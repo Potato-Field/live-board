@@ -21,7 +21,7 @@ function App() {
     const stage = e.target.getStage();
     const point = stage.getPointerPosition();
     let lastLine = lines[lines.length - 1];
-    // add point
+    //우왕
     lastLine.points = lastLine.points.concat([point.x, point.y]);
 
     // replace last
