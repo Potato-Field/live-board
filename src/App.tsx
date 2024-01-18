@@ -1,19 +1,24 @@
-import React from 'react';
+import React, { FC, useState, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Stage, Layer, Line, Text } from 'react-konva';
 
-function App() {
-  const [tool, setTool] = React.useState('pen');
-  const [lines, setLines] = React.useState([]);
-  const isDrawing = React.useRef(false);
+interface LineData {
+  tool: string;
+  points: number[];
+}
 
-  const handleMouseDown = (e) => {
+const App: FC = () => {
+  const [tool, setTool] = useState<string>('pen');
+  const [lines, setLines] = useState<LineData[]>([]);
+  const isDrawing = useRef<boolean>(false);
+
+  const handleMouseDown = (e: any) => {
     isDrawing.current = true;
     const pos = e.target.getStage().getPointerPosition();
     setLines([...lines, { tool, points: [pos.x, pos.y] }]);
   };
-
-  const handleMouseMove = (e) => {
+  
+  const handleMouseMove = (e: any) => {
     // no drawing - skipping
     if (!isDrawing.current) {
       return;
@@ -21,12 +26,11 @@ function App() {
     const stage = e.target.getStage();
     const point = stage.getPointerPosition();
     let lastLine = lines[lines.length - 1];
-    //우왕
     lastLine.points = lastLine.points.concat([point.x, point.y]);
 
     // replace last
     lines.splice(lines.length - 1, 1, lastLine);
-    setLines(lines.concat());
+    setLines([...lines]);
   };
 
   const handleMouseUp = () => {
@@ -43,7 +47,7 @@ function App() {
         onMouseup={handleMouseUp}
       >
         <Layer>
-          <Text text="Just start drawing" x={5} y={30} />
+          {/* <Text text="네비바 만들 공간" x={5} y={30} /> */}
           {lines.map((line, i) => (
             <Line
               key={i}
@@ -73,4 +77,4 @@ function App() {
   );
 }
 
-export default App
+export default App;
