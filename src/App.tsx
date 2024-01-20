@@ -1,6 +1,8 @@
 import React, { FC, useState, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Stage, Layer, Line, Text } from 'react-konva';
+import Button from '@mui/material/Button';
+import ButtonGroup from '@mui/material/ButtonGroup';
 
 interface LineData {
   tool: string;
@@ -64,15 +66,19 @@ const App: FC = () => {
           ))}
         </Layer>
       </Stage>
-      <select
-        value={tool}
-        onChange={(e) => {
-          setTool(e.target.value);
-        }}
-      >
-        <option value="pen">Pen</option>
-        <option value="eraser">Eraser</option>
-      </select>
+      <ButtonGroup variant="contained" aria-label="outlined primary button group">
+        <Button onClick={()=>{setTool("do")}}>do</Button>
+        <Button onClick={()=>{setTool("undo")}}>undo</Button>
+        <Button onClick={()=>{setTool("text")}}>text</Button>
+        <Button onClick={()=>{setTool("pen")}}>pen</Button>
+        <Button onClick={()=>{setTool("highlighter")}}>highlighter</Button>
+        <Button onClick={()=>{setTool("eraser")}}>eraser</Button>
+        <Button onClick={()=>{setTool("postit")}}>postit</Button>
+        <Button onClick={()=>{setTool("shape")}}>shape</Button>
+        <Button onClick={()=>{setTool("stamp")}}>stamp</Button>
+        <Button onClick={()=>{setTool("mindmap")}}>mindmap</Button>
+        <Button onClick={()=>{setTool("color")}}>color</Button>
+      </ButtonGroup>
     </div>
   );
 }

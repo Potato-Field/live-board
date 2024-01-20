@@ -16,4 +16,3 @@ module.exports = {
     ],
   },
 }
-//야호adsfdafsa
