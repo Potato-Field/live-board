@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 0.0.0.0 --port 4000",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
@@ -19,7 +19,10 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-konva": "^18.2.10",
-    "styled-components": "^6.1.8"
+    "styled-components": "^6.1.8",
+    "y-webrtc": "^10.3.0",
+    "y-websocket": "^1.5.3",
+    "yjs": "^13.6.11"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
