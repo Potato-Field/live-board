@@ -1,6 +1,5 @@
-import React, { FC, useState, useRef, useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
-import { Stage, Layer, Line, Text } from 'react-konva';
+import { FC, useState, useRef, useEffect } from 'react';
+import { Stage, Layer, Line } from 'react-konva';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 //-----------CRDT---------------------
@@ -35,7 +34,7 @@ const App: FC = () => {
     const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     // Y.js 배열을 캔버스에 선으로 그리기
-    yLinesRef.current.observe(event => {
+    yLinesRef.current.observe(() => {
       setLines(yLinesRef.current.toArray());
     });
 
