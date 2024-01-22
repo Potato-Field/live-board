@@ -1,17 +1,17 @@
-import React, { FC, useState, useRef, useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
+import { FC, useState, useRef, useEffect } from 'react';
+//import { createRoot } from 'react-dom/client';
 import { Stage, Layer, Line, Text } from 'react-konva';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
-import IconButton from '@mui/material/IconButton';
-import CircleIcon from '@mui/icons-material/Circle';
-import { Icon } from '@mui/material';
+// import IconButton from '@mui/material/IconButton';
+// import CircleIcon from '@mui/icons-material/Circle';
+// import { Icon } from '@mui/material';
 import "./index.css"
 
 //-----------CRDT---------------------
 import * as Y from "yjs";
-import { WebrtcProvider } from "y-webrtc";
 //import { WebsocketProvider } from "y-websocket";
+import { WebrtcProvider } from "y-webrtc";
 
 interface LineData {
   tool: string;
@@ -41,7 +41,10 @@ const App: FC = () => {
   const yDocRef = useRef(new Y.Doc());
   const yLinesRef = useRef<Y.Array<LineData>>(yDocRef.current.getArray<LineData>('lines'));
 
+
+  //load() 역할을 하는 듯
   useEffect(() => {
+    //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current)
     const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     // Y.js 배열을 캔버스에 선으로 그리기
@@ -99,14 +102,7 @@ const App: FC = () => {
   const handleColorChange = (e:React.ChangeEvent<HTMLInputElement>) => {
     setCurrentColor(e.target.value);
   };
-/*
-  const handleTextInputChange = (index: number, newText: string) => {
-    const updatedTextInputs = [...textInputs];
-    updatedTextInputs[index].init = newText;
-    setTextInputs(updatedTextInputs);
-  }
-*/
-  console.log(setTool);
+
   return (
     <div style={{position: "relative", width: "100%"}}>
       <Stage
