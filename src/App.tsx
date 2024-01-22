@@ -1,7 +1,13 @@
-import { FC, useState, useRef, useEffect } from 'react';
-import { Stage, Layer, Line } from 'react-konva';
+import React, { FC, useState, useRef, useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
+import { Stage, Layer, Line, Text } from 'react-konva';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
+import IconButton from '@mui/material/IconButton';
+import CircleIcon from '@mui/icons-material/Circle';
+import { Icon } from '@mui/material';
+import "./index.css"
+
 //-----------CRDT---------------------
 import * as Y from "yjs";
 import { WebrtcProvider } from "y-webrtc";
@@ -12,18 +18,11 @@ interface LineData {
   points: number[];
 }
 
-const App: FC = () => {
-  
-  /*
-   * [CRDT] 
-   * 2024.01.22
-   * 드로잉 동기화 구현
-   * 김병철
-   */
-
-  const [lines, setLines] = useState<LineData[]>([]);
+const App: FC = () => { // 컴포넌트 선언
   const [tool, setTool] = useState<string>('pen');
+  const [lines, setLines] = useState<LineData[]>([]);
   const stageRef = useRef(null);
+  const [currentColor, setCurrentColor] = useState<string>('#000000');
   const isDrawing = useRef(false);
 
   // Y.js 관련 상태를 useRef로 관리
@@ -67,8 +66,13 @@ const App: FC = () => {
     isDrawing.current = false;
   };
 
+  // 색상 변경 - 팔레트
+  const handleColorChange = (e:React.ChangeEvent<HTMLInputElement>) => {
+    setCurrentColor(e.target.value);
+  };
+
   return (
-    <div>
+    <div style={{position: "relative", width: "100%"}}>
       <Stage
         width={window.innerWidth}
         height={window.innerHeight}
@@ -82,7 +86,7 @@ const App: FC = () => {
             <Line
               key={i}
               points={line.points}
-              stroke="#df4b26"
+              stroke={currentColor}
               strokeWidth={5}
               tension={0.5}
               lineCap="round"
@@ -93,22 +97,25 @@ const App: FC = () => {
             />
           ))}
         </Layer>
+        <Layer></Layer>
       </Stage>
-      {/* 임시 스타일 */}
-      <div style={{position: "absolute", bottom: "2%", left: "25%" }}>
+
+      <div className = "ToolBtnGroup" style={{position: "absolute", bottom: "2%", left: "50%", transform: "translate(-50%, 0)"}}>
         <ButtonGroup variant="contained" aria-label="outlined primary button group">
-            <Button onClick={()=>{setTool("do")}}>do</Button>
-            <Button onClick={()=>{setTool("undo")}}>undo</Button>
-            <Button onClick={()=>{setTool("text")}}>text</Button>
-            <Button onClick={()=>{setTool("pen")}}>pen</Button>
-            <Button onClick={()=>{setTool("highlighter")}}>highlighter</Button>
-            <Button onClick={()=>{setTool("eraser")}}>eraser</Button>
-            <Button onClick={()=>{setTool("postit")}}>postit</Button>
-            <Button onClick={()=>{setTool("shape")}}>shape</Button>
-            <Button onClick={()=>{setTool("stamp")}}>stamp</Button>
-            <Button onClick={()=>{setTool("mindmap")}}>mindmap</Button>
-            <Button onClick={()=>{setTool("color")}}>color</Button>
-          </ButtonGroup>
+          <Button id='undo' onClick={()=>{setTool("undo")}}>undo</Button>
+          <Button id='do' onClick={()=>{setTool("do")}}>do</Button>
+          <Button id='text' onClick={()=>{setTool("text")}}>text</Button>
+          <Button id='pen' onClick={()=>{setTool("pen")}}>pen</Button>
+          <Button id='highlighter' onClick={()=>{setTool("highlighter")}}>highlighter</Button>
+          <Button id='eraser' onClick={()=>{setTool("eraser")}}>eraser</Button>
+          <Button id='postit' onClick={()=>{setTool("postit")}}>postit</Button>
+          <Button id='shape' onClick={()=>{setTool("shape")}}>shape</Button>
+          <Button id='stamp' onClick={()=>{setTool("stamp")}}>stamp</Button>
+          <Button id='mindmap' onClick={()=>{setTool("mindmap")}}>mindmap</Button>
+          <Button id='palatte'>
+            <input type='color' value={currentColor} onChange={handleColorChange}></input>
+          </Button>
+        </ButtonGroup>
       </div>
     </div>
   );
