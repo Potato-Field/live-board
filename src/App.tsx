@@ -17,13 +17,25 @@ interface LineData {
   tool: string;
   points: number[];
 }
+interface TextInputProps {
+  init: string;
+  x?: number;
+  y?: number;
+}
+const App: FC = () => {
 
-const App: FC = () => { // 컴포넌트 선언
+  /*
+   * [CRDT] 
+   * 2024.01.22
+   * 드로잉 동기화 구현
+   * 김병철
+   */
   const [tool, setTool] = useState<string>('pen');
   const [lines, setLines] = useState<LineData[]>([]);
   const stageRef = useRef(null);
   const [currentColor, setCurrentColor] = useState<string>('#000000');
   const isDrawing = useRef(false);
+  const [textInputs, setTextInputs] = useState<TextInputProps[]>([]);
 
   // Y.js 관련 상태를 useRef로 관리
   const yDocRef = useRef(new Y.Doc());
@@ -44,9 +56,19 @@ const App: FC = () => { // 컴포넌트 선언
   }, []);
 
   const handleMouseDown = (e: any) => {
-    isDrawing.current = true;
     const pos = e.target.getStage().getPointerPosition();
-    yLinesRef.current.push([{ tool, points: [pos.x, pos.y] }]);
+    console.log(tool)
+    if (tool === 'text') {
+      const newTextInput = { init: 'Click to Text', x: pos.x, y: pos.y };
+      setTextInputs([...textInputs, newTextInput]);
+      const newTextIndex = textInputs.length;
+      setTool(`text-${newTextIndex}`);
+    } else if (tool === 'pen') {
+      isDrawing.current = true;
+
+      
+      yLinesRef.current.push([{ tool, points: [pos.x, pos.y] }]);
+    }
   };
 
   const handleMouseMove = (e: any) => {
@@ -65,20 +87,34 @@ const App: FC = () => { // 컴포넌트 선언
   const handleMouseUp = () => {
     isDrawing.current = false;
   };
-
+/*
+  const handleTextInputChange = (index: number, newText: string) => {
+    const updatedTextInputs = [...textInputs];
+    updatedTextInputs[index].init = newText;
+    setTextInputs(updatedTextInputs);
+  }
+*/
+  //console.log(setTool);
   // 색상 변경 - 팔레트
   const handleColorChange = (e:React.ChangeEvent<HTMLInputElement>) => {
     setCurrentColor(e.target.value);
   };
-
+/*
+  const handleTextInputChange = (index: number, newText: string) => {
+    const updatedTextInputs = [...textInputs];
+    updatedTextInputs[index].init = newText;
+    setTextInputs(updatedTextInputs);
+  }
+*/
+  console.log(setTool);
   return (
     <div style={{position: "relative", width: "100%"}}>
       <Stage
         width={window.innerWidth}
         height={window.innerHeight}
         onMouseDown={handleMouseDown}
-        onMousemove={handleMouseMove}
-        onMouseup={handleMouseUp}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
         ref={stageRef}
       >
         <Layer>
@@ -94,6 +130,23 @@ const App: FC = () => { // 컴포넌트 선언
               globalCompositeOperation={
                 line.tool === 'eraser' ? 'destination-out' : 'source-over'
               }
+            />
+          ))}
+          {textInputs.map((textInput, i) => (
+            <Text
+            key={i}
+            text={textInput.init}
+            x={textInput.x}
+            y={textInput.y}
+            fill="#000000"
+            fontSize={16}
+            draggable
+            onDragEnd={(e) => {
+              const updatedTextInputs = [...textInputs];
+              updatedTextInputs[i].x = e.target.x();
+              updatedTextInputs[i].y = e.target.y();
+              setTextInputs(updatedTextInputs);
+            }}
             />
           ))}
         </Layer>
