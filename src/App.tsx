@@ -22,6 +22,12 @@ interface TextInputProps {
   x?: number;
   y?: number;
 }
+
+interface InputData{
+  id: string;
+  value: string;
+}
+
 const App: FC = () => {
 
   /*
@@ -30,6 +36,10 @@ const App: FC = () => {
    * 드로잉 동기화 구현
    * 김병철
    */
+
+   //input state 저장하는 부분
+  const [inputDataArray, setInputDataArray] = useState<InputData[]>([]);
+  
   const [tool, setTool] = useState<string>('pen');
   const [lines, setLines] = useState<LineData[]>([]);
   const stageRef = useRef(null);
@@ -41,6 +51,9 @@ const App: FC = () => {
   const yDocRef = useRef(new Y.Doc());
   const yLinesRef = useRef<Y.Array<LineData>>(yDocRef.current.getArray<LineData>('lines'));
 
+  //input ref로 저장하는 부분
+  const inputDataRefs = useRef<Y.Array<InputData>>(yDocRef.current.getArray<InputData>('inputdata'));
+ 
 
   //load() 역할을 하는 듯
   useEffect(() => {
@@ -50,6 +63,11 @@ const App: FC = () => {
     // Y.js 배열을 캔버스에 선으로 그리기
     yLinesRef.current.observe(() => {
       setLines(yLinesRef.current.toArray());
+    });
+
+    //inputarray 배열형태로 state에 저장하기 
+    inputDataRefs.current.observe(() => {
+      setInputDataArray(inputDataRefs.current.toArray());
     });
 
     return () => {
@@ -103,8 +121,67 @@ const App: FC = () => {
     setCurrentColor(e.target.value);
   };
 
+  const addInput = () => {
+    const newId = `input - ${Date.now()}-${Math.random()}`
+    const newInputData = {
+      // id: `input - ${inputDataArray.length}`,
+      id: newId,
+      value: ''
+    };
+    setInputDataArray([...inputDataArray, newInputData]);
+    inputDataRefs.current.push([newInputData]);
+  }
+  
+  const removeInput = (index : number) =>{
+    const filteredArray = inputDataArray.filter((_, i) => i !== index);
+    setInputDataArray(inputDataArray.filter((_, i) => i !== index));
+    inputDataRefs.current.delete(index, 1);
+  }
+
+  const handleInputChange = (index: number, event: React.ChangeEvent<HTMLInputElement>) =>{
+   const updatedValue = event.target.value;
+
+   yDocRef.current.transact(() => {
+    const currentItem = inputDataRefs.current.get(index);
+    if(currentItem){
+      const updatedItem = {...currentItem, value: updatedValue};
+      inputDataRefs.current.delete(index, 1);
+      inputDataRefs.current.insert(index, [updatedItem]);
+    }
+   });
+
+   const updatedInputDataArray = inputDataArray.map((inputData, i) => {
+      if(i === index){
+        return {...inputData, value: updatedValue};
+      }
+      return inputData;
+   });
+   setInputDataArray(updatedInputDataArray);
+  }
+
+
+
+
+
+
+
+
   return (
     <div style={{position: "relative", width: "100%"}}>
+    <div>
+        <button onClick={addInput}>add textbox</button>
+        {inputDataArray.map((inputData, index) => (
+          <div key={inputData.id}>
+            <input
+            id={inputData.id}
+            type='text'
+            value={inputData.value}
+            onChange={(e) => handleInputChange(index, e)} 
+            />
+            <button onClick={() => removeInput(index)}>Delete</button>
+          </div>
+        ))}
+      </div>
       <Stage
         width={window.innerWidth}
         height={window.innerHeight}
