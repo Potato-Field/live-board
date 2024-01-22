@@ -20,6 +20,7 @@
     "react-dom": "^18.2.0",
     "react-konva": "^18.2.10",
     "styled-components": "^6.1.8",
+    "valtio-yjs": "^0.5.1",
     "y-webrtc": "^10.3.0",
     "y-websocket": "^1.5.3",
     "yjs": "^13.6.11"

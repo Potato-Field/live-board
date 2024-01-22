@@ -29,13 +29,25 @@ const App: FC = () => {
   // Y.js 관련 상태를 useRef로 관리
   const yDocRef = useRef(new Y.Doc());
   const yLinesRef = useRef<Y.Array<LineData>>(yDocRef.current.getArray<LineData>('lines'));
-
+  
+  //textRef
+  const yTextRef = useRef('null');
+  yTextRef.current = yDocRef.current.getText('text');
+  
   useEffect(() => {
     const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     // Y.js 배열을 캔버스에 선으로 그리기
     yLinesRef.current.observe(() => {
       setLines(yLinesRef.current.toArray());
+    });
+
+    // text 동기화 기능
+    yTextRef.current.observe(() => {
+      const inputElement = document.getElementById('yjs-input');
+      if (inputElement) {
+        inputElement.value = yTextRef.current.toString();
+      }
     });
 
     return () => {
@@ -67,8 +79,18 @@ const App: FC = () => {
     isDrawing.current = false;
   };
 
+
+  const inputChange = (event, yTextRef) =>{
+    const value = event.target.value;
+    yTextRef.current.delete(0, yTextRef.current.length);
+    yTextRef.current.insert(0, value);
+  };
+
   return (
     <div>
+      <div>
+        <input id='yjs-input' type='text' onChange={(e) => inputChange(e, yTextRef)}/>
+      </div>
       <Stage
         width={window.innerWidth}
         height={window.innerHeight}
@@ -94,6 +116,7 @@ const App: FC = () => {
           ))}
         </Layer>
       </Stage>
+      
       {/* 임시 스타일 */}
       <div style={{position: "absolute", bottom: "2%", left: "25%" }}>
         <ButtonGroup variant="contained" aria-label="outlined primary button group">
