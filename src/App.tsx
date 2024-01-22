@@ -44,7 +44,8 @@ const App: FC = () => {
 
   //load() 역할을 하는 듯
   useEffect(() => {
-    //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current)
+    //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current) //서버 확인용
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1234'] }); //서버 확인용
     const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     // Y.js 배열을 캔버스에 선으로 그리기
