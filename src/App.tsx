@@ -1,10 +1,18 @@
-import { FC, useState, useRef, useEffect } from 'react';
+import { 
+  FC
+  , useState
+  , useRef
+  , useEffect 
+} from 'react';
 //import { createRoot } from 'react-dom/client';
 import { Stage, Layer, Line, Text } from 'react-konva';
-import Button from '@mui/material/Button';
-import ButtonGroup from '@mui/material/ButtonGroup';
-import CircleIcon from '@mui/icons-material/Circle';
-import { MuiColorInput } from 'mui-color-input'
+import { ButtonCustomGroup } from './component/ButtonCustomGroup';
+
+import { useTool } from './component/ToolContext';
+import { ColorProvider } from './component/ColorContext';
+
+import { Tools } from './component/Tools';
+
 import "./index.css"
 
 //-----------CRDT---------------------
@@ -12,32 +20,42 @@ import * as Y from "yjs";
 //import { WebsocketProvider } from "y-websocket";
 import { WebrtcProvider } from "y-webrtc";
 
-interface LineData {
-  tool: string;
+
+interface BaseData {
+  name? : string
+  tool : Tools
+}
+
+interface LineData extends BaseData {
   points: number[];
 }
 
-interface TextInputProps {
+interface TextData extends BaseData {
   init: string;
   x?: number;
   y?: number;
 }
 
-const App: FC = () => {
+interface ShapeData extends BaseData {
+  color : string
+}
 
+const App: FC = () => {
+  //Container Components
+
+  const { tool, setTool } = useTool();
   /*
    * [CRDT] 
    * 2024.01.22
    * 드로잉 동기화 구현
    * 김병철
    */
-  const [tool, setTool] = useState<string>('pen');
   const [lines, setLines] = useState<LineData[]>([]);
-  const stageRef = useRef(null);
+  const [textInputs, setTextInputs] = useState<TextData[]>([]);
   const [currentColor, setCurrentColor] = useState<string>('#000000');
+  
+  const stageRef = useRef(null);
   const isDrawing = useRef(false);
-  const [textInputs, setTextInputs] = useState<TextInputProps[]>([]);
-
   // Y.js 관련 상태를 useRef로 관리
   const yDocRef = useRef(new Y.Doc());
   const yLinesRef = useRef<Y.Array<LineData>>(yDocRef.current.getArray<LineData>('lines'));
@@ -46,7 +64,8 @@ const App: FC = () => {
   //load() 역할을 하는 듯
   useEffect(() => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current)
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1234'] });
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1234'] });
 
     // Y.js 배열을 캔버스에 선으로 그리기
     yLinesRef.current.observe(() => {
@@ -59,18 +78,16 @@ const App: FC = () => {
     };
   }, []);
 
+  /* 
+    마우스 클릭 시 동작
+  */
   const handleMouseDown = (e: any) => {
     const pos = e.target.getStage().getPointerPosition();
-    console.log(tool)
-    if (tool === 'text') {
-      const newTextInput = { init: 'Click to Text', x: pos.x, y: pos.y };
-      setTextInputs([...textInputs, newTextInput]);
-      const newTextIndex = textInputs.length;
-      setTool(`text-${newTextIndex}`);
-    } else if (tool === 'pen') {
-      isDrawing.current = true;
 
+    if (tool === Tools.TEXT) {
       
+    } else if (tool === Tools.PEN) {
+      isDrawing.current = true;
       yLinesRef.current.push([{ tool, points: [pos.x, pos.y] }]);
     }
   };
@@ -90,20 +107,6 @@ const App: FC = () => {
 
   const handleMouseUp = () => {
     isDrawing.current = false;
-  };
-
-/*
-  const handleTextInputChange = (index: number, newText: string) => {
-    const updatedTextInputs = [...textInputs];
-    updatedTextInputs[index].init = newText;
-    setTextInputs(updatedTextInputs);
-  }
-*/
-  //console.log(setTool);
-
-  // 색상 변경
-  const handleColorClick = (e: string) => {
-    setCurrentColor(e);
   };
 
   return (
@@ -128,7 +131,7 @@ const App: FC = () => {
               lineCap="round"
               lineJoin="round"
               globalCompositeOperation={
-                line.tool === 'eraser' ? 'destination-out' : 'source-over'
+                line.tool === Tools.ERASER ? 'destination-out' : 'source-over'
               }
             />
           ))}
@@ -170,27 +173,9 @@ const App: FC = () => {
           ))}
         </Layer>
       </Stage>
-
-      <div className = "ToolBtnGroup" style={{position: "absolute", bottom: "2%", left: "50%", transform: "translate(-50%, 0)"}}>
-        <ButtonGroup variant="contained" aria-label="outlined primary button group">
-          <Button id='undo' onClick={()=>{setTool("undo")}}>undo</Button>
-          <Button id='do' onClick={()=>{setTool("do")}}>do</Button>
-          <Button id='text' onClick={()=>{setTool("text")}}>text</Button>
-          <Button id='pen' onClick={()=>{setTool("pen")}}>pen</Button>
-          <Button id='highlighter' onClick={()=>{setTool("highlighter")}}>highlighter</Button>
-          <Button id='eraser' onClick={()=>{setTool("eraser")}}>eraser</Button>
-          <Button id='postit' onClick={()=>{setTool("postit")}}>postit</Button>
-          <Button id='shape' onClick={()=>{setTool("shape")}}>shape</Button>
-          <Button id='stamp' onClick={()=>{setTool("stamp")}}>stamp</Button>
-          <Button id='mindmap' onClick={()=>{setTool("mindmap")}}>mindmap</Button>
-          <Button className='singleColor' onClick={()=>{handleColorClick('#000000')}}><CircleIcon style={{color: '000000'}}/></Button>
-          <Button className='singleColor' onClick={()=>{handleColorClick('#E7464B')}}><CircleIcon style={{color: 'E7464B'}}/></Button>
-          <Button className='singleColor' onClick={()=>{handleColorClick('#3B7EF2')}}><CircleIcon style={{color: '3B7EF2'}}/></Button>
-          <Button className='singleColor' onClick={()=>{handleColorClick('#79D375')}}><CircleIcon style={{color: '79D375'}}/></Button>
-          <Button className='singleColor' onClick={()=>{handleColorClick('#F7D054')}}><CircleIcon style={{color: 'F7D054'}}/></Button>
-          <Button><MuiColorInput value={currentColor} onChange={handleColorClick} /></Button>
-        </ButtonGroup>
-      </div>
+      <ColorProvider>
+        <ButtonCustomGroup />
+      </ColorProvider>
     </div>
   );
 }
