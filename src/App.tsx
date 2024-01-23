@@ -3,9 +3,8 @@ import { FC, useState, useRef, useEffect } from 'react';
 import { Stage, Layer, Line, Text } from 'react-konva';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
-// import IconButton from '@mui/material/IconButton';
-// import CircleIcon from '@mui/icons-material/Circle';
-// import { Icon } from '@mui/material';
+import CircleIcon from '@mui/icons-material/Circle';
+import { MuiColorInput } from 'mui-color-input'
 import "./index.css"
 
 //-----------CRDT---------------------
@@ -17,11 +16,13 @@ interface LineData {
   tool: string;
   points: number[];
 }
+
 interface TextInputProps {
   init: string;
   x?: number;
   y?: number;
 }
+
 const App: FC = () => {
 
   /*
@@ -90,6 +91,7 @@ const App: FC = () => {
   const handleMouseUp = () => {
     isDrawing.current = false;
   };
+
 /*
   const handleTextInputChange = (index: number, newText: string) => {
     const updatedTextInputs = [...textInputs];
@@ -98,9 +100,10 @@ const App: FC = () => {
   }
 */
   //console.log(setTool);
-  // 색상 변경 - 팔레트
-  const handleColorChange = (e:React.ChangeEvent<HTMLInputElement>) => {
-    setCurrentColor(e.target.value);
+
+  // 색상 변경
+  const handleColorClick = (e: string) => {
+    setCurrentColor(e);
   };
 
   return (
@@ -114,6 +117,7 @@ const App: FC = () => {
         ref={stageRef}
       >
         <Layer>
+          {/* pen */}
           {lines.map((line, i) => (
             <Line
               key={i}
@@ -128,6 +132,25 @@ const App: FC = () => {
               }
             />
           ))}
+        </Layer>
+        
+        {/* highlighter */}
+        {/* <Layer>
+          {lines.map((line, i) => (
+            <Line
+              key={i}
+              points={line.points}
+              stroke={currentColor}
+              strokeWidth={15}
+              tension={0.5}
+              lineCap="butt"
+              lineJoin="round"
+              opacity={0.4}
+            />
+          ))}
+        </Layer> */}
+
+        <Layer>
           {textInputs.map((textInput, i) => (
             <Text
             key={i}
@@ -146,7 +169,6 @@ const App: FC = () => {
             />
           ))}
         </Layer>
-        <Layer></Layer>
       </Stage>
 
       <div className = "ToolBtnGroup" style={{position: "absolute", bottom: "2%", left: "50%", transform: "translate(-50%, 0)"}}>
@@ -161,9 +183,12 @@ const App: FC = () => {
           <Button id='shape' onClick={()=>{setTool("shape")}}>shape</Button>
           <Button id='stamp' onClick={()=>{setTool("stamp")}}>stamp</Button>
           <Button id='mindmap' onClick={()=>{setTool("mindmap")}}>mindmap</Button>
-          <Button id='palatte'>
-            <input type='color' value={currentColor} onChange={handleColorChange}></input>
-          </Button>
+          <Button className='singleColor' onClick={()=>{handleColorClick('#000000')}}><CircleIcon style={{color: '000000'}}/></Button>
+          <Button className='singleColor' onClick={()=>{handleColorClick('#E7464B')}}><CircleIcon style={{color: 'E7464B'}}/></Button>
+          <Button className='singleColor' onClick={()=>{handleColorClick('#3B7EF2')}}><CircleIcon style={{color: '3B7EF2'}}/></Button>
+          <Button className='singleColor' onClick={()=>{handleColorClick('#79D375')}}><CircleIcon style={{color: '79D375'}}/></Button>
+          <Button className='singleColor' onClick={()=>{handleColorClick('#F7D054')}}><CircleIcon style={{color: 'F7D054'}}/></Button>
+          <Button><MuiColorInput value={currentColor} onChange={handleColorClick} /></Button>
         </ButtonGroup>
       </div>
     </div>
