@@ -20,6 +20,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-konva": "^18.2.10",
+    "react-konva-utils": "^1.0.5",
     "styled-components": "^6.1.8",
     "y-webrtc": "^10.3.0",
     "y-websocket": "^1.5.3",
