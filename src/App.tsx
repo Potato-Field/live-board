@@ -3,9 +3,8 @@ import { FC, useState, useRef, useEffect } from 'react';
 import { Stage, Layer, Line, Text } from 'react-konva';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
-// import IconButton from '@mui/material/IconButton';
-// import CircleIcon from '@mui/icons-material/Circle';
-// import { Icon } from '@mui/material';
+import CircleIcon from '@mui/icons-material/Circle';
+import { MuiColorInput } from 'mui-color-input'
 import "./index.css"
 
 //-----------CRDT---------------------
@@ -17,15 +16,11 @@ interface LineData {
   tool: string;
   points: number[];
 }
+
 interface TextInputProps {
   init: string;
   x?: number;
   y?: number;
-}
-
-interface InputData{
-  id: string;
-  value: string;
 }
 
 const App: FC = () => {
@@ -36,10 +31,6 @@ const App: FC = () => {
    * 드로잉 동기화 구현
    * 김병철
    */
-
-   //input state 저장하는 부분
-  const [inputDataArray, setInputDataArray] = useState<InputData[]>([]);
-  
   const [tool, setTool] = useState<string>('pen');
   const [lines, setLines] = useState<LineData[]>([]);
   const stageRef = useRef(null);
@@ -51,24 +42,15 @@ const App: FC = () => {
   const yDocRef = useRef(new Y.Doc());
   const yLinesRef = useRef<Y.Array<LineData>>(yDocRef.current.getArray<LineData>('lines'));
 
-  //input ref로 저장하는 부분
-  const inputDataRefs = useRef<Y.Array<InputData>>(yDocRef.current.getArray<InputData>('inputdata'));
- 
 
   //load() 역할을 하는 듯
   useEffect(() => {
-    //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current) //서버 확인용
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1234'] }); //서버 확인용
+    //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current)
     const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     // Y.js 배열을 캔버스에 선으로 그리기
     yLinesRef.current.observe(() => {
       setLines(yLinesRef.current.toArray());
-    });
-
-    //inputarray 배열형태로 state에 저장하기 
-    inputDataRefs.current.observe(() => {
-      setInputDataArray(inputDataRefs.current.toArray());
     });
 
     return () => {
@@ -109,6 +91,7 @@ const App: FC = () => {
   const handleMouseUp = () => {
     isDrawing.current = false;
   };
+
 /*
   const handleTextInputChange = (index: number, newText: string) => {
     const updatedTextInputs = [...textInputs];
@@ -117,72 +100,14 @@ const App: FC = () => {
   }
 */
   //console.log(setTool);
-  // 색상 변경 - 팔레트
-  const handleColorChange = (e:React.ChangeEvent<HTMLInputElement>) => {
-    setCurrentColor(e.target.value);
+
+  // 색상 변경
+  const handleColorClick = (e: string) => {
+    setCurrentColor(e);
   };
-
-  const addInput = () => {
-    const newId = `input - ${Date.now()}-${Math.random()}`
-    const newInputData = {
-      // id: `input - ${inputDataArray.length}`,
-      id: newId,
-      value: ''
-    };
-    setInputDataArray([...inputDataArray, newInputData]);
-    inputDataRefs.current.push([newInputData]);
-  }
-  
-  const removeInput = (index : number) =>{
-    const filteredArray = inputDataArray.filter((_, i) => i !== index);
-    setInputDataArray(inputDataArray.filter((_, i) => i !== index));
-    inputDataRefs.current.delete(index, 1);
-  }
-
-  const handleInputChange = (index: number, event: React.ChangeEvent<HTMLInputElement>) =>{
-   const updatedValue = event.target.value;
-
-   yDocRef.current.transact(() => {
-    const currentItem = inputDataRefs.current.get(index);
-    if(currentItem){
-      const updatedItem = {...currentItem, value: updatedValue};
-      inputDataRefs.current.delete(index, 1);
-      inputDataRefs.current.insert(index, [updatedItem]);
-    }
-   });
-
-   const updatedInputDataArray = inputDataArray.map((inputData, i) => {
-      if(i === index){
-        return {...inputData, value: updatedValue};
-      }
-      return inputData;
-   });
-   setInputDataArray(updatedInputDataArray);
-  }
-
-
-
-
-
-
-
 
   return (
     <div style={{position: "relative", width: "100%"}}>
-    <div>
-        <button onClick={addInput}>add textbox</button>
-        {inputDataArray.map((inputData, index) => (
-          <div key={inputData.id}>
-            <input
-            id={inputData.id}
-            type='text'
-            value={inputData.value}
-            onChange={(e) => handleInputChange(index, e)} 
-            />
-            <button onClick={() => removeInput(index)}>Delete</button>
-          </div>
-        ))}
-      </div>
       <Stage
         width={window.innerWidth}
         height={window.innerHeight}
@@ -192,6 +117,7 @@ const App: FC = () => {
         ref={stageRef}
       >
         <Layer>
+          {/* pen */}
           {lines.map((line, i) => (
             <Line
               key={i}
@@ -206,6 +132,25 @@ const App: FC = () => {
               }
             />
           ))}
+        </Layer>
+        
+        {/* highlighter */}
+        {/* <Layer>
+          {lines.map((line, i) => (
+            <Line
+              key={i}
+              points={line.points}
+              stroke={currentColor}
+              strokeWidth={15}
+              tension={0.5}
+              lineCap="butt"
+              lineJoin="round"
+              opacity={0.4}
+            />
+          ))}
+        </Layer> */}
+
+        <Layer>
           {textInputs.map((textInput, i) => (
             <Text
             key={i}
@@ -224,7 +169,6 @@ const App: FC = () => {
             />
           ))}
         </Layer>
-        <Layer></Layer>
       </Stage>
 
       <div className = "ToolBtnGroup" style={{position: "absolute", bottom: "2%", left: "50%", transform: "translate(-50%, 0)"}}>
@@ -239,9 +183,12 @@ const App: FC = () => {
           <Button id='shape' onClick={()=>{setTool("shape")}}>shape</Button>
           <Button id='stamp' onClick={()=>{setTool("stamp")}}>stamp</Button>
           <Button id='mindmap' onClick={()=>{setTool("mindmap")}}>mindmap</Button>
-          <Button id='palatte'>
-            <input type='color' value={currentColor} onChange={handleColorChange}></input>
-          </Button>
+          <Button className='singleColor' onClick={()=>{handleColorClick('#000000')}}><CircleIcon style={{color: '000000'}}/></Button>
+          <Button className='singleColor' onClick={()=>{handleColorClick('#E7464B')}}><CircleIcon style={{color: 'E7464B'}}/></Button>
+          <Button className='singleColor' onClick={()=>{handleColorClick('#3B7EF2')}}><CircleIcon style={{color: '3B7EF2'}}/></Button>
+          <Button className='singleColor' onClick={()=>{handleColorClick('#79D375')}}><CircleIcon style={{color: '79D375'}}/></Button>
+          <Button className='singleColor' onClick={()=>{handleColorClick('#F7D054')}}><CircleIcon style={{color: 'F7D054'}}/></Button>
+          <Button><MuiColorInput value={currentColor} onChange={handleColorClick} /></Button>
         </ButtonGroup>
       </div>
     </div>
