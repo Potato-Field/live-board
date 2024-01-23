@@ -18,6 +18,7 @@ interface LineData {
   tool: string;
   points: number[];
 }
+// text 자원값 설정
 interface TextInputProps {
   init: string;
   x?: number;
@@ -49,7 +50,6 @@ const App: FC = () => {
   const isDrawing = useRef(false);
   // 텍스트 생성
   const [textInputs, setTextInputs] = useState<TextInputProps[]>([]);
-  // 텍스트 수정
 
   // Y.js 관련 상태를 useRef로 관리
   const yDocRef = useRef(new Y.Doc());
@@ -57,7 +57,7 @@ const App: FC = () => {
 
   //input ref로 저장하는 부분
   const inputDataRefs = useRef<Y.Array<InputData>>(yDocRef.current.getArray<InputData>('inputdata'));
-
+ 
 
   //load() 역할을 하는 듯
   useEffect(() => {
@@ -83,9 +83,11 @@ const App: FC = () => {
 
   const handleMouseDown = (e: any) => {
     const pos = e.target.getStage().getPointerPosition();
+    // Toolbar 도구 text 버튼 클릭 후 보드 클릭시 그 위치 텍스트 생성
     if (tool === 'text') {
       const newTextInput = { init: 'Click to Text', x: pos.x, y: pos.y };
       setTextInputs([...textInputs, newTextInput]);
+      // 텍스트 생성시 텍스트 길이 따라 객체 박스 계산하려고 length  계산
       const newTextIndex = textInputs.length;
       setTool(`text-${newTextIndex}`);
     } else if (tool === 'pen') {
@@ -159,6 +161,7 @@ const handleInputChange = (index: number, event: React.ChangeEvent<HTMLInputElem
     setInputDataArray(updatedInputDataArray);
   }
 
+  // 텍스트 더블 클릭시 isEditing 값 True 로 변경하여 텍스트 수정하려고 시도
   const handleTextInputDblClick = (index: number) => {
     yDocRef.current.transact(() => {
       const currentTextItem = textInputs[index];
@@ -171,6 +174,7 @@ const handleInputChange = (index: number, event: React.ChangeEvent<HTMLInputElem
     setTextInputs([...textInputs]); // 이 부분을 추가하여 상태 갱신을 유발합니다.
   };
 
+  // text 말고 다른 곳 클릭 시 text 수정 종료되고 상태 갱신 시도
   const handleTextInputBlur = (index: number) => {
     yDocRef.current.transact(() => {
       const currentTextItem = textInputs[index];
@@ -179,8 +183,8 @@ const handleInputChange = (index: number, event: React.ChangeEvent<HTMLInputElem
         textInputs.splice(index, 1, updatedTextItem);
       }
     });
-  
-    setTextInputs([...textInputs]); // 이 부분을 추가하여 상태 갱신을 유발합니다.
+  // 이 부분을 추가하여 상태 갱신 시도
+    setTextInputs([...textInputs]);
   };
 
 
