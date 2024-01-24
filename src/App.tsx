@@ -12,6 +12,9 @@ import { useTool } from './component/ToolContext';
 import { ColorProvider } from './component/ColorContext';
 
 import { Tools } from './component/Tools';
+import Stamp from './component/Stamp';
+import thumbUpImg from './thumbup.png';
+import thumbDownImg from './thumbdown.png'
 
 import "./index.css"
 
@@ -19,6 +22,7 @@ import "./index.css"
 import * as Y from "yjs";
 //import { WebsocketProvider } from "y-websocket";
 import { WebrtcProvider } from "y-webrtc";
+import Konva from 'konva';
 
 
 interface BaseData {
@@ -53,9 +57,12 @@ const App: FC = () => {
   const [lines, setLines] = useState<LineData[]>([]);
   const [textInputs, setTextInputs] = useState<TextData[]>([]);
   const [currentColor, setCurrentColor] = useState<string>('#000000');
-  
+  const [image, setImage] = useState<HTMLImageElement | null>(null);
+
   const stageRef = useRef(null);
   const isDrawing = useRef(false);
+  const isSelected = useRef(false);
+
   // Y.js 관련 상태를 useRef로 관리
   const yDocRef = useRef(new Y.Doc());
   const yLinesRef = useRef<Y.Array<LineData>>(yDocRef.current.getArray<LineData>('lines'));
@@ -78,9 +85,6 @@ const App: FC = () => {
     };
   }, []);
 
-  /* 
-    마우스 클릭 시 동작
-  */
   const handleMouseDown = (e: any) => {
     const pos = e.target.getStage().getPointerPosition();
 
@@ -89,7 +93,7 @@ const App: FC = () => {
     } else if (tool === Tools.PEN) {
       isDrawing.current = true;
       yLinesRef.current.push([{ tool, points: [pos.x, pos.y] }]);
-    }
+    } 
   };
 
   const handleMouseMove = (e: any) => {
@@ -109,6 +113,35 @@ const App: FC = () => {
     isDrawing.current = false;
   };
 
+  const handleMouseClick = (e: any) => {
+    const stage = e.target.getStage()
+    const pos = stage.getPointerPosition();
+    const layers = stage.getLayers();
+    const layer = layers[0];
+
+    if (tool === Tools.STAMP) {
+      const stampType = e.currentTarget.className;
+      let stampImg = new window.Image();
+      stampImg.src = stampType === 'thumbUp' ? thumbUpImg : thumbDownImg;
+      
+      stampImg.onload = () => {
+        setImage(stampImg);
+        isSelected.current = true;
+      }
+
+      /* 클릭 위치에 스탬프 찍기 */
+      if (isSelected.current) {
+        const newStamp = new Konva.Image({
+          x: pos.x,
+          y: pos.y,
+          image: stampImg,
+        });
+        layer.add(newStamp);
+        layer.bacthDraw();
+      }
+    }
+  };
+
   return (
     <div style={{position: "relative", width: "100%"}}>
       <Stage
@@ -117,6 +150,7 @@ const App: FC = () => {
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        onClick={handleMouseClick}
         ref={stageRef}
       >
         <Layer>
