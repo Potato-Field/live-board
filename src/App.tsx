@@ -15,6 +15,8 @@ import { Tools } from './component/Tools';
 
 import "./index.css"
 
+import EditableText from "./component/EditableText";
+
 //-----------CRDT---------------------
 import * as Y from "yjs";
 //import { WebsocketProvider } from "y-websocket";
@@ -37,10 +39,10 @@ interface LineData extends BaseData {
 //   y?: number;
 // }
 
-interface InputData{
-  id: string;
-  value: string;
-}
+// interface InputData{
+//   id: string;
+//   value: string;
+// }
 interface ShapeData extends BaseData {
   color : string
 }
@@ -132,6 +134,9 @@ const App: FC = () => {
 
   return (
     <div style={{position: "relative", width: "100%"}}>
+      {/* <div>
+        <EditableText initialText = {"initialText"} yDocRef = {yDocRef}/>
+      </div> */}
       <Stage
         width={window.innerWidth}
         height={window.innerHeight}
