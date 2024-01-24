@@ -14,12 +14,16 @@ import { Tools } from './component/Tools';
 
 import "./index.css"
 
+import EditableText from "./component/EditableText";
+
 //-----------CRDT---------------------
 import * as Y from "yjs";
 //import { WebsocketProvider } from "y-websocket";
 import { WebrtcProvider } from "y-webrtc";
 import Konva from 'konva';
 import { uuidv4 } from 'lib0/random.js';
+import TextEditor, {TextInputProps} from './component/TextEditor';
+import { FastLayer } from 'konva/lib/FastLayer';
 
 
 interface BaseData {
@@ -30,21 +34,25 @@ interface BaseData {
 interface LineData extends BaseData {
   points: number[];
 }
+// interface TextInputProps {
+//   init: string;
+//   x?: number;
+//   y?: number;
+// }
 
-interface TextData extends BaseData {
-  init: string;
-  x?: number;
-  y?: number;
-}
-
+// interface InputData{
+//   id: string;
+//   value: string;
+// }
 interface ShapeData extends BaseData {
   color : string
 }
 
+
 const App: FC = () => {
   //Container Components
 
-  const { tool } = useTool();
+  const { tool, setTool } = useTool();
   /*
    * [CRDT] 
    * 2024.01.22
@@ -53,8 +61,18 @@ const App: FC = () => {
    */
   const [dataLoaded, setDataLoaded] = useState(false);
 
+
+  //const [tool, setTool] = useState<string>('pen');
+  const [lines, setLines] = useState<LineData[]>([]);
+ // const [textInputs, setTextInputs] = useState<TextData[]>([]);
+  const [currentColor, setCurrentColor] = useState<string>('#000000');
+
+//text 상태 저장
+  const [textInputs, setTextInputs] = useState<TextInputProps[]>([]);
+  
   const stageRef = useRef(null);
   const isDrawing = useRef(false);
+
   // Y.js 관련 상태를 useRef로 관리
   const yDocRef = useRef(new Y.Doc());
   //const yLinesRef = useRef<Y.Array<Konva.Line>>(yDocRef.current.getArray<Konva.Line>('lines'));
@@ -63,6 +81,7 @@ const App: FC = () => {
   const yLines = yDocRef.current.getMap('yLines');
 
 
+ const yTextRef = useRef<Y.Array<TextInputProps>>(yDocRef.current.getArray<TextInputProps>('texts'));
 
   //load() 역할을 하는 듯
   useEffect(() => {
@@ -131,6 +150,9 @@ const App: FC = () => {
 
     // 사용자가 처음 접속했을 때 선을 그리는 초기화 함수 호출
 
+    yTextRef.current.observe(() => {
+      setTextInputs(yTextRef.current.toArray());
+    });
 
     return () => {
       //yLinesRef.current.unobserveDeep(updateLayer);
@@ -149,41 +171,16 @@ const App: FC = () => {
   let penData : {} | null = null;
 
   const handleMouseDown = (e: any) => {
-    const stage = e.target.getStage()
-    const pos = stage.getPointerPosition();
-    const layers = stage.getLayers();
-    const layer = layers[0];
-    
+    const pos = e.target.getStage().getPointerPosition();
 
     if (tool === Tools.TEXT) {
-      //텍스트 이벤트
+      const newText: TextInputProps = { init: '뚱인데요', x: pos.x, y: pos.y, isEditing: false };
+      setTextInputs(prev => [...prev, newText]);
+      yTextRef.current.push([newText]);
+      console.log(textInputs);
+      setTool(Tools.MINDMAP);                  //추가 수정해야 됨
       
     } else if (tool === Tools.PEN) {
-
-
-      const idx:string = "lineIdx_"+(id).toString()
-      //펜 이벤트
-      isDrawing.current = true;
-      newLine = new Konva.Line({
-        id : idx,
-        points: [pos.x, pos.y],
-        stroke: 'black',
-        strokeWidth: 5,
-        lineCap: 'round',
-        lineJoin: 'round',
-      });
-      layer.add(newLine);
-
-      
-      const changeInfo = {
-        type: "insert",
-        point: [pos.x, pos.y]
-      };
-      yPens.set(idx, changeInfo);
-      //yLinesRef.current.push([newLine]);
-      
-    } else if (tool === Tools.HIGHLIGHTER) {
-      //형광펜 이벤트
       isDrawing.current = true;
 
       newLine = new Konva.Line({
@@ -258,6 +255,9 @@ const App: FC = () => {
 
   return (
     <div style={{position: "relative", width: "100%"}}>
+      {/* <div>
+        <EditableText initialText = {"initialText"} yDocRef = {yDocRef}/>
+      </div> */}
       <Stage
         width={window.innerWidth}
         height={window.innerHeight}
@@ -267,6 +267,10 @@ const App: FC = () => {
         ref={stageRef}
       >
         <Layer></Layer>
+
+        <Layer>
+        <TextEditor textInputs={textInputs} setTextInputs={setTextInputs} yTextRef={yTextRef} yDocRef = {yDocRef} />
+       </Layer>
 
       </Stage>
       <ColorProvider>
