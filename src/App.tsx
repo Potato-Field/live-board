@@ -77,7 +77,8 @@ const App: FC = () => {
   //load() 역할을 하는 듯
   useEffect(() => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current)
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1234'] });
 
     // Y.js 배열을 캔버스에 선으로 그리기
     yLinesRef.current.observe(() => {
@@ -99,19 +100,12 @@ const App: FC = () => {
   const handleMouseDown = (e: any) => {
     const pos = e.target.getStage().getPointerPosition();
     console.log(tool) //
-    if (tool === Tools.TEXT) {        //이 부분 수정해야 됨 !!!
-      const newText: TextInputProps = { init: 'New Text', x: pos.x, y: pos.y, isEditing: false };
+    if (tool === Tools.TEXT) {        //이 부분 수정해야 됨 !!! FIXME
+      const newText: TextInputProps = { init: '뚱인데요', x: pos.x, y: pos.y, isEditing: false };
       setTextInputs(prev => [...prev, newText]);
       yTextRef.current.push([newText]);
-      // console.log("text");
-
-      // setTextInputs(prev => [...prev, { init: 'New Text', x: pos.x, y: pos.y, isEditing: false }]);
-      // console.log(textInputs);
-      // //// 텍스트 생성시 텍스트 길이 따라 객체 박스 계산하려고 length  계산
-      // //const newTextIndex = textInputs.length;
-      // //setTool(`text-${newTextIndex}`);
       console.log(textInputs);
-       setTool(Tools.PEN);                     //추가 수정해야 됨
+       setTool(Tools.ERASER);                     //추가 수정해야 됨
     } else if (tool === Tools.PEN) {
       console.log("not text");
       isDrawing.current = true;
@@ -181,7 +175,7 @@ const App: FC = () => {
         </Layer> */}
 
       <Layer>
-        <TextEditor textInputs={textInputs} setTextInputs={setTextInputs} yTextRef={yTextRef} />
+        <TextEditor textInputs={textInputs} setTextInputs={setTextInputs} yTextRef={yTextRef} yDocRef = {yDocRef} />
       </Layer>
       </Stage>
       <ColorProvider>
