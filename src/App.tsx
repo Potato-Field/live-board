@@ -1,12 +1,18 @@
-import { FC, useState, useRef, useEffect } from 'react';
-import React from 'react';
+import { 
+  FC
+  , useState
+  , useRef
+  , useEffect 
+} from 'react';
 //import { createRoot } from 'react-dom/client';
-import { Stage, Layer, Line, Text} from 'react-konva';
-import Button from '@mui/material/Button';
-import ButtonGroup from '@mui/material/ButtonGroup';
-// import IconButton from '@mui/material/IconButton';
-// import CircleIcon from '@mui/icons-material/Circle';
-// import { Icon } from '@mui/material';
+import { Stage, Layer, Line, Text } from 'react-konva';
+import { ButtonCustomGroup } from './component/ButtonCustomGroup';
+
+import { useTool } from './component/ToolContext';
+import { ColorProvider } from './component/ColorContext';
+
+import { Tools } from './component/Tools';
+
 import "./index.css"
 
 //-----------CRDT---------------------
@@ -14,65 +20,57 @@ import * as Y from "yjs";
 //import { WebsocketProvider } from "y-websocket";
 import { WebrtcProvider } from "y-webrtc";
 
-interface LineData {
-  tool: string;
+
+interface BaseData {
+  name? : string
+  tool : Tools
+}
+
+interface LineData extends BaseData {
   points: number[];
 }
-// text 자원값 설정
-interface TextInputProps {
+
+interface TextData extends BaseData {
   init: string;
   x?: number;
   y?: number;
   isEditing?: boolean;
 }
 
-interface InputData {
-  id: string;
-  value: string;
+interface ShapeData extends BaseData {
+  color : string
 }
 
 const App: FC = () => {
+  //Container Components
 
+  const { tool, setTool } = useTool();
   /*
    * [CRDT] 
    * 2024.01.22
    * 드로잉 동기화 구현
    * 김병철
    */
-
-  //input state 저장하는 부분
-  const [inputDataArray, setInputDataArray] = useState<InputData[]>([]);
-
-  const [tool, setTool] = useState<string>('pen');
   const [lines, setLines] = useState<LineData[]>([]);
-  const stageRef = useRef(null);
+  const [textInputs, setTextInputs] = useState<TextData[]>([]);
   const [currentColor, setCurrentColor] = useState<string>('#000000');
+  
+  const stageRef = useRef(null);
   const isDrawing = useRef(false);
-  // 텍스트 생성
-  const [textInputs, setTextInputs] = useState<TextInputProps[]>([]);
-
   // Y.js 관련 상태를 useRef로 관리
   const yDocRef = useRef(new Y.Doc());
   const yLinesRef = useRef<Y.Array<LineData>>(yDocRef.current.getArray<LineData>('lines'));
 
-  //input ref로 저장하는 부분
-  const inputDataRefs = useRef<Y.Array<InputData>>(yDocRef.current.getArray<InputData>('inputdata'));
- 
 
   //load() 역할을 하는 듯
   useEffect(() => {
-    //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current) //서버 확인용
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1234'] }); //서버 확인용
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+    //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current)
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1234'] });
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1234'] });
 
     // Y.js 배열을 캔버스에 선으로 그리기
     yLinesRef.current.observe(() => {
       setLines(yLinesRef.current.toArray());
-    });
-
-    //inputarray 배열형태로 state에 저장하기 
-    inputDataRefs.current.observe(() => {
-      setInputDataArray(inputDataRefs.current.toArray());
     });
 
     return () => {
@@ -81,19 +79,16 @@ const App: FC = () => {
     };
   }, []);
 
+  /* 
+    마우스 클릭 시 동작
+  */
   const handleMouseDown = (e: any) => {
     const pos = e.target.getStage().getPointerPosition();
-    // Toolbar 도구 text 버튼 클릭 후 보드 클릭시 그 위치 텍스트 생성
-    if (tool === 'text') {
-      const newTextInput = { init: 'Click to Text', x: pos.x, y: pos.y };
-      setTextInputs([...textInputs, newTextInput]);
-      // 텍스트 생성시 텍스트 길이 따라 객체 박스 계산하려고 length  계산
-      const newTextIndex = textInputs.length;
-      setTool(`text-${newTextIndex}`);
-    } else if (tool === 'pen') {
+
+    if (tool === Tools.TEXT) {
+      
+    } else if (tool === Tools.PEN) {
       isDrawing.current = true;
-
-
       yLinesRef.current.push([{ tool, points: [pos.x, pos.y] }]);
     }
   };
@@ -114,82 +109,9 @@ const App: FC = () => {
   const handleMouseUp = () => {
     isDrawing.current = false;
   };
-  /*
-    const handleTextInputChange = (index: number, newText: string) => {
-      const updatedTextInputs = [...textInputs];
-      updatedTextInputs[index].init = newText;
-      setTextInputs(updatedTextInputs);
-    }
-  */
-  //console.log(setTool);
-  // 색상 변경 - 팔레트
-  const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCurrentColor(e.target.value);
-  };
-
-  const addInput = () => {
-    const newId = `input - ${Date.now()}-${Math.random()}`
-    const newInputData = {
-      // id: `input - ${inputDataArray.length}`,
-      id: newId,
-      value: ''
-    };
-    setInputDataArray([...inputDataArray, newInputData]);
-    inputDataRefs.current.push([newInputData]);
-  }
-
-  const removeInput = (index: number) => {
-    const filteredArray = inputDataArray.filter((_, i) => i !== index);
-    setInputDataArray(inputDataArray.filter((_, i) => i !== index));
-    inputDataRefs.current.delete(index, 1);
-  }
-
-const handleInputChange = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
-  const updatedValue = event.target.value;
-
-  const updatedTextInputs = [...textInputs];
-  updatedTextInputs[index].init = updatedValue;
-
-  setTextInputs(updatedTextInputs);
-
-    const updatedInputDataArray = inputDataArray.map((inputData, i) => {
-      if (i === index) {
-        return { ...inputData, value: updatedValue };
-      }
-      return inputData;
-    });
-    setInputDataArray(updatedInputDataArray);
-  }
-
-  // 텍스트 더블 클릭시 isEditing 값 True 로 변경하여 텍스트 수정하려고 시도
-  const handleTextInputDblClick = (index: number) => {
-    yDocRef.current.transact(() => {
-      const currentTextItem = textInputs[index];
-      if (currentTextItem) {
-        const updatedTextItem = { ...currentTextItem, isEditing: true };
-        textInputs.splice(index, 1, updatedTextItem);
-      }
-    });
-  
-    setTextInputs([...textInputs]); // 이 부분을 추가하여 상태 갱신을 유발합니다.
-  };
-
-  // text 말고 다른 곳 클릭 시 text 수정 종료되고 상태 갱신 시도
-  const handleTextInputBlur = (index: number) => {
-    yDocRef.current.transact(() => {
-      const currentTextItem = textInputs[index];
-      if (currentTextItem) {
-        const updatedTextItem = { ...currentTextItem, isEditing: false };
-        textInputs.splice(index, 1, updatedTextItem);
-      }
-    });
-  // 이 부분을 추가하여 상태 갱신 시도
-    setTextInputs([...textInputs]);
-  };
-
 
   return (
-    <div style={{ position: "relative", width: "100%" }}>
+    <div style={{position: "relative", width: "100%"}}>
       <Stage
         width={window.innerWidth}
         height={window.innerHeight}
@@ -199,6 +121,7 @@ const handleInputChange = (index: number, event: React.ChangeEvent<HTMLInputElem
         ref={stageRef}
       >
         <Layer>
+          {/* pen */}
           {lines.map((line, i) => (
             <Line
               key={i}
@@ -209,61 +132,51 @@ const handleInputChange = (index: number, event: React.ChangeEvent<HTMLInputElem
               lineCap="round"
               lineJoin="round"
               globalCompositeOperation={
-                line.tool === 'eraser' ? 'destination-out' : 'source-over'
+                line.tool === Tools.ERASER ? 'destination-out' : 'source-over'
               }
             />
           ))}
         </Layer>
+        
+        {/* highlighter */}
+        {/* <Layer>
+          {lines.map((line, i) => (
+            <Line
+              key={i}
+              points={line.points}
+              stroke={currentColor}
+              strokeWidth={15}
+              tension={0.5}
+              lineCap="butt"
+              lineJoin="round"
+              opacity={0.4}
+            />
+          ))}
+        </Layer> */}
+
         <Layer>
-        {textInputs.map((textInput, i) => (
-            <React.Fragment key={i}>
-              {textInput.isEditing ? (
-                <input
-                  type="text"
-                  value={textInput.init}
-                  onChange={(e) => handleInputChange(i, e)}
-                  onBlur={() => handleTextInputBlur(i)}
-                  autoFocus
-                />
-              ) : (
-                <Text
-                  text={textInput.init}
-                  x={textInput.x}
-                  y={textInput.y}
-                  fill="#000000"
-                  fontSize={16}
-                  draggable
-                  onDragEnd={(e) => {
-                    const updatedTextInputs = [...textInputs];
-                    updatedTextInputs[i].x = e.target.x();
-                    updatedTextInputs[i].y = e.target.y();
-                    setTextInputs(updatedTextInputs);
-                  }}
-                  onDblClick={() => handleTextInputDblClick(i)}
-                />
-              )}
-            </React.Fragment>
+          {textInputs.map((textInput, i) => (
+            <Text
+            key={i}
+            text={textInput.init}
+            x={textInput.x}
+            y={textInput.y}
+            fill="#000000"
+            fontSize={16}
+            draggable
+            onDragEnd={(e) => {
+              const updatedTextInputs = [...textInputs];
+              updatedTextInputs[i].x = e.target.x();
+              updatedTextInputs[i].y = e.target.y();
+              setTextInputs(updatedTextInputs);
+            }}
+            />
           ))}
         </Layer>
       </Stage>
-
-      <div className="ToolBtnGroup" style={{ position: "absolute", bottom: "2%", left: "50%", transform: "translate(-50%, 0)" }}>
-        <ButtonGroup variant="contained" aria-label="outlined primary button group">
-          <Button id='undo' onClick={() => { setTool("undo") }}>undo</Button>
-          <Button id='do' onClick={() => { setTool("do") }}>do</Button>
-          <Button id='text' onClick={() => { setTool("text") }}>text</Button>
-          <Button id='pen' onClick={() => { setTool("pen") }}>pen</Button>
-          <Button id='highlighter' onClick={() => { setTool("highlighter") }}>highlighter</Button>
-          <Button id='eraser' onClick={() => { setTool("eraser") }}>eraser</Button>
-          <Button id='postit' onClick={() => { setTool("postit") }}>postit</Button>
-          <Button id='shape' onClick={() => { setTool("shape") }}>shape</Button>
-          <Button id='stamp' onClick={() => { setTool("stamp") }}>stamp</Button>
-          <Button id='mindmap' onClick={() => { setTool("mindmap") }}>mindmap</Button>
-          <Button id='palatte'>
-            <input type='color' value={currentColor} onChange={handleColorChange}></input>
-          </Button>
-        </ButtonGroup>
-      </div>
+      <ColorProvider>
+        <ButtonCustomGroup />
+      </ColorProvider>
     </div>
   );
 }
