@@ -18,15 +18,10 @@
     "@types/styled-components": "^5.1.34",
     "konva": "^9.3.0",
     "lib0": "^0.2.42",
-    "mui-color-input": "^2.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-konva": "^18.2.10",
-<<<<<<< HEAD
     "react-konva-utils": "^1.0.5",
-=======
-    "simple-peer": "^9.11.0",
->>>>>>> 465d586f92968f389da4f01d8daa9f9cd6d27815
     "styled-components": "^6.1.8",
     "ws": "^8.16.0",
     "y-protocols": "^1.0.6",
@@ -37,11 +32,10 @@
   "devDependencies": {
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
-    "@typescript-eslint/eslint-plugin": "^6.19.1",
-    "@typescript-eslint/parser": "^6.19.1",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
     "@vitejs/plugin-react": "^4.2.1",
-    "eslint": "^8.56.0",
-    "eslint-plugin-react": "^7.33.2",
+    "eslint": "^8.55.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "typescript": "^5.2.2",
