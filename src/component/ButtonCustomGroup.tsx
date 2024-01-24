@@ -5,6 +5,7 @@ import ButtonGroup from '@mui/material/ButtonGroup';
 import { MuiColorInput } from 'mui-color-input'
 import CircleIcon from '@mui/icons-material/Circle';
 import Pen from './Pen';
+import Text from './Text';
 import { Tools } from './Tools';
 import { useColor } from './ColorContext';
 
@@ -23,7 +24,9 @@ export const ButtonCustomGroup = () =>{
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
                 <Button id='undo'>undo</Button>
                 <Button id='do'>do</Button>
-                <Button id='text'>text</Button>
+                {/* <Button id='text' onClick={() => setTool(Tools.TEXT)}>text</Button> */}
+                <Text props = {Tools.TEXT}/>
+
                 {
                     /* 
                         [NOTE]
