@@ -171,16 +171,42 @@ const App: FC = () => {
   let penData : {} | null = null;
 
   const handleMouseDown = (e: any) => {
-    const pos = e.target.getStage().getPointerPosition();
+    const stage = e.target.getStage()
+    const pos = stage.getPointerPosition();
+    const layers = stage.getLayers();
+    const layer = layers[0];
 
     if (tool === Tools.TEXT) {
-      const newText: TextInputProps = { init: '뚱인데요', x: pos.x, y: pos.y, isEditing: false };
+      const newText: TextInputProps = { init: 'Text Click', x: pos.x, y: pos.y, isEditing: false };
       setTextInputs(prev => [...prev, newText]);
       yTextRef.current.push([newText]);
       console.log(textInputs);
       setTool(Tools.MINDMAP);                  //추가 수정해야 됨
       
     } else if (tool === Tools.PEN) {
+      const idx:string = "lineIdx_"+(id).toString()
+        //펜 이벤트
+        isDrawing.current = true;
+        
+        newLine = new Konva.Line({
+          id : idx,
+          points: [pos.x, pos.y],
+          stroke: 'black',
+          strokeWidth: 5,
+          lineCap: 'round',
+          lineJoin: 'round',
+        });
+        layer.add(newLine);
+
+
+        const changeInfo = {
+          type: "insert",
+          point: [pos.x, pos.y]
+        };
+        yPens.set(idx, changeInfo);
+
+    } else if (tool === Tools.HIGHLIGHTER) {
+      //형광펜 이벤트
       isDrawing.current = true;
 
       newLine = new Konva.Line({
@@ -197,7 +223,6 @@ const App: FC = () => {
     } else if (tool === Tools.SHAPE) {
       //도형 이벤트
     } 
-      
   };
 
   const handleMouseMove = (e: any) => {
@@ -205,8 +230,6 @@ const App: FC = () => {
       if (!isDrawing.current || newLine == null) {
         return;
       }
-      //e.evt.preventDefault();
-
       const stage = e.target.getStage();
       const pos = stage.getPointerPosition();
 
@@ -214,22 +237,12 @@ const App: FC = () => {
       newLine.points(newPoints);
       
       const idx = "lineIdx_"+(id).toString()
-      /*
-      penData = { 
-        id : idx
-        , points: newLine.points()
-        , tool: Tools.PEN 
-      };
-      yPens.set(idx, penData);
-      */
+
       const changeInfo = {
         type: "update",
         point: [pos.x, pos.y]
       };
       yPens.set(idx, changeInfo);
-
-      //yLinesRef.current.delete(yLinesRef.current.length - 1, 1);
-      
 
     } else if (tool === Tools.SHAPE) {
 
@@ -268,7 +281,7 @@ const App: FC = () => {
       >
         <Layer></Layer>
 
-        <Layer>
+      <Layer>
         <TextEditor textInputs={textInputs} setTextInputs={setTextInputs} yTextRef={yTextRef} yDocRef = {yDocRef} />
        </Layer>
 
