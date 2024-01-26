@@ -426,7 +426,7 @@ const App: FC = () => {
 
   const handleMouseUp = () => {
     isDrawing.current = false;
-    const idx = "lineIdx_"+(id).toString()
+        const idx = "lineIdx_"+(id).toString()
     if(newLine == null) return;
     const konvaData = {
       id : idx,
