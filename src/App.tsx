@@ -11,6 +11,7 @@ import { useTool } from './component/ToolContext';
 import { ColorProvider } from './component/ColorContext';
 
 import { Tools } from './component/Tools';
+
 import Stamp from './component/Stamp';
 import thumbUpImg from './thumbup.png';
 import thumbDownImg from './thumbdown.png'
@@ -37,6 +38,7 @@ interface BaseData {
 interface LineData extends BaseData {
   points: number[];
 }
+
 // interface TextInputProps {
 //   init: string;
 //   x?: number;
@@ -47,15 +49,21 @@ interface LineData extends BaseData {
 //   id: string;
 //   value: string;
 // }
-interface ShapeData extends BaseData {
-  color : string
-}
+
+// interface ShapeData extends BaseData {
+//   color : string
+// }
 
 
+//Container Components
 const App: FC = () => {
-  //Container Components
 
   const { tool, setTool } = useTool();
+  //const [tool, setTool] = useState<string>('pen');
+  const [lines, setLines] = useState<LineData[]>([]);
+  const [currentColor, setCurrentColor] = useState<string>('#000000');
+  const [image, setImage] = useState<HTMLImageElement | null>(null);
+  
   /*
    * [CRDT] 
    * 2024.01.22
@@ -64,12 +72,6 @@ const App: FC = () => {
    */
   const [dataLoaded, setDataLoaded] = useState(false);
 
-
-  //const [tool, setTool] = useState<string>('pen');
-  const [lines, setLines] = useState<LineData[]>([]);
-  const [currentColor, setCurrentColor] = useState<string>('#000000');
-  const [image, setImage] = useState<HTMLImageElement | null>(null);
-  
   //text 상태 저장
   // const [textInputs, setTextInputs] = useState<TextData[]>([]);
   const [textInputs, setTextInputs] = useState<TextInputProps[]>([]);
@@ -84,7 +86,6 @@ const App: FC = () => {
   const yPens = yDocRef.current.getMap('pens');
 
   const yLines = yDocRef.current.getMap('yLines');
-
 
   const yTextRef = useRef<Y.Array<TextInputProps>>(yDocRef.current.getArray<TextInputProps>('texts'));
 
@@ -221,7 +222,6 @@ const App: FC = () => {
         opacity     : 0.4
       });
       layer.add(newLine);
-
     }
   };
 
@@ -257,7 +257,7 @@ const App: FC = () => {
     const layer = layers[0];
 
     if (tool === Tools.STAMP) {
-      const stampType = e.currentTarget.className;
+      const stampType = e.currentTarget.id;
       let stampImg = new window.Image();
       stampImg.src = stampType === 'thumbUp' ? thumbUpImg : thumbDownImg;
       
@@ -273,8 +273,8 @@ const App: FC = () => {
           y: pos.y,
           image: stampImg,
         });
+        isSelected.current = false;
         layer.add(newStamp);
-        layer.bacthDraw();
       }
     }
   };
@@ -293,7 +293,8 @@ const App: FC = () => {
         onClick={handleMouseClick}
         ref={stageRef}
       >
-        <Layer></Layer>
+      
+      <Layer></Layer>
 
       <Layer>
         <TextEditor textInputs={textInputs} setTextInputs={setTextInputs} yTextRef={yTextRef} yDocRef = {yDocRef} />

@@ -16,16 +16,6 @@ interface StampProps {
 export default function Stamp({ props }: StampProps){
     const { setTool } = useTool();
 
-    interface components {
-        name : string
-        id : string
-    }
-    
-    const componentElem : components = {
-        name : Tools[props].toString(),
-        id : Tools[props].toString()
-    }
-
     return(
         <>
             <IconButton aria-label="thumb up" id="thumbUp" onClick={()=>{setTool(props)}}>
