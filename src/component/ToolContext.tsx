@@ -30,7 +30,8 @@ export const ToolProvider: React.FC<ToolProviderProps> = ({ children }) => {
 
   return (
     <ToolContext.Provider value={{ tool, setTool }}>
-      {children}
+      {/* 자식 컴포넌트에서 tool, setTool 이용 가능 */}
+      {children}  
     </ToolContext.Provider>
   );
 };

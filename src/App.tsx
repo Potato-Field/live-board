@@ -11,6 +11,9 @@ import { useTool } from './component/ToolContext';
 import { ColorProvider } from './component/ColorContext';
 
 import { Tools } from './component/Tools';
+import Stamp from './component/Stamp';
+import thumbUpImg from './thumbup.png';
+import thumbDownImg from './thumbdown.png'
 
 import "./index.css"
 
@@ -64,14 +67,16 @@ const App: FC = () => {
 
   //const [tool, setTool] = useState<string>('pen');
   const [lines, setLines] = useState<LineData[]>([]);
- // const [textInputs, setTextInputs] = useState<TextData[]>([]);
   const [currentColor, setCurrentColor] = useState<string>('#000000');
-
-//text 상태 저장
-  const [textInputs, setTextInputs] = useState<TextInputProps[]>([]);
+  const [image, setImage] = useState<HTMLImageElement | null>(null);
   
+  //text 상태 저장
+  // const [textInputs, setTextInputs] = useState<TextData[]>([]);
+  const [textInputs, setTextInputs] = useState<TextInputProps[]>([]);
+
   const stageRef = useRef(null);
   const isDrawing = useRef(false);
+  const isSelected = useRef(false);
 
   // Y.js 관련 상태를 useRef로 관리
   const yDocRef = useRef(new Y.Doc());
@@ -81,7 +86,7 @@ const App: FC = () => {
   const yLines = yDocRef.current.getMap('yLines');
 
 
- const yTextRef = useRef<Y.Array<TextInputProps>>(yDocRef.current.getArray<TextInputProps>('texts'));
+  const yTextRef = useRef<Y.Array<TextInputProps>>(yDocRef.current.getArray<TextInputProps>('texts'));
 
   //load() 역할을 하는 듯
   useEffect(() => {
@@ -162,9 +167,6 @@ const App: FC = () => {
     };
   }, []);
 
-  /* 
-    마우스 클릭 시 동작
-  */
   
   let newLine : Konva.Line | null = null;
   let id = uuidv4();
@@ -220,9 +222,7 @@ const App: FC = () => {
       });
       layer.add(newLine);
 
-    } else if (tool === Tools.SHAPE) {
-      //도형 이벤트
-    } 
+    }
   };
 
   const handleMouseMove = (e: any) => {
@@ -243,27 +243,40 @@ const App: FC = () => {
         point: [pos.x, pos.y]
       };
       yPens.set(idx, changeInfo);
-
-    } else if (tool === Tools.SHAPE) {
-
     }
   };
 
   const handleMouseUp = () => {
     isDrawing.current = false;
-    const idx = "lineIdx_"+(id).toString()
-    if(newLine == null) return;
-    const konvaData = {
-      id : idx,
-      points: newLine.points(),
-      stroke: newLine.stroke(),
-      strokeWidth: newLine.strokeWidth(),
-      lineCap: newLine.lineCap(),
-      lineJoin: newLine.lineJoin(),
+  };
+
+  const handleMouseClick = (e: any) => {
+    const stage = e.target.getStage()
+    const pos = stage.getPointerPosition();
+    const layers = stage.getLayers();
+    const layer = layers[0];
+
+    if (tool === Tools.STAMP) {
+      const stampType = e.currentTarget.className;
+      let stampImg = new window.Image();
+      stampImg.src = stampType === 'thumbUp' ? thumbUpImg : thumbDownImg;
+      
+      stampImg.onload = () => {
+        setImage(stampImg);
+        isSelected.current = true;
+      }
+
+      /* 클릭 위치에 스탬프 찍기 */
+      if (isSelected.current) {
+        const newStamp = new Konva.Image({
+          x: pos.x,
+          y: pos.y,
+          image: stampImg,
+        });
+        layer.add(newStamp);
+        layer.bacthDraw();
+      }
     }
-    yLines.set(idx, konvaData)
-    newLine = null;
-    id = uuidv4();
   };
 
   return (
@@ -277,13 +290,14 @@ const App: FC = () => {
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        onClick={handleMouseClick}
         ref={stageRef}
       >
         <Layer></Layer>
 
       <Layer>
         <TextEditor textInputs={textInputs} setTextInputs={setTextInputs} yTextRef={yTextRef} yDocRef = {yDocRef} />
-       </Layer>
+      </Layer>
 
       </Stage>
       <ColorProvider>

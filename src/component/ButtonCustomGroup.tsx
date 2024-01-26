@@ -1,17 +1,20 @@
+import { Tools } from './Tools';
+import { useColor } from './ColorContext';
+import Stamp from './Stamp';
+import Shape from './Shape';
+import Pen from './Pen';
+import Text from './Text';
 
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import { MuiColorInput } from 'mui-color-input'
+import { IconButton } from '@mui/material';
+import UndoRoundedIcon from '@mui/icons-material/UndoRounded';
+import RedoRoundedIcon from '@mui/icons-material/RedoRounded';
 import CircleIcon from '@mui/icons-material/Circle';
-import Pen from './Pen';
-import Text from './Text';
-import { Tools } from './Tools';
-import { useColor } from './ColorContext';
-
 
 export const ButtonCustomGroup = () =>{
     const { currentColor, setCurrentColor } = useColor();
-    
 
     // 색상 변경
     const handleColorClick = (e: string) => {
@@ -19,13 +22,10 @@ export const ButtonCustomGroup = () =>{
     };
 
     return(
-        <div className = "ToolBtnGroup" style={{position: "absolute", bottom: "2%", left: "50%", transform: "translate(-50%, 0)"}}>
+        <div className = "ToolBtnGroup" style={{position: "absolute", bottom: "2%", left: "50%", transform: "translate(-50%, 0)", backgroundColor: "white"}}>
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
-                <Button id='undo'>undo</Button>
-                <Button id='do'>do</Button>
-                {/* <Button id='text' onClick={() => setTool(Tools.TEXT)}>text</Button> */}
-                <Text props = {Tools.TEXT}/>
-
+                <IconButton><UndoRoundedIcon /></IconButton>
+                <IconButton><RedoRoundedIcon /></IconButton>
                 {
                     /* 
                         [NOTE]
@@ -37,13 +37,16 @@ export const ButtonCustomGroup = () =>{
                         } 
                     */
                 }
+                <Text props = {Tools.TEXT}/>
                 <Pen props={Tools.PEN}/>
                 <Pen props={Tools.HIGHLIGHTER}/>
 
                 <Button id='eraser'>eraser</Button>
                 <Button id='postit'>postit</Button>
-                <Button id='shape'>shape</Button>
-                <Button id='stamp'>stamp</Button>
+                <div className='shapeBox'>
+                    <Stamp props={Tools.STAMP} />
+                    <Shape />
+                </div>
                 <Button id='mindmap'>mindmap</Button>
                 <Button className='singleColor' onClick={()=>{handleColorClick('#000000')}}><CircleIcon style={{color: '000000'}}/></Button>
                 <Button className='singleColor' onClick={()=>{handleColorClick('#E7464B')}}><CircleIcon style={{color: 'E7464B'}}/></Button>
