@@ -1,9 +1,9 @@
-// import {useState, forwardRef, useImperativeHandle} from 'react';
-import Pen from './Pen';
 import { Tools } from './Tools';
 import { useColor } from './ColorContext';
 import Stamp from './Stamp';
 import Shape from './Shape';
+import Pen from './Pen';
+import Text from './Text';
 
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
@@ -26,7 +26,6 @@ export const ButtonCustomGroup = () =>{
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
                 <IconButton><UndoRoundedIcon /></IconButton>
                 <IconButton><RedoRoundedIcon /></IconButton>
-                <Button id='text'>text</Button>
                 {
                     /* 
                         [NOTE]
@@ -38,6 +37,7 @@ export const ButtonCustomGroup = () =>{
                         } 
                     */
                 }
+                <Text props = {Tools.TEXT}/>
                 <Pen props={Tools.PEN}/>
                 <Pen props={Tools.HIGHLIGHTER}/>
 
