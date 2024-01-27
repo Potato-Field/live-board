@@ -48,7 +48,7 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
                 <Button id='eraser'>eraser</Button>
                 <Button id='postit'>postit</Button>
                 <div className='shapeBox'>
-                    <Stamp handleIconBtnClick={handleIconBtnClick}/>
+                    <Stamp handleIconBtnClick={handleIconBtnClick} props={Tools.STAMP}/>
                     <Shape props={Tools.SHAPE}/>
                 </div>
                 <Button id='mindmap'>mindmap</Button>
