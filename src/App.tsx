@@ -79,7 +79,7 @@ const App: FC = () => {
 
   const stageRef = useRef(null);
   const isDrawing = useRef(false);
-  const isSelected = useRef(false);
+  const isToolSelected = useRef(false);
 
   // Y.js 관련 상태를 useRef로 관리
   const yDocRef = useRef(new Y.Doc());
@@ -452,30 +452,32 @@ const App: FC = () => {
     const layers = stage.getLayers();
     const layer = layers[0];
     
-    if (clickedIconBtn === 'thumbUp' || 'thumbDown') {
-      /* btn에 맞는 이미지 불러오기 */
-      let stampType = clickedIconBtn;
-
-      let stampImg = new window.Image();
-      stampImg.src = stampType === 'thumbUp' ? thumbUpImg : thumbDownImg;
-      
-      stampImg.onload = () => {
-        setImage(stampImg);
-        isSelected.current = true;
-      }
-
-      /* 클릭 위치에 스탬프 찍기 */
-      if (isSelected.current) {
-        const newStamp = new Konva.Image({
-          x: pos.x,
-          y: pos.y,
-          width: 40,
-          height: 40,
-          image: stampImg,
-          draggable: true,
-        });
-        isSelected.current = false;
-        layer.add(newStamp);
+    if(tool === Tools.STAMP){
+      if (clickedIconBtn === 'thumbUp' || 'thumbDown') {
+        /* btn에 맞는 이미지 불러오기 */
+        let stampType = clickedIconBtn;
+  
+        let stampImg = new window.Image();
+        stampImg.src = stampType === 'thumbUp' ? thumbUpImg : thumbDownImg;
+        
+        stampImg.onload = () => {
+          setImage(stampImg);
+          isToolSelected.current = true;
+        }
+  
+        /* 클릭 위치에 스탬프 찍기 */
+        if (isToolSelected.current) {
+          const newStamp = new Konva.Image({
+            x: pos.x,
+            y: pos.y,
+            width: 40,
+            height: 40,
+            image: stampImg,
+            draggable: true,
+          });
+          isToolSelected.current = false;
+          layer.add(newStamp);
+        }
       }
     }
   };
