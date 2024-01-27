@@ -63,7 +63,8 @@ const App: FC = () => {
   const [lines, setLines] = useState<LineData[]>([]);
   const [currentColor, setCurrentColor] = useState<string>('#000000');
   const [image, setImage] = useState<HTMLImageElement | null>(null);
-  
+  const [clickedIconBtn, setClickedIconBtn] = useState<string | null>(null);
+
   /*
    * [CRDT] 
    * 2024.01.22
@@ -171,6 +172,10 @@ const App: FC = () => {
   
   let newLine : Konva.Line | null = null;
   let id = uuidv4();
+  
+  const handleIconBtnClick = (id: string) => {
+    setClickedIconBtn(id);  // 클릭한 IconBtn의 id를 clickIconBtn 변수에 저장
+  }
 
   const handleMouseDown = (e: any) => {
     const stage = e.target.getStage()
@@ -362,7 +367,7 @@ const App: FC = () => {
           window.addEventListener('click', handleOutsideClick);
         });
       });
-      setTool(Tools.CORSER)
+      setTool(Tools.CURSOR);
 
     } else if (tool === Tools.PEN) {
       
@@ -446,9 +451,11 @@ const App: FC = () => {
     const pos = stage.getPointerPosition();
     const layers = stage.getLayers();
     const layer = layers[0];
+    
+    if (clickedIconBtn === 'thumbUp' || 'thumbDown') {
+      /* btn에 맞는 이미지 불러오기 */
+      let stampType = clickedIconBtn;
 
-    if (tool === Tools.STAMP) {
-      const stampType = e.currentTarget.id;
       let stampImg = new window.Image();
       stampImg.src = stampType === 'thumbUp' ? thumbUpImg : thumbDownImg;
       
@@ -462,7 +469,10 @@ const App: FC = () => {
         const newStamp = new Konva.Image({
           x: pos.x,
           y: pos.y,
+          width: 40,
+          height: 40,
           image: stampImg,
+          draggable: true,
         });
         isSelected.current = false;
         layer.add(newStamp);
@@ -493,7 +503,7 @@ const App: FC = () => {
 
       </Stage>
       <ColorProvider>
-        <ButtonCustomGroup />
+        <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} />
       </ColorProvider>
     </div>
   );

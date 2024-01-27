@@ -13,7 +13,11 @@ import UndoRoundedIcon from '@mui/icons-material/UndoRounded';
 import RedoRoundedIcon from '@mui/icons-material/RedoRounded';
 import CircleIcon from '@mui/icons-material/Circle';
 
-export const ButtonCustomGroup = () =>{
+interface ButtonCustomGroupProps {
+    handleIconBtnClick: (id: string) => void;
+}
+
+export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) =>{
     const { currentColor, setCurrentColor } = useColor();
 
     // 색상 변경
@@ -44,8 +48,8 @@ export const ButtonCustomGroup = () =>{
                 <Button id='eraser'>eraser</Button>
                 <Button id='postit'>postit</Button>
                 <div className='shapeBox'>
-                    <Stamp props={Tools.STAMP} />
-                    <Shape />
+                    <Stamp handleIconBtnClick={handleIconBtnClick}/>
+                    <Shape props={Tools.SHAPE}/>
                 </div>
                 <Button id='mindmap'>mindmap</Button>
                 <Button className='singleColor' onClick={()=>{handleColorClick('#000000')}}><CircleIcon style={{color: '000000'}}/></Button>
