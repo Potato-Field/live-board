@@ -174,7 +174,7 @@ const App: FC = () => {
   let id = uuidv4();
   
   const handleIconBtnClick = (id: string) => {
-    setClickedIconBtn(id);  // 클릭한 IconBtn의 id를 clickIconBtn 변수에 저장
+    setClickedIconBtn(id);  // 어떤 IconBtn 클릭했는지 변수 clickIconBtn에 저장
   }
 
   const handleMouseDown = (e: any) => {
@@ -453,31 +453,26 @@ const App: FC = () => {
     const layer = layers[0];
     
     if(tool === Tools.STAMP){
-      if (clickedIconBtn === 'thumbUp' || 'thumbDown') {
-        /* btn에 맞는 이미지 불러오기 */
-        let stampType = clickedIconBtn;
-  
-        let stampImg = new window.Image();
-        stampImg.src = stampType === 'thumbUp' ? thumbUpImg : thumbDownImg;
-        
-        stampImg.onload = () => {
-          setImage(stampImg);
-          isToolSelected.current = true;
-        }
-  
-        /* 클릭 위치에 스탬프 찍기 */
-        if (isToolSelected.current) {
-          const newStamp = new Konva.Image({
-            x: pos.x,
-            y: pos.y,
-            width: 40,
-            height: 40,
-            image: stampImg,
-            draggable: true,
-          });
-          isToolSelected.current = false;
-          layer.add(newStamp);
-        }
+      let stampImg = new window.Image();
+      stampImg.src = clickedIconBtn === 'thumbUp' ? thumbUpImg : thumbDownImg;
+      
+      stampImg.onload = () => {
+        setImage(stampImg);
+        isToolSelected.current = true;
+      }
+
+      /* 클릭 위치에 스탬프 찍기 */
+      if (isToolSelected.current) {
+        const newStamp = new Konva.Image({
+          x: pos.x,
+          y: pos.y,
+          width: 40,
+          height: 40,
+          image: stampImg,
+          draggable: true,
+        });
+        layer.add(newStamp);
+        isToolSelected.current = false;
       }
     }
   };
