@@ -73,7 +73,8 @@ const App: FC = () => {
   const [lines, setLines] = useState<LineData[]>([]);
   const [currentColor, setCurrentColor] = useState<string>('#000000');
   const [image, setImage] = useState<HTMLImageElement | null>(null);
-  
+  const [clickedIconBtn, setClickedIconBtn] = useState<string | null>(null);
+
   /*
    * [CRDT] 
    * 2024.01.22
@@ -88,6 +89,7 @@ const App: FC = () => {
 
   const stageRef = useRef(null);
   const isDrawing = useRef(false);
+  const isToolSelected = useRef(false);
   const isSelected = useRef(false);
   const isCursor = useRef(false);
   const isHand = useRef(false);
@@ -205,6 +207,10 @@ const App: FC = () => {
   let id = uuidv4(); //객체 고유 ID
 
 
+  
+  const handleIconBtnClick = (id: string) => {
+    setClickedIconBtn(id);  // 클릭한 IconBtn의 id를 clickIconBtn 변수에 저장
+  }
 
   const handleMouseDown = (e: any) => {
     const stage = e.target.getStage()
@@ -638,7 +644,7 @@ const App: FC = () => {
     const pos = stage.getPointerPosition();
     const layers = stage.getLayers();
     const layer = layers[0];
-    const scale = stage.scaleX(); // 현재 스케일
+        const scale = stage.scaleX(); // 현재 스케일
     const position = stage.position(); // 현재 위치
     
     const realPointerPosition = {
@@ -646,25 +652,32 @@ const App: FC = () => {
       y: (pos.y - position.y) / scale,
     };
 
-    if (tool === Tools.STAMP) {
-      const stampType = e.currentTarget.id;
-      let stampImg = new window.Image();
-      stampImg.src = stampType === 'thumbUp' ? thumbUpImg : thumbDownImg;
-      
-      stampImg.onload = () => {
-        setImage(stampImg);
-        isSelected.current = true;
-      }
-
-      /* 클릭 위치에 스탬프 찍기 */
-      if (isSelected.current) {
-        const newStamp = new Konva.Image({
-          x: realPointerPosition.x,
-          y: realPointerPosition.y,
-          image: stampImg,
-        });
-        isSelected.current = false;
-        layer.add(newStamp);
+    if(tool === Tools.STAMP){
+      if (clickedIconBtn === 'thumbUp' || 'thumbDown') {
+        /* btn에 맞는 이미지 불러오기 */
+        let stampType = clickedIconBtn;
+  
+        let stampImg = new window.Image();
+        stampImg.src = stampType === 'thumbUp' ? thumbUpImg : thumbDownImg;
+        
+        stampImg.onload = () => {
+          setImage(stampImg);
+          isToolSelected.current = true;
+        }
+  
+        /* 클릭 위치에 스탬프 찍기 */
+        if (isToolSelected.current) {
+          const newStamp = new Konva.Image({
+            x: realPointerPosition.x,
+            y: realPointerPosition.y,
+            width: 40,
+            height: 40,
+            image: stampImg,
+            draggable: true,
+          });
+          isToolSelected.current = false;
+          layer.add(newStamp);
+        }
       }
     } 
     else if(tool === Tools.CURSOR){
@@ -750,7 +763,7 @@ const App: FC = () => {
 
       </Stage>
       <ColorProvider>
-        <ButtonCustomGroup />
+        <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} />
       </ColorProvider>
     </div>
   );
