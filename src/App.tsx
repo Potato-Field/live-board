@@ -79,7 +79,6 @@ const App: FC = () => {
 
   const stageRef = useRef(null);
   const isDrawing = useRef(false);
-  const isToolSelected = useRef(false);
 
   // Y.js 관련 상태를 useRef로 관리
   const yDocRef = useRef(new Y.Doc());
@@ -455,14 +454,11 @@ const App: FC = () => {
     if(tool === Tools.STAMP){
       let stampImg = new window.Image();
       stampImg.src = clickedIconBtn === 'thumbUp' ? thumbUpImg : thumbDownImg;
-      
+
       stampImg.onload = () => {
         setImage(stampImg);
-        isToolSelected.current = true;
-      }
 
-      /* 클릭 위치에 스탬프 찍기 */
-      if (isToolSelected.current) {
+        /* 클릭 위치에 스탬프 찍기 */
         const newStamp = new Konva.Image({
           x: pos.x,
           y: pos.y,
@@ -472,8 +468,31 @@ const App: FC = () => {
           draggable: true,
         });
         layer.add(newStamp);
-        isToolSelected.current = false;
       }
+    }
+    else if (tool === Tools.SHAPE){
+      let newShape;
+      const shapeOptions = {
+        x: pos.x,
+        y: pos.y,
+        fill: 'black',
+        draggable: true,
+      }
+
+      if (clickedIconBtn === 'rect'){
+        newShape = new Konva.Rect({ ...shapeOptions, width:150, height: 150 });
+      }
+      else if (clickedIconBtn === 'cir') {
+        newShape = new Konva.Circle({ ...shapeOptions, radius: 75 });
+      }
+      else if (clickedIconBtn === 'tri') {
+        newShape = new Konva.RegularPolygon({
+          ...shapeOptions,
+          sides: 3,
+          radius: 100
+        });
+      }
+      layer.add(newShape);
     }
   };
 
