@@ -4,6 +4,7 @@ import Stamp from './Stamp';
 import Shape from './Shape';
 import Pen from './Pen';
 import Text from './Text';
+import Cursor from './Cursor';
 
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
@@ -12,6 +13,7 @@ import { IconButton } from '@mui/material';
 import UndoRoundedIcon from '@mui/icons-material/UndoRounded';
 import RedoRoundedIcon from '@mui/icons-material/RedoRounded';
 import CircleIcon from '@mui/icons-material/Circle';
+import Hand from './Hand';
 
 interface ButtonCustomGroupProps {
     handleIconBtnClick: (id: string) => void;
@@ -41,9 +43,11 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
                         } 
                     */
                 }
-                <Text props = {Tools.TEXT}/>
-                <Pen props={Tools.PEN}/>
-                <Pen props={Tools.HIGHLIGHTER}/>
+                <Hand props = {Tools.HAND}/>
+                <Cursor props = {Tools.CURSOR}/>
+                <Text   props = {Tools.TEXT}/>
+                <Pen    props = {Tools.PEN}/>
+                <Pen    props = {Tools.HIGHLIGHTER}/>
 
                 <Button id='eraser'>eraser</Button>
                 <Button id='postit'>postit</Button>
