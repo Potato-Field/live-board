@@ -89,7 +89,6 @@ const App: FC = () => {
 
   const stageRef = useRef(null);
   const isDrawing = useRef(false);
-  const isToolSelected = useRef(false);
   const isSelected = useRef(false);
   const isCursor = useRef(false);
   const isHand = useRef(false);
@@ -209,7 +208,7 @@ const App: FC = () => {
 
   
   const handleIconBtnClick = (id: string) => {
-    setClickedIconBtn(id);  // 클릭한 IconBtn의 id를 clickIconBtn 변수에 저장
+    setClickedIconBtn(id);  // 어떤 IconBtn 클릭했는지 변수 clickIconBtn에 저장
   }
 
   const handleMouseDown = (e: any) => {
@@ -644,7 +643,7 @@ const App: FC = () => {
     const pos = stage.getPointerPosition();
     const layers = stage.getLayers();
     const layer = layers[0];
-        const scale = stage.scaleX(); // 현재 스케일
+    const scale = stage.scaleX(); // 현재 스케일
     const position = stage.position(); // 현재 위치
     
     const realPointerPosition = {
@@ -653,32 +652,47 @@ const App: FC = () => {
     };
 
     if(tool === Tools.STAMP){
-      if (clickedIconBtn === 'thumbUp' || 'thumbDown') {
-        /* btn에 맞는 이미지 불러오기 */
-        let stampType = clickedIconBtn;
-  
-        let stampImg = new window.Image();
-        stampImg.src = stampType === 'thumbUp' ? thumbUpImg : thumbDownImg;
-        
-        stampImg.onload = () => {
-          setImage(stampImg);
-          isToolSelected.current = true;
-        }
-  
+      let stampImg = new window.Image();
+      stampImg.src = clickedIconBtn === 'thumbUp' ? thumbUpImg : thumbDownImg;
+
+      stampImg.onload = () => {
+        setImage(stampImg);
+
         /* 클릭 위치에 스탬프 찍기 */
-        if (isToolSelected.current) {
-          const newStamp = new Konva.Image({
-            x: realPointerPosition.x,
-            y: realPointerPosition.y,
-            width: 40,
-            height: 40,
-            image: stampImg,
-            draggable: true,
-          });
-          isToolSelected.current = false;
-          layer.add(newStamp);
-        }
+        const newStamp = new Konva.Image({
+          x: realPointerPosition.x,
+          y: realPointerPosition.y,
+          width: 40,
+          height: 40,
+          image: stampImg,
+          draggable: true,
+        });
+        layer.add(newStamp);
       }
+    }
+    else if (tool === Tools.SHAPE){
+      let newShape;
+      const shapeOptions = {
+        x: realPointerPosition.x,
+        y: realPointerPosition.y,
+        fill: 'black',
+        draggable: true,
+      }
+
+      if (clickedIconBtn === 'rect'){
+        newShape = new Konva.Rect({ ...shapeOptions, width:150, height: 150 });
+      }
+      else if (clickedIconBtn === 'cir') {
+        newShape = new Konva.Circle({ ...shapeOptions, radius: 75 });
+      }
+      else if (clickedIconBtn === 'tri') {
+        newShape = new Konva.RegularPolygon({
+          ...shapeOptions,
+          sides: 3,
+          radius: 100
+        });
+      }
+      layer.add(newShape);
     } 
     else if(tool === Tools.CURSOR){
 

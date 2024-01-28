@@ -4,7 +4,7 @@ import Stamp from './Stamp';
 import Shape from './Shape';
 import Pen from './Pen';
 import Text from './Text';
-import Corser from './Cursor';
+import Cursor from './Cursor';
 
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
@@ -44,7 +44,7 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
                     */
                 }
                 <Hand props = {Tools.HAND}/>
-                <Corser props = {Tools.CURSOR}/>
+                <Cursor props = {Tools.CURSOR}/>
                 <Text   props = {Tools.TEXT}/>
                 <Pen    props = {Tools.PEN}/>
                 <Pen    props = {Tools.HIGHLIGHTER}/>
@@ -53,7 +53,7 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
                 <Button id='postit'>postit</Button>
                 <div className='shapeBox'>
                     <Stamp handleIconBtnClick={handleIconBtnClick} props={Tools.STAMP}/>
-                    <Shape props={Tools.SHAPE}/>
+                    <Shape handleIconBtnClick={handleIconBtnClick} props={Tools.SHAPE}/>
                 </div>
                 <Button id='mindmap'>mindmap</Button>
                 <Button className='singleColor' onClick={()=>{handleColorClick('#000000')}}><CircleIcon style={{color: '000000'}}/></Button>
