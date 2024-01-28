@@ -7,5 +7,6 @@ export enum Tools{
     "SHAPE",
     "STAMP",
     "MINDMAP",
-    "CORSER"
+    "CURSOR",
+    "HAND"
   }
