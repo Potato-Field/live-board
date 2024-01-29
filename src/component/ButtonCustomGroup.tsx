@@ -4,6 +4,7 @@ import Stamp from './Stamp';
 import Shape from './Shape';
 import Pen from './Pen';
 import Text from './Text';
+import MindMap from './MindMapIndex';
 
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
@@ -47,7 +48,9 @@ export const ButtonCustomGroup = () =>{
                     <Stamp props={Tools.STAMP} />
                     <Shape />
                 </div>
-                <Button id='mindmap'>mindmap</Button>
+                
+                <MindMap props = {Tools.MINDMAP}/>
+
                 <Button className='singleColor' onClick={()=>{handleColorClick('#000000')}}><CircleIcon style={{color: '000000'}}/></Button>
                 <Button className='singleColor' onClick={()=>{handleColorClick('#E7464B')}}><CircleIcon style={{color: 'E7464B'}}/></Button>
                 <Button className='singleColor' onClick={()=>{handleColorClick('#3B7EF2')}}><CircleIcon style={{color: '3B7EF2'}}/></Button>

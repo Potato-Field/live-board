@@ -27,6 +27,7 @@ import Konva from 'konva';
 import { uuidv4 } from 'lib0/random.js';
 import TextEditor, {TextInputProps} from './component/TextEditor';
 import { FastLayer } from 'konva/lib/FastLayer';
+import MindMap from './component/MindMap';
 
 
 interface BaseData {
@@ -74,7 +75,7 @@ const App: FC = () => {
   // const [textInputs, setTextInputs] = useState<TextData[]>([]);
   const [textInputs, setTextInputs] = useState<TextInputProps[]>([]);
 
-  const stageRef = useRef(null);
+  const stageRef = useRef<Konva.Stage>(null);
   const isDrawing = useRef(false);
   const isSelected = useRef(false);
 
@@ -84,7 +85,6 @@ const App: FC = () => {
   const yPens = yDocRef.current.getMap('pens');
 
   const yLines = yDocRef.current.getMap('yLines');
-
 
   const yTextRef = useRef<Y.Array<TextInputProps>>(yDocRef.current.getArray<TextInputProps>('texts'));
 
@@ -298,6 +298,9 @@ const App: FC = () => {
       <Layer>
         <TextEditor textInputs={textInputs} setTextInputs={setTextInputs} yTextRef={yTextRef} yDocRef = {yDocRef} />
       </Layer>
+      <>
+        <MindMap stageRef = {stageRef}/>
+      </>
 
       </Stage>
       <ColorProvider>
