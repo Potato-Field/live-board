@@ -4,6 +4,7 @@ import Stamp from './Stamp';
 import Shape from './Shape';
 import Pen from './Pen';
 import Text from './Text';
+import Cursor from './Cursor';
 import MindMap from './MindMapIndex';
 
 import Button from '@mui/material/Button';
@@ -13,8 +14,13 @@ import { IconButton } from '@mui/material';
 import UndoRoundedIcon from '@mui/icons-material/UndoRounded';
 import RedoRoundedIcon from '@mui/icons-material/RedoRounded';
 import CircleIcon from '@mui/icons-material/Circle';
+import Hand from './Hand';
 
-export const ButtonCustomGroup = () =>{
+interface ButtonCustomGroupProps {
+    handleIconBtnClick: (id: string) => void;
+}
+
+export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) =>{
     const { currentColor, setCurrentColor } = useColor();
 
     // 색상 변경
@@ -38,15 +44,17 @@ export const ButtonCustomGroup = () =>{
                         } 
                     */
                 }
-                <Text props = {Tools.TEXT}/>
-                <Pen props={Tools.PEN}/>
-                <Pen props={Tools.HIGHLIGHTER}/>
+                <Hand props = {Tools.HAND}/>
+                <Cursor props = {Tools.CURSOR}/>
+                <Text   props = {Tools.TEXT}/>
+                <Pen    props = {Tools.PEN}/>
+                <Pen    props = {Tools.HIGHLIGHTER}/>
 
                 <Button id='eraser'>eraser</Button>
                 <Button id='postit'>postit</Button>
                 <div className='shapeBox'>
-                    <Stamp props={Tools.STAMP} />
-                    <Shape />
+                    <Stamp handleIconBtnClick={handleIconBtnClick} props={Tools.STAMP}/>
+                    <Shape handleIconBtnClick={handleIconBtnClick} props={Tools.SHAPE}/>
                 </div>
                 
                 <MindMap props = {Tools.MINDMAP}/>
