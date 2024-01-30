@@ -92,12 +92,12 @@ const VoiceChat: React.FC = () => {
     const handleUserJoined = (user: any) => {
         console.log('USER:', user);
         // 새로 참여한 사용자의 UID를 members 상태에 추가합니다.
-            setMembers(prevMembers => {
-                // 새로운 사용자가 이미 목록에 있는지 확인합니다.
-                const isUserExist = prevMembers.includes(user.uid);
-                // 존재하지 않는 경우에만 목록에 추가합니다.
-                return isUserExist ? prevMembers : [...prevMembers, user.uid];
-            });
+            // setMembers(prevMembers => {
+            //     // 새로운 사용자가 이미 목록에 있는지 확인합니다.
+            //     const isUserExist = prevMembers.includes(user.uid);
+            //     // 존재하지 않는 경우에만 목록에 추가합니다.
+            //     return isUserExist ? prevMembers : [...prevMembers, user.uid];
+            // });
     };
 
     const handleUserPublished = async (user: any, mediaType: "audio" | "video") => {
