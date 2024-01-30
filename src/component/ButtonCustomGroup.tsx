@@ -1,10 +1,12 @@
 import { Tools } from './Tools';
 import { useColor } from './ColorContext';
+import Hand from './Hand';
+import Cursor from './Cursor';
+import Text from './Text';
+import Pen from './Pen';
+import PostIt from './PostIt';
 import Stamp from './Stamp';
 import Shape from './Shape';
-import Pen from './Pen';
-import Text from './Text';
-import Cursor from './Cursor';
 
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
@@ -12,8 +14,8 @@ import { MuiColorInput } from 'mui-color-input'
 import { IconButton } from '@mui/material';
 import UndoRoundedIcon from '@mui/icons-material/UndoRounded';
 import RedoRoundedIcon from '@mui/icons-material/RedoRounded';
+import { faPen, faHighlighter } from '@fortawesome/free-solid-svg-icons'
 import CircleIcon from '@mui/icons-material/Circle';
-import Hand from './Hand';
 
 interface ButtonCustomGroupProps {
     handleIconBtnClick: (id: string) => void;
@@ -43,14 +45,15 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
                         } 
                     */
                 }
-                <Hand props = {Tools.HAND}/>
-                <Cursor props = {Tools.CURSOR}/>
+                <div className='cursorBox'>
+                    <Hand props = {Tools.HAND}/>
+                    <Cursor props = {Tools.CURSOR}/>
+                </div>
                 <Text   props = {Tools.TEXT}/>
-                <Pen    props = {Tools.PEN}/>
-                <Pen    props = {Tools.HIGHLIGHTER}/>
-
+                <Pen    props = {Tools.PEN} icon = {faPen}/>
+                <Pen    props = {Tools.HIGHLIGHTER} icon = {faHighlighter}/>
                 <Button id='eraser'>eraser</Button>
-                <Button id='postit'>postit</Button>
+                <PostIt handleIconBtnClick={handleIconBtnClick} props={Tools.POSTIT}/>
                 <div className='shapeBox'>
                     <Stamp handleIconBtnClick={handleIconBtnClick} props={Tools.STAMP}/>
                     <Shape handleIconBtnClick={handleIconBtnClick} props={Tools.SHAPE}/>

@@ -1,4 +1,6 @@
 import Button from '@mui/material/Button';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { useTool } from './ToolContext';
 import { Tools } from './Tools';
 
@@ -10,9 +12,10 @@ interface PenProps {
         바로 쓰려면 interface를 생성해서 타입 지정해주고 받아야 하는 듯
     */
     props: Tools;
+    icon: IconProp;
 }
 
-export default function Pen({ props }:PenProps){
+export default function Pen({ props, icon }:PenProps){
     const { setTool } = useTool();
     
     interface components {
@@ -22,13 +25,14 @@ export default function Pen({ props }:PenProps){
 
     const componentElem : components = {
         name : Tools[props].toString(),
-        id : Tools[props].toString()
+        id : Tools[props].toString(),
     }
 
     return(
         <>
-            <Button id={componentElem.id} onClick={()=>{setTool(props)}}>{componentElem.name}</Button>
+            <Button id={componentElem.id} onClick={()=>{setTool(props)}}>
+                <FontAwesomeIcon icon={icon} size='2xl' />
+            </Button>
         </>
     );
-
 }

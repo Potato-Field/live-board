@@ -1,4 +1,6 @@
 import Button from '@mui/material/Button';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faHand } from '@fortawesome/free-regular-svg-icons'
 import { useTool } from './ToolContext';
 import { Tools } from './Tools';
 
@@ -21,8 +23,9 @@ export default function Hand({ props }:HandProps){
 
     return(
         <>
-            <Button id={componentElem.id} onClick={()=>{setTool(props)}}>{componentElem.name}</Button>
+            <Button id={componentElem.id} onClick={()=>{setTool(props)}}>
+                <FontAwesomeIcon icon={faHand} size='xl' />    
+            </Button>
         </>
     );
-
 }
