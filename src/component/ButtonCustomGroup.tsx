@@ -36,7 +36,7 @@ export const ButtonCustomGroup = ({handleIconBtnClick, setUserId}: ButtonCustomG
         setUserId(userIdBox.current.value)
     };
     return(
-        <div className = "ToolBtnGroup" style={{position: "absolute", bottom: "2%", left: "50%", transform: "translate(-50%, 0)", backgroundColor: "white"}}>
+        <div className = "ToolBtnGroup" style={{position: "absolute", bottom: "2%", left: "50%", transform: "translate(-50%, 0)", backgroundColor: "white", maxWidth: "100%"}}>
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
                 <input type="text" id="userId" placeholder='Input your ID' ref={userIdBox}></input>
                 <button type="button" onClick={addUserId}>submit</button>

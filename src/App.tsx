@@ -125,12 +125,12 @@ const App: FC = () => {
         } else if(dataSet.type === 'insert' && node == null){
           const newLine = new Konva.Line({
             id : index,
-            points: dataSet.point,
-            stroke: 'black',
-            strokeWidth: 5,
-            lineCap: 'round',
-            lineJoin: 'round',
-            draggable : true
+            points: dataSet.points,
+            stroke: dataSet.stroke,
+            strokeWidth: dataSet.strokeWidth,
+            lineCap: dataSet.lineCap,
+            lineJoin: dataSet.lineJoin,
+            draggable : true,
           });
           stageRef.current.getLayers()[0].add(newLine);
         } 
@@ -220,10 +220,9 @@ const App: FC = () => {
     const tr = new Konva.Transformer();
     tr.on('dragstart', function(e:any) {
       isDrag.current = true;
-
     });
     tr.on('dragmove', function(e:any) {
-      
+      console.log("dragging");
       tr.getNodes().forEach((node:any)=>{        
         const changeInfo = {
           idx : node.id(),
@@ -238,6 +237,7 @@ const App: FC = () => {
     tr.on('dragend', function(e:any) {
       isDrag.current = false;
       tr.getNodes().forEach((node:any)=>{
+        //node.draggable(false);
         const konvaData = {
           id : node.id(),
           x :node.x(),
@@ -364,9 +364,7 @@ const App: FC = () => {
         isSelected.current = true;
         layer.add(selectionRectangle)
       } 
-      else {
-
-      }
+      
     }
     else if (tool === Tools.TEXT) {
       
@@ -642,6 +640,8 @@ const App: FC = () => {
         if (!selectionRectangle.visible()) {
           return;
         }
+
+        
         e.evt.preventDefault();
         // update visibility in timeout, so we can check it in click event
         selectionRectangle.visible(false);
@@ -650,26 +650,22 @@ const App: FC = () => {
         var box = selectionRectangle.getClientRect();
         
         const selected = shapes.filter((shape:any) =>
-          Konva.Util.haveIntersection(box, shape.getClientRect())
+        Konva.Util.haveIntersection(box, shape.getClientRect())
         );
-        
-        selected.forEach((node:any) => {
-          node.draggable(true);
-        });
         
         if(globalTr == null){
           globalTr = createNewTrEvt();
           globalTr.nodes(selected);
           e.currentTarget.getLayers()[0].add(globalTr);
         } else {
-
+          
           globalTr.nodes(selected);
         }
       } else {
         if(leaveEvtFlag) return;
         
         if(isTrans || isDrag) return ;
-
+        
         const selected = e.target
         if(globalTr == null){
           globalTr = createNewTrEvt();
@@ -682,7 +678,11 @@ const App: FC = () => {
           }
         }
       }
-        
+      /*
+      globalTr.getNodes().forEach((node:any) => {
+        node.draggable(true);
+      });
+      */
       return;
     }
     else if(tool === Tools.HAND){
@@ -819,8 +819,11 @@ const App: FC = () => {
         onMouseEnter= {handleMouseEnter}
         onMouseLeave= {handleMouseLeave}
         onMouseDown = {handleMouseDown}
+        onTouchStart= {handleMouseDown}
         onMouseMove = {handleMouseMove}
+        onTouchMove = {handleMouseMove}
         onMouseUp   = {handleMouseUp}
+        onTouchEnd  = {handleMouseUp}
         onClick     = {handleMouseClick}
         onWheel     = {handleMouseWheel}
         draggable   = {false}
