@@ -646,7 +646,7 @@ const App: FC = () => {
         // update visibility in timeout, so we can check it in click event
         selectionRectangle.visible(false);
         selectionRectangle.destroy();
-        var shapes = stageRef.current.find('Shape, Line, Text');
+        var shapes = stageRef.current.find('Shape, Line, Text, Target');
         var box = selectionRectangle.getClientRect();
         
         const selected = shapes.filter((shape:any) =>

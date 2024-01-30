@@ -51,7 +51,7 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
         console.log(newTarget);
 
     }
-
+    
     //초기 설정 useEffect app.tsx로 이동해야 할 로직
 
     useEffect(() => {
@@ -67,15 +67,22 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
         const baseTarget = nodeTargets.find(t => t.id === targetId);
         if (!baseTarget) return;
     
-        const newX = baseTarget.x + 100;
-        const newY = baseTarget.y + 100; 
+        // Calculate position for new circle
+        const newX = baseTarget.x + 100; // Adjust as needed
+        const newY = baseTarget.y + 100; // Adjust as needed
     
+        // Create new target
         const newTargetId = 'target-' + nodeTargets.length;
         const newTarget = { id: newTargetId, x: newX, y: newY, value: "new-node" };
         setNodeTargets([...nodeTargets, newTarget]);
     
+        // Create connector
         const newConnector = { id: 'connector-' + connectors.length, from: targetId, to: newTargetId };
         setConnectors([...connectors, newConnector]);
+
+        console.log("dbclick new circle and connectors");
+        console.log(newTarget);     //TEST
+        console.log(newConnector);
       };
 
       const getConnectorPoints = (from: Target, to: Target): number[] => {
@@ -101,14 +108,6 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
         textArea.style.position = 'absolute';
         textArea.style.left = areaPos.x + 'px';
         textArea.style.top = areaPos.y + 'px';
-        textArea.style.border = 'none';
-        textArea.style.padding = '0px';
-        textArea.style.margin = '0px';
-        textArea.style.overflow = 'hidden';
-        textArea.style.background = 'none';
-        textArea.style.outline = 'none';
-        textArea.style.resize = 'none';
-        textArea.style.transformOrigin = 'left top';
     
         textArea.addEventListener('keydown', function(e) {
           if (e.key === 'Enter' && !e.shiftKey) {
@@ -125,35 +124,6 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
         textArea.focus();
       };
 
-      
-    /*************************************************** */
-    //update하는 방식으로 새로 구현한 코드 - line
-    const updateConnectors = ((draggedNodeId:string) => {
-      //console.log("!!!!!!!!!!!!!!imhere!!!!!!!!!!!!!!!!!!!!!!!!!!");//TEST
-      connectors.forEach((connector) => {
-        if (connector.from === draggedNodeId || connector.to === draggedNodeId) {
-          const fromNode = nodeTargets.find(n => n.id === connector.from);
-          const toNode = nodeTargets.find(n => n.id === connector.to);
-          
-          if (fromNode && toNode) {
-            const line = layerRef.current?.findOne('#' + connector.id) as Konva.Arrow;
-            // console.log(layerRef.current?.getChildren().map(child => child.id())); 
-            // // This will log the IDs of all children in the layer
-            // console.log(connector);//TEST
-            // console.log(line)//TEST
-            if (line) {
-              line?.points([fromNode.x, fromNode.y, toNode.x, toNode.y]);
-              layerRef.current?.add(line);
-              //console.log("!!!!!!!!!!!! test drag new ways", draggedNodeId, line);    //TEST
-            }
-          }
-        }
-      });
-      
-    });
-
-
-    
 
 
 
@@ -170,11 +140,9 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
             id: target.id,
             x: target.x,
             y: target.y,
-            //fill: Konva.Util.getRandomColor(),
-            fill: '#A9A9A9',
-            radius: 20, 
+            fill: Konva.Util.getRandomColor(),
+            radius: 20, // Adjustable
             draggable: true,
-            //zindex: 998,
           });
 
           const text = new Konva.Text({
@@ -184,31 +152,77 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
             fontSize: 12,
             fontFamily: 'Arial',
             fill: 'black',
-            //zindex: 999,
           });
-          
+
     
           node.on('dragmove', () => {
-            //////////////////////////////////////////////////////////////
-            /////version3
-            const draggedNodeId = node.id();
-            const draggedNode = nodeTargets.find(t => t.id === draggedNodeId);
-            if(draggedNode){
-              draggedNode.x = node.x();
-              draggedNode.y = node.y();
-            }
-            updateConnectors(draggedNodeId);
+            //////////////////////////////////////////
+            // ////drag 새로 수정 version 1
+            target.x = node.x();
+            target.y = node.y();
+            nodeTargets.forEach((target) => {
+              const node = layerRef.current?.findOne(target.id) as Konva.Circle;
+              if(node){
+                node.x(target.x);
+                node.y(target.y);
+                
+                //text.x(node.x()+20);
+                //text.y(node.y()+20);
+                text.x(target.x);
+                text.y(target.y);
+
+                layerRef.current?.add(node);
+                layerRef.current?.add(text);
+              }
+
+            });
+
+           
+            connectors.forEach((connector) => {
+              const fromNode = nodeTargets.find(n => n.id === connector.from);
+              const toNode = nodeTargets.find(n => n.id === connector.to);
+
+              // const before_line = layerRef.current?.findOne(connector.id);
+              // before_line?.remove();
+        
+              if (fromNode && toNode) {
+                //const points = [fromNode.x, fromNode.y, toNode.x, toNode.y];
+                const points = getConnectorPoints(fromNode, toNode);
+                const line = new Konva.Arrow({
+                  points: points,
+                  stroke: 'black',
+                  fill: 'black',
+                  strokeWidth: 2,
+                });
+                layerRef.current?.add(line);
+                console.log("!!!!!connectors test!!!!!");
+                console.log(connectors);        //TEST
+              }
+            });
+
+            //////////////////////////////////////////////////////////
+            // //version2 -> 
+            // const updatedTargets = nodeTargets.map(t => 
+            //   t.id === target.id ? { ...t, x: node.x(), y: node.y() } : t
+            // );
+          
+            // // Update the state
+            // setNodeTargets(updatedTargets);
+            
 
             
+            //////////////////////////////////////////////////////////
+
+
+
+             console.log("drag move");
+             console.log(target.x, target.y);      //TEST
+             console.log(nodeTargets);
           });
 
           
-          //node.on('click', () => handleCircleClick(target));
-          ////우클릭해야 변경하는 방향으로 수정
-          node.on('contextmenu', (e) => {
-            e.evt.preventDefault();
-            handleCircleClick(target);
-          });
+          node.on('click', () => handleCircleClick(target));
+          
     
           node.on('dblclick', () => {
             addNewCircleAndConnector(target.id);
@@ -216,11 +230,9 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
 
     
           layerRef.current?.add(node);
-          layerRef.current?.add(text);
-         
         });
     
-        // //Create connectors
+        //Create connectors
         connectors.forEach((connector) => {
           const fromNode = nodeTargets.find(n => n.id === connector.from);
           const toNode = nodeTargets.find(n => n.id === connector.to);
@@ -229,7 +241,6 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
             //const points = [fromNode.x, fromNode.y, toNode.x, toNode.y];
             const points = getConnectorPoints(fromNode, toNode);
             const line = new Konva.Arrow({
-              id: connector.id,
               points: points,
               stroke: 'black',
               fill: 'black',
@@ -239,7 +250,7 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
           }
         });
     
-        //layerRef.current.batchDraw();
+        layerRef.current.batchDraw();
       }, [nodeTargets, connectors]);
     
 
