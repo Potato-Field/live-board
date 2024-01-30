@@ -30,7 +30,7 @@ export default function Pen({ props, icon }:PenProps){
 
     return(
         <>
-            <Button id={componentElem.id} onClick={()=>{setTool(props)}}>
+            <Button id={componentElem.id} onTouchEnd={()=>{setTool(props)}} onClick={()=>{setTool(props)}}>
                 <FontAwesomeIcon icon={icon} size='2xl' />
             </Button>
         </>
