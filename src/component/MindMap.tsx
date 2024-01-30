@@ -157,11 +157,11 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
     
           node.on('dragmove', () => {
             //////////////////////////////////////////
-            ////drag 새로 수정 version 1
+            // ////drag 새로 수정 version 1
             target.x = node.x();
             target.y = node.y();
             nodeTargets.forEach((target) => {
-              const node = layerRef.current?.findOne('target-' + target.id) as Konva.Circle;
+              const node = layerRef.current?.findOne(target.id) as Konva.Circle;
               if(node){
                 node.x(target.x);
                 node.y(target.y);
@@ -175,6 +175,29 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
 
             });
 
+           
+            connectors.forEach((connector) => {
+              const fromNode = nodeTargets.find(n => n.id === connector.from);
+              const toNode = nodeTargets.find(n => n.id === connector.to);
+
+              // const before_line = layerRef.current?.findOne(connector.id);
+              // before_line?.remove();
+        
+              if (fromNode && toNode) {
+                //const points = [fromNode.x, fromNode.y, toNode.x, toNode.y];
+                const points = getConnectorPoints(fromNode, toNode);
+                const line = new Konva.Arrow({
+                  points: points,
+                  stroke: 'black',
+                  fill: 'black',
+                  strokeWidth: 2,
+                });
+                layerRef.current?.add(line);
+                console.log("!!!!!connectors test!!!!!");
+                console.log(connectors);        //TEST
+              }
+            });
+
             //////////////////////////////////////////////////////////
             // //version2 -> 
             // const updatedTargets = nodeTargets.map(t => 
@@ -184,12 +207,15 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
             // // Update the state
             // setNodeTargets(updatedTargets);
             
+
+            
             //////////////////////////////////////////////////////////
 
-           
+
 
              console.log("drag move");
              console.log(target.x, target.y);      //TEST
+             console.log(nodeTargets);
           });
 
           
