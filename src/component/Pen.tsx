@@ -27,7 +27,7 @@ export default function Pen({ props }:PenProps){
 
     return(
         <>
-            <Button id={componentElem.id} onClick={()=>{setTool(props)}}>{componentElem.name}</Button>
+            <Button id={componentElem.id} onTouchEnd={()=>{setTool(props)}} onClick={()=>{setTool(props)}}>{componentElem.name}</Button>
         </>
     );
 
