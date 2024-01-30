@@ -4,7 +4,7 @@ import {
   , useRef
   , useEffect 
 } from 'react';
-import { Stage, Layer, Line, Text } from 'react-konva';
+import { Stage, Layer, Line, Text, Group } from 'react-konva';
 import { ButtonCustomGroup } from './component/ButtonCustomGroup';
 
 import { useTool } from './component/ToolContext';
@@ -308,9 +308,11 @@ const App: FC = () => {
   }
 
   
+  /* stamp, shape에만 사용 */
   const handleIconBtnClick = (id: string) => {
     setClickedIconBtn(id);  // 어떤 IconBtn 클릭했는지 변수 clickIconBtn에 저장
   }
+
 
   const handleMouseDown = (e: any) => {
     const stage = e.target.getStage()
@@ -753,6 +755,54 @@ const App: FC = () => {
     } 
     else if(tool === Tools.CURSOR){
 
+    }
+    else if (tool === Tools.POSTIT) {
+      let PostItGroup = new Konva.Group({
+        x: realPointerPosition.x,
+        y: realPointerPosition.y,
+        draggable: true,
+      });
+      
+      let PostItRect = new Konva.Rect({
+        x: 0,
+        y: 0,
+        width: 250,
+        height: 300,
+        fill: '#FFD966',
+        shadowColor: 'black',
+        shadowBlur: 15,
+        shadowOffsetX: 5,
+        shadowOffsetY: 5,
+        shadowOpacity: 0.2,
+      });
+
+      const padding = 15;
+
+      let PostItText: any = new Konva.Text({
+        // id : idx,
+        text: 'Type anything! And also everyone in the meeting can vote on your topic by stamp.',
+        // text: '22222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222221111111111111111111111111111114444444422222222222222222222222222222222222222222222223333333333322222222222222222eeeee222222222222222233333333333666666666666666666',
+        fontSize: 20,
+        opacity: 0.4, // TODO: 텍스트 작성시 1로 변경
+        x: padding,
+        y: padding,
+        width: PostItRect.width() - (2 * padding),  // 좌우에 패딩
+        height: PostItRect.height() - 45,
+      });
+
+      let PostItWriter: any = new Konva.Text({
+        text: '{User name}',  // TODO
+        fontSize: 15,
+        opacity: 0.4,
+        x: padding,
+        y: PostItRect.height() - padding - 15,  // 15-> PostItWriter.fontSize
+        width: PostItRect.width() - (2 * padding),  // 좌우에 패딩
+      });
+
+      PostItGroup.add(PostItRect);
+      PostItGroup.add(PostItText);
+      PostItGroup.add(PostItWriter);
+      layer.add(PostItGroup);
     }
   };
 
