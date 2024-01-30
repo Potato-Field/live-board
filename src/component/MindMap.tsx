@@ -178,6 +178,7 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
           });
 
           const text = new Konva.Text({
+            id:'text-'+target.id,
             x: target.x,
             y: target.y,
             text: target.value,
@@ -199,7 +200,11 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
             }
             updateConnectors(draggedNodeId);
 
-            
+            //text 이동추가
+            const targetNode = layerRef.current?.findOne('#text-'+node.id());
+            targetNode?.x(node.x());
+            targetNode?.y(node.y());
+
           });
 
           
