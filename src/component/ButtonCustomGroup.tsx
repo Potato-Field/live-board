@@ -4,6 +4,7 @@ import Hand from './Hand';
 import Cursor from './Cursor';
 import Text from './Text';
 import Pen from './Pen';
+import Eraser from './Eraser';
 import PostIt from './PostIt';
 import Stamp from './Stamp';
 import Shape from './Shape';
@@ -61,7 +62,7 @@ export const ButtonCustomGroup = ({handleIconBtnClick, setUserId}: ButtonCustomG
                 <Text   props = {Tools.TEXT}/>
                 <Pen    props = {Tools.PEN} icon = {faPen}/>
                 <Pen    props = {Tools.HIGHLIGHTER} icon = {faHighlighter}/>
-                <Button id='eraser'>eraser</Button>
+                <Eraser props = {Tools.ERASER} />
                 <PostIt props={Tools.POSTIT}/>
                 <div className='shapeBox'>
                     <Stamp handleIconBtnClick={handleIconBtnClick} props={Tools.STAMP}/>
