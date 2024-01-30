@@ -50,22 +50,6 @@ let multiSelectBlocker = {
 
 }//블록 하는 좌표
 
-// interface TextInputProps {
-//   init: string;
-//   x?: number;
-//   y?: number;
-// }
-
-// interface InputData{
-//   id: string;
-//   value: string;
-// }
-
-// interface ShapeData extends BaseData {
-//   color : string
-// }
-
-
 //Container Components
 const App: FC = () => {
 
@@ -91,7 +75,8 @@ const App: FC = () => {
   const stageRef = useRef<Konva.Stage>(null);
   const isDrawing = useRef(false);
   const isSelected = useRef(false);
-  const isCursor = useRef(false);
+  const isTrans = useRef(false);
+  const isDrag = useRef(false);
   const isHand = useRef(false);
 
   // Y.js 관련 상태를 useRef로 관리
@@ -99,9 +84,13 @@ const App: FC = () => {
   
   //Pen 동작 저장
   const yPens = yDocRef.current.getMap('pens');
+  //Trans 동작 저장
+  const yTrans = yDocRef.current.getMap('trans');
+  //Drag move 동작 저장
+  const yMove = yDocRef.current.getMap('move');
   
   //Pen 객체 전체 저장
-  const yLines = yDocRef.current.getMap('yLines');
+  const yObjects = yDocRef.current.getMap('yObjects');
 
   const yTextRef = useRef<Y.Array<TextInputProps>>(yDocRef.current.getArray<TextInputProps>('texts'));
   
@@ -109,17 +98,22 @@ const App: FC = () => {
   let selectionRectangle:Konva.Rect = new Konva.Rect();
   let globalTr:Konva.Transformer | null = null;
   
+  //임시 UserId
+  const userId = useRef("");
+  const setUserId = (param:string)=>{
+    userId.current = param
+  }
   //load() 역할을 하는 듯
   useEffect(() => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current)
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1234'] });
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://localhost:1239'] });
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1239'] });
     
       
 
     // Y.js 배열을 캔버스에 선으로 그리기
-    // yLinesRef.current.observe(() => {
-    //   setLines(yLinesRef.current.toArray());
+    // yObjectsRef.current.observe(() => {
+    //   setLines(yObjectsRef.current.toArray());
     // });
     yPens.observe(event => {
       yPens.forEach((dataSet:any, index:string)=>{
@@ -143,11 +137,39 @@ const App: FC = () => {
         yPens.delete(index);
       });  
     })
-    
-    
+
+    yMove.observe(event => {
+      yMove.forEach((dataSet:any, index:string)=>{
+        const paramUserId = dataSet.userId;
+        if(paramUserId === userId.current || !userId.current) return;
+        const node:Konva.Node = stageRef.current.children[0].findOne("#"+index)
+        if(!node) return;
+        node.x(dataSet.x)
+        node.y(dataSet.y)
+        yMove.delete(index);
+      });
+    })
+
+    yTrans.observe(event => {
+      yTrans.forEach((dataSet:any, index:string)=>{
+        const paramUserId = dataSet.userId;
+        if(paramUserId === userId.current || !userId.current) return;
+        const node:Konva.Node = stageRef.current.children[0].findOne("#"+index)
+        if(!node) return;
+        node.x(dataSet.x)
+        node.y(dataSet.y)
+        node.scaleX(dataSet.scaleX)
+        node.scaleY(dataSet.scaleY)
+        node.rotation(dataSet.rotation)
+        yTrans.delete(index);
+      });
+    })
+
+
     // 초기화 함수 정의
     const initializeCanvas = () => {
-      yLines.forEach((lineData:any, idx:string) => {
+      yObjects.forEach((lineData:any, idx:string) => {
+        
         const node = stageRef.current.children[0].findOne("#"+idx)
         if(node) return;
         if(lineData == null) return;
@@ -158,46 +180,34 @@ const App: FC = () => {
           strokeWidth: lineData.strokeWidth,
           lineCap: lineData.lineCap,
           lineJoin: lineData.lineJoin,
-          draggable : true
+          draggable : true,
+          visible : false
         })
-        
         stageRef.current.getLayers()[0].add(newLine);
+        newLine.move({x:lineData.x, y:lineData.y});
+        newLine.scaleX(lineData.scaleX)
+        newLine.scaleY(lineData.scaleY)
+        newLine.rotation(lineData.rotation)
+        newLine.visible(true);
       });
+      yObjects.unobserve(initializeCanvas);
     };
     
-    // // 사용자가 처음 접속했을 때 선을 그리는 초기화 함수 호출
-    // const checkDataLoaded = () => {
-    //   // yLines의 크기가 0보다 크면 데이터가 로드된 것으로 간주
-    //   if (!dataLoaded) {
-    //     console.log("sync")
-    //     console.log(yLines.size)
-    //     //yLines.size > 0 && 
-    //     initializeCanvas();
-    //     setDataLoaded(true); // 데이터 로드 완료 상태로 설정
-    //     yLines.unobserve(checkDataLoaded);
-    //   }
-    // };
-    
-    yLines.observe(initializeCanvas);
-    
-    // checkDataLoaded();
+    yObjects.observe(initializeCanvas);
 
-    if (!dataLoaded.current) {
-      //yLines.size > 0 && 
-      initializeCanvas();
-      dataLoaded.current = true; // 데이터 로드 완료 상태로 설정
-      yLines.unobserve(initializeCanvas);
-    }
+    // if (!dataLoaded.current) {
+    //   //yObjects.size > 0 && 
+    //   initializeCanvas();
+    //   dataLoaded.current = true; // 데이터 로드 완료 상태로 설정
+    // }
 
     yTextRef.current.observe(() => {
       setTextInputs(yTextRef.current.toArray());
     });
 
     return () => {
-      //yLinesRef.current.unobserveDeep(updateLayer);
       provider.destroy();
       yDocRef.current.destroy();
-      //yLines.unobserve(checkDataLoaded);
     };
   }, []);
 
@@ -206,6 +216,97 @@ const App: FC = () => {
 
   let id = uuidv4(); //객체 고유 ID
 
+  const createNewTrEvt = ()=>{
+    const tr = new Konva.Transformer();
+    tr.on('dragstart', function(e:any) {
+      isDrag.current = true;
+
+    });
+    tr.on('dragmove', function(e:any) {
+      
+      tr.getNodes().forEach((node:any)=>{        
+        const changeInfo = {
+          idx : node.id(),
+          x   : node.x(),
+          y   : node.y(),
+          userId : userId.current
+        }
+        yMove.set(node.id(), changeInfo);
+      });
+
+    });
+    tr.on('dragend', function(e:any) {
+      isDrag.current = false;
+      tr.getNodes().forEach((node:any)=>{
+        const konvaData = {
+          id : node.id(),
+          x :node.x(),
+          y :node.y(),
+          points: node.points(),
+          stroke: node.stroke(),
+          strokeWidth: node.strokeWidth(),
+          lineCap: node.lineCap(),
+          lineJoin: node.lineJoin(),
+          scaleX   : node.scaleX(),
+          scaleY   : node.scaleY(),
+          rotation : node.rotation(),
+          draggable : true,
+          //userId : userId.current
+        }
+        
+        yObjects.set(node.id(), konvaData)
+      });
+
+
+    });
+    tr.on('transformstart', function(e:any) {
+      isTrans.current = true;
+
+    });
+    tr.on('transform', function(e:any) {
+      tr.getNodes().forEach((node:any)=>{        
+
+        const changeInfo = {
+          idx      : node.id(),
+          x        : node.x(),
+          y        : node.y(),
+          scaleX   : node.scaleX(),
+          scaleY   : node.scaleY(),
+          rotation : node.rotation(),
+          userId : userId.current
+        }
+        yTrans.set(node.id(), changeInfo); 
+      });
+
+    });
+    tr.on('transformend', function(e:any) {
+      isTrans.current = false;
+      tr.getNodes().forEach((node:any)=>{
+        const konvaData = {
+          id : node.id(),
+          x :node.x(),
+          y :node.y(),
+          points: node.points(),
+          stroke: node.stroke(),
+          strokeWidth: node.strokeWidth(),
+          lineCap: node.lineCap(),
+          lineJoin: node.lineJoin(),
+          scaleX   : node.scaleX(),
+          scaleY   : node.scaleY(),
+          rotation : node.rotation(),
+          draggable : true,
+          //userId : userId.current
+        }
+        
+        yObjects.set(node.id(), konvaData)
+      });
+
+    });
+    tr.on('mousedown touchstart', (e) => {
+      e.cancelBubble = true;
+    });
+    return tr
+  }
 
   
   const handleIconBtnClick = (id: string) => {
@@ -225,7 +326,7 @@ const App: FC = () => {
       y: (pos.y - position.y) / scale,
     };
 
-    const idx:string = "lineIdx_"+(id).toString()
+    const idx:string = "obj_Id_"+(id).toString()
     if(tool === Tools.HAND){
       if (e.target === stage){
         stage.container().style.cursor = 'grabbing';
@@ -262,39 +363,24 @@ const App: FC = () => {
         selectionRectangle.height(1);
         isSelected.current = true;
         layer.add(selectionRectangle)
+      } 
+      else {
+
       }
     }
     else if (tool === Tools.TEXT) {
-      /*
-      const newText: TextInputProps = { init: 'Text Click', x: pos.x, y: pos.y, isEditing: false };
-      setTextInputs(prev => [...prev, newText]);
-      yTextRef.current.push([newText]);
-      console.log(textInputs);
-      setTool(Tools.MINDMAP);                  //추가 수정해야 됨
-      */
       
-      //---------리뉴얼--------
       var textNode:any = new Konva.Text({
         id : idx,
         text: 'Some text here',
-        x: pos.x,
-        y: pos.y,
+        x: realPointerPosition.x,
+        y: realPointerPosition.y,
         fontSize: 20,
         draggable: true,
         width: 200,
       });
 
       layer.add(textNode);
-
-      // var tr = new Konva.Transformer({
-      //   node: textNode,
-      //   enabledAnchors: ['middle-left', 'middle-right'],
-      //   // set minimum width of text
-      //   boundBoxFunc: function (oldBox, newBox) {
-      //     newBox.width = Math.max(30, newBox.width);
-      //     return newBox;
-      //   },
-      // });
 
       textNode.on('transform', function () {
         // reset scale, so only with is changing by transformer
@@ -310,46 +396,29 @@ const App: FC = () => {
           return;
         }
         // 텍스트 노드 이외 클릭 시 Transformer 숨김
-        //tr.hide();
         // 이벤트 리스너 제거
         stageRef.current.off('click tap', canvasClickHandler);
       };
       // 캔버스에 클릭 이벤트 리스너 추가
       stageRef.current.on('click tap', canvasClickHandler);
 
-      //layer.add(tr);
-
-
       textNode.on('click tap', () => {
-        //tr.show();
         stageRef.current.on('click tap', canvasClickHandler);
       })
 
       textNode.on('dblclick dbltap', () => {
-        // hide text node and transformer:
         textNode.hide();
-        //tr.hide();
 
-        // create textarea over canvas with absolute position
-        // first we need to find position for textarea
-        // how to find it?
-
-        // at first lets find position of text node relative to the stage:
         var textPosition = textNode.absolutePosition();
 
-        // so position of textarea will be the sum of positions above:
         var areaPosition = {
           x: stage.container().offsetLeft + textPosition.x,
           y: stage.container().offsetTop + textPosition.y,
         };
 
-        // create textarea and style it
         var textarea = document.createElement('textarea');
         document.body.appendChild(textarea);
 
-        // apply many styles to match text on canvas as close as possible
-        // remember that text rendering on canvas and on the textarea can be different
-        // and sometimes it is hard to make it 100% the same. But we will try...
         textarea.value = textNode.text();
         textarea.style.position = 'absolute';
         textarea.style.top = areaPosition.y + 'px';
@@ -376,8 +445,7 @@ const App: FC = () => {
         }
 
         var px = 0;
-        // also we need to slightly move textarea on firefox
-        // because it jumps a bit
+
         var isFirefox =
           navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
         if (isFirefox) {
@@ -540,7 +608,7 @@ const App: FC = () => {
       var newPoints = newLine.points().concat([realPointerPosition.x, realPointerPosition.y]);
       newLine.points(newPoints);
       
-      const idx = "lineIdx_"+(id).toString()
+      const idx = "obj_Id_"+(id).toString()
 
       const changeInfo = {
         type: "update",
@@ -554,7 +622,7 @@ const App: FC = () => {
     const leaveEvtFlag:boolean = e.evt.type === 'mouseleave'? true:false
     if(tool === Tools.PEN){
       isDrawing.current = false;
-      const idx = "lineIdx_"+(id).toString()
+      const idx = "obj_Id_"+(id).toString()
       if(newLine == null) return;
       const konvaData = {
         id : idx,
@@ -564,7 +632,8 @@ const App: FC = () => {
         lineCap: newLine.lineCap(),
         lineJoin: newLine.lineJoin(),
       }
-      yLines.set(idx, konvaData)
+      yObjects.set(idx, konvaData)
+      
       newLine = null;
     }
     else if(tool === Tools.CURSOR){
@@ -583,20 +652,13 @@ const App: FC = () => {
         const selected = shapes.filter((shape:any) =>
           Konva.Util.haveIntersection(box, shape.getClientRect())
         );
-        /*
+        
         selected.forEach((node:any) => {
           node.draggable(true);
-          node.on('dragstart', (e:any) => {
-            e.cancelBubble = true;
-          });
-        
         });
-        */
+        
         if(globalTr == null){
-          globalTr = new Konva.Transformer();
-          globalTr.on('mousedown touchstart', (e) => {
-            e.cancelBubble = true;
-          });
+          globalTr = createNewTrEvt();
           globalTr.nodes(selected);
           e.currentTarget.getLayers()[0].add(globalTr);
         } else {
@@ -605,17 +667,12 @@ const App: FC = () => {
         }
       } else {
         if(leaveEvtFlag) return;
-        const selected = e.target
-        console.log(Konva.Util.haveIntersection(selected, selected.getClientRect()))
-        console.log(e)
-        if(globalTr == null){
-          globalTr = new Konva.Transformer();
-          globalTr.anchorDragBoundFunc = (oldPos: any, newPos: any, e: any)=>{
+        
+        if(isTrans || isDrag) return ;
 
-          }
-          globalTr.on('mousedown touchstart', (e) => {
-            e.cancelBubble = true;
-          });
+        const selected = e.target
+        if(globalTr == null){
+          globalTr = createNewTrEvt();
           globalTr.nodes([selected]);
           e.currentTarget.getLayers()[0].add(globalTr);
         } else {
@@ -638,6 +695,8 @@ const App: FC = () => {
 
     id = uuidv4();
   };
+
+
 
   const handleMouseClick = (e: any) => {
     const stage = e.target.getStage()
@@ -666,7 +725,6 @@ const App: FC = () => {
           width: 40,
           height: 40,
           image: stampImg,
-          draggable: true,
         });
         layer.add(newStamp);
       }
@@ -677,7 +735,6 @@ const App: FC = () => {
         x: realPointerPosition.x,
         y: realPointerPosition.y,
         fill: 'black',
-        draggable: true,
       }
 
       if (clickedIconBtn === 'rect'){
@@ -781,7 +838,7 @@ const App: FC = () => {
 
       </Stage>
       <ColorProvider>
-        <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} />
+        <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} setUserId={setUserId}/>
       </ColorProvider>
     </div>
   );
