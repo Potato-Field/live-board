@@ -100,8 +100,8 @@ const App: FC = () => {
   //load() 역할을 하는 듯
   useEffect(() => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current)
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1234'] });
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1239'] });
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1239'] });
     
       
 
