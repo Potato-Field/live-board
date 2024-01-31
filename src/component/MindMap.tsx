@@ -23,6 +23,7 @@ type Target = {
 //const MindMap = forwardRef((ref: RefObject<Konva.Stage>) => {
 export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.RefObject<Konva.Stage>, currentTool: Tools 
 , yDocRef: React.MutableRefObject<Y.Doc>}) => {
+    console.log(yDocRef)
     const [nodeTargets, setNodeTargets] = useState<Target[]>([]);
     const [connectors, setConnectors] = useState<Connector[]>([]);
     const layerRef = useRef<Konva.Layer>();

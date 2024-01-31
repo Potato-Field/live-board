@@ -4,7 +4,7 @@ import {
   , useRef
   , useEffect 
 } from 'react';
-import { Stage, Layer, Line, Text, RegularPolygon } from 'react-konva';
+import { Stage, Layer} from 'react-konva';
 import { ButtonCustomGroup } from './component/ButtonCustomGroup';
 
 import { useTool } from './component/ToolContext';
@@ -12,14 +12,14 @@ import { ColorProvider } from './component/ColorContext';
 
 import { Tools } from './component/Tools';
 
-import Stamp from './component/Stamp';
+//import Stamp from './component/Stamp';
 
 import thumbUpImg from './assets/thumbup.png';
 import thumbDownImg from './assets/thumbdown.png'
 
 import "./index.css"
 
-import EditableText from "./component/EditableText";
+//import EditableText from "./component/EditableText";
 
 //-----------CRDT---------------------
 import * as Y from "yjs";
@@ -27,18 +27,13 @@ import * as Y from "yjs";
 import { WebrtcProvider } from "y-webrtc";
 import Konva from 'konva';
 import { uuidv4 } from 'lib0/random.js';
-import TextEditor, {TextInputProps} from './component/TextEditor';
-import { FastLayer } from 'konva/lib/FastLayer';
-import { set } from 'lodash';
+import {TextInputProps} from './component/TextEditor';
+//import { FastLayer } from 'konva/lib/FastLayer';
+import { Shape } from './component/UserShape';
+//import { set } from 'lodash';
 import VoiceChat from './component/voicechat/voicechat';
 //import { number } from 'lib0';
-import MindMap from './component/MindMap';
-
-
-interface BaseData {
-  name? : string
-  tool : Tools
-}
+//import MindMap from './component/MindMap';
 
 let multiSelectBlocker = {
   x1:0,
@@ -53,8 +48,8 @@ const App: FC = () => {
 
   const { tool, setTool } = useTool();
   //const [tool, setTool] = useState<string>('pen');
-  const [currentColor, setCurrentColor] = useState<string>('#000000');
-  const [image, setImage] = useState<HTMLImageElement | null>(null);
+  //const [currentColor, setCurrentColor] = useState<string>('#000000');
+  //const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [clickedIconBtn, setClickedIconBtn] = useState<string | null>(null);
 
   /*
@@ -63,13 +58,13 @@ const App: FC = () => {
    * 드로잉 동기화 구현
    * 김병철
    */
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
 
   //text 상태 저장
   // const [textInputs, setTextInputs] = useState<TextData[]>([]);
-  const [textInputs, setTextInputs] = useState<TextInputProps[]>([]);
+  const [, setTextInputs] = useState<TextInputProps[]>([]);
 
-  const stageRef = useRef(null);
+  const stageRef = useRef<Konva.Stage>(null as any);
   const isDrawing = useRef(false);
   const isSelected = useRef(false);
   const isTrans = useRef(false);
@@ -111,9 +106,10 @@ const App: FC = () => {
       
 
     // Y.js에 저장된 것들 감시하고 업데이트 되면 캔버스에 그리기
-    yPens.observe(event => {
+    yPens.observe(() => {
       yPens.forEach((konvaData:any, index:string)=>{
-        const node = stageRef.current.children[0].findOne("#"+index)
+        
+        const node:any = stageRef.current.children[0].findOne("#"+index)
         if(konvaData.type === 'update' && node != null){
           var newPoints = node.points().concat(konvaData.point);
           node.points(newPoints);
@@ -127,10 +123,10 @@ const App: FC = () => {
       });  
     })
 
-    yShape.observe(event => {
+    yShape.observe(() => {
       yShape.forEach((konvaData:any, index:string)=>{
         const node = stageRef.current.children[0].findOne("#"+index)
-        let newShape;
+        let newShape:any;
         console.log(node)
         if(node) return;
         if(konvaData.type === Shape.Stamp){
@@ -138,7 +134,7 @@ const App: FC = () => {
           stampImg.src = konvaData.image === 'thumbUp' ? thumbUpImg : thumbDownImg;
     
           stampImg.onload = () => {
-            setImage(stampImg)
+            
             const newStamp = createNewStamp(index, {x: konvaData.x, y: konvaData.y}, stampImg)
             newStamp.name(konvaData.image)
             stageRef.current.getLayers()[0].add(newStamp);
@@ -161,11 +157,11 @@ const App: FC = () => {
       });  
     })
 
-    yMove.observe(event => {
+    yMove.observe(() => {
       yMove.forEach((konvaData:any, index:string)=>{
         const paramUserId = konvaData.userId;
         if(paramUserId === userId.current || !userId.current) return;
-        const node:Konva.Node = stageRef.current.children[0].findOne("#"+index)
+        const node:Konva.Node | undefined | null = stageRef.current.children[0].findOne("#"+index)
         if(!node) return;
         node.x(konvaData.x)
         node.y(konvaData.y)
@@ -173,11 +169,11 @@ const App: FC = () => {
       });
     })
 
-    yTrans.observe(event => {
+    yTrans.observe(() => {
       yTrans.forEach((konvaData:any, index:string)=>{
         const paramUserId = konvaData.userId;
         if(paramUserId === userId.current || !userId.current) return;
-        const node:Konva.Node = stageRef.current.children[0].findOne("#"+index)
+        const node:Konva.Node | undefined | null = stageRef.current.children[0].findOne("#"+index)
         if(!node) return;
         node.x(konvaData.x)
         node.y(konvaData.y)
@@ -241,7 +237,7 @@ const App: FC = () => {
             stampImg.src = konvaData.image === 'thumbUp' ? thumbUpImg : thumbDownImg;
       
             stampImg.onload = () => {
-              setImage(stampImg)
+              
               const newStamp = createNewStamp(index, {x: konvaData.x, y: konvaData.y}, stampImg)
               newStamp.name(konvaData.image)
               newStamp.visible(false)
@@ -317,10 +313,13 @@ const App: FC = () => {
       const selected = e.target
       if(groupTr == null){
         createNewTr();
+      } 
+      if(groupTr){
+        if(groupTr.nodes().length == 0){
+          groupTr.nodes([selected]);
+        }
       }
-      if(groupTr.nodes().length == 0){
-        groupTr.nodes([selected]);
-      }
+      
     })
     return newLine
   }
@@ -349,8 +348,10 @@ const App: FC = () => {
       if(groupTr == null){
         createNewTr();
       }
-      if(groupTr.nodes().length == 0){
-        groupTr.nodes([selected]);
+      if(groupTr){
+        if(groupTr.nodes().length == 0){
+          groupTr.nodes([selected]);
+        }
       }
     })
 
@@ -380,8 +381,10 @@ const App: FC = () => {
       if(groupTr == null){
         createNewTr();
       }
-      if(groupTr.nodes().length == 0){
-        groupTr.nodes([selected]);
+      if(groupTr){
+        if(groupTr.nodes().length == 0){
+          groupTr.nodes([selected]);
+        }
       }
     })
     return newShape
@@ -411,8 +414,10 @@ const App: FC = () => {
       if(groupTr == null){
         createNewTr();
       }
-      if(groupTr.nodes().length == 0){
-        groupTr.nodes([selected]);
+      if(groupTr){
+        if(groupTr.nodes().length == 0){
+          groupTr.nodes([selected]);
+        }
       }
     })
     return newShape
@@ -442,8 +447,10 @@ const App: FC = () => {
       if(groupTr == null){
         createNewTr();
       }
-      if(groupTr.nodes().length == 0){
-        groupTr.nodes([selected]);
+      if(groupTr){
+        if(groupTr.nodes().length == 0){
+          groupTr.nodes([selected]);
+        }
       }
     })
     return newShape
@@ -452,10 +459,10 @@ const App: FC = () => {
   const createNewTr = ()=>{
     //if (groupTr != null) return;
     const tr = new Konva.Transformer();
-    tr.on('dragstart', function(e:any) {
+    tr.on('dragstart', function() {
       isDrag.current = true;
     });
-    tr.on('dragmove', function(e:any) {
+    tr.on('dragmove', function() {
       tr.getNodes().forEach((node:any)=>{        
         const changeInfo = {
           idx : node.id(),
@@ -467,7 +474,7 @@ const App: FC = () => {
       });
 
     });
-    tr.on('dragend', function(e:any) {
+    tr.on('dragend', function() {
       isDrag.current = false;
       let type:any;
       let konvaData:any;
@@ -538,11 +545,11 @@ const App: FC = () => {
 
 
     });
-    tr.on('transformstart', function(e:any) {
+    tr.on('transformstart', function() {
       isTrans.current = true;
 
     });
-    tr.on('transform', function(e:any) {
+    tr.on('transform', function() {
       tr.getNodes().forEach((node:any)=>{        
 
         const changeInfo = {
@@ -558,7 +565,7 @@ const App: FC = () => {
       });
 
     });
-    tr.on('transformend', function(e:any) {
+    tr.on('transformend', function() {
       isTrans.current = false;
       let type:Shape;
       let konvaData:any;
@@ -790,8 +797,8 @@ const App: FC = () => {
           textarea.parentNode.removeChild(textarea);
           window.removeEventListener('click', handleOutsideClick);
           textNode.show();
-          tr.show();
-          tr.forceUpdate();
+          // tr.show();
+          // tr.forceUpdate();
         }
 
         function setTextareaWidth(newWidth:any) {
@@ -830,7 +837,7 @@ const App: FC = () => {
           }
         });
 
-        textarea.addEventListener('keydown', function (e) {
+        textarea.addEventListener('keydown', function () {
           let scale = textNode.getAbsoluteScale().x;
           setTextareaWidth(textNode.width() * scale);
           textarea.style.height = 'auto';
@@ -887,8 +894,7 @@ const App: FC = () => {
 
   const handleMouseMove = (e: any) => {
     const stage = e.target.getStage();
-    const layers = stage.getLayers();
-    const layer = layers[0];
+
     const pos = stage.getPointerPosition();
     const scale = stage.scaleX(); // 현재 스케일
     const position = stage.position(); // 현재 위치
@@ -976,8 +982,10 @@ const App: FC = () => {
         
         if(groupTr == null){
           createNewTr(); 
-        } 
-        groupTr.nodes(selected);
+        }
+        if(groupTr){
+          groupTr.nodes(selected);
+        }
         
       } else {
         if(leaveEvtFlag) return;
@@ -988,10 +996,11 @@ const App: FC = () => {
         if(groupTr == null){
           createNewTr();
         } 
-
-        if(groupTr.nodes().length < 2){
-          
-          groupTr.nodes([selected]);
+        if(groupTr){
+          if(groupTr.nodes().length < 2){
+            
+            groupTr.nodes([selected]);
+          }
         }
       }
       /*
@@ -1038,7 +1047,7 @@ const App: FC = () => {
       
 
       stampImg.onload = () => {
-        //setImage(stampImg)
+       
         /* 클릭 위치에 스탬프 찍기 */
         const newStamp = createNewStamp(idx, shapeOptions, stampImg);
         if(clickedIconBtn){
@@ -1130,8 +1139,7 @@ const App: FC = () => {
   const handleMouseWheel = (e: any) => {
     e.evt.preventDefault();
     const stage = e.target.getStage();
-    const layers = stage.getLayers();
-    const layer = layers[0];
+;
     var oldScale = stage.scaleX();
     var pointer = stage.getPointerPosition();
     var scaleBy = 1.1;
@@ -1141,11 +1149,8 @@ const App: FC = () => {
       y: (pointer.y - stage.y()) / oldScale,
     };
 
-    // how to scale? Zoom in? Or zoom out?
     let direction = e.evt.deltaY > 0 ? 1 : -1;
 
-    // when we zoom on trackpad, e.evt.ctrlKey is true
-    // in that case lets revert direction
     if (e.evt.ctrlKey) {
       direction = -direction;
     }
@@ -1171,7 +1176,7 @@ const App: FC = () => {
   }
 
   const handleMouseLeave = (e:any)=>{
-    const stage = e.target.getStage();
+    
     handleMouseUp(e);
 
     // if(groupTr != null){
@@ -1204,9 +1209,9 @@ const App: FC = () => {
       
         <Layer></Layer>
         
-      <>
+      {/* <>
         <MindMap stageRef = {stageRef} currentTool={tool} yDocRef = {yDocRef}/>
-      </>
+      </> */}
 
 
       </Stage>
