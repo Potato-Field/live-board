@@ -260,7 +260,7 @@ const App: FC = () => {
       
       setIsLoading(false);
       initializeCanvas();
-      yObjects.unobserve(initializeCanvas);
+      yObjects.unobserve(handleDataLoaded);
     };
 
     yObjects.observe(handleDataLoaded);
