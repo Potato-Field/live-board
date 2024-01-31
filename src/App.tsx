@@ -1213,12 +1213,12 @@ const App: FC = () => {
           
           />
         )} */}
-        {tool === Tools.MINDMAP && (
+        {/* {tool === Tools.MINDMAP && ( */}
           <MindMap 
           stageRef={stageRef} currentTool={tool} yDocRef={yDocRef} 
           
           />
-        )}
+        {/* )} */}
 
 
 
