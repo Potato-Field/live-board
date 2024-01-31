@@ -4,7 +4,7 @@ import {
   , useRef
   , useEffect 
 } from 'react';
-import { Stage, Layer, Line, Text, Group } from 'react-konva';
+import { Stage, Layer } from 'react-konva';
 import { ButtonCustomGroup } from './component/ButtonCustomGroup';
 
 import { useTool } from './component/ToolContext';
@@ -1268,7 +1268,7 @@ const App: FC = () => {
 
         /* 입력되는 텍스트 양에 따른 rect height 증가  */
         textarea.addEventListener('keydown', function (e: any) {
-          scale = PostItText.getAbsoluteScale().x;
+          let scale = PostItText.getAbsoluteScale().x;
           setTextareaWidth(PostItText.width() * scale - PostItText.padding() * 2);
           textarea.style.height = 'auto';
           textarea.style.height = textarea.scrollHeight + PostItText.fontSize() + 'px';
