@@ -35,6 +35,16 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
         }
         
     }, [stageRef]);
+  //   useEffect(() => {
+  //     if (stageRef.current && !layerRef.current) {
+  //         let layer = stageRef.current.getLayers()[0];
+  //         if (!layer) {
+  //             layer = new Konva.Layer();
+  //             stageRef.current.add(layer);
+  //         }
+  //         layerRef.current = layer;
+  //     }
+  // }, [stageRef]);
     
 
     /*************************************************** */

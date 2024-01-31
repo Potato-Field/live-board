@@ -35,6 +35,16 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
         }
         
     }, [stageRef]);
+  //   useEffect(() => {
+  //     if (stageRef.current && !layerRef.current) {
+  //         let layer = stageRef.current.getLayers()[0];
+  //         if (!layer) {
+  //             layer = new Konva.Layer();
+  //             stageRef.current.add(layer);
+  //         }
+  //         layerRef.current = layer;
+  //     }
+  // }, [stageRef]);
     
 
     /*************************************************** */
@@ -256,23 +266,23 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
           });
           
     
-          
+          node.on('dragmove', () => {
+            const draggedNodeId = node.id();
+            const draggedNode = nodeTargets.find(t => t.id === draggedNodeId);
+            if(draggedNode){
+              draggedNode.x = node.x();
+              draggedNode.y = node.y();
+            }
+            updateConnectors(draggedNodeId);
+
+            //text 이동추가
+            const targetNode = layerRef.current?.findOne('#text-'+node.id());
+            targetNode?.x(node.x() - offsetX);
+            targetNode?.y(node.y() - offsetY);
+
+          });
+
           if(currentTool === Tools.MINDMAP){
-            node.on('dragmove', () => {
-              const draggedNodeId = node.id();
-              const draggedNode = nodeTargets.find(t => t.id === draggedNodeId);
-              if(draggedNode){
-                draggedNode.x = node.x();
-                draggedNode.y = node.y();
-              }
-              updateConnectors(draggedNodeId);
-  
-              //text 이동추가
-              const targetNode = layerRef.current?.findOne('#text-'+node.id());
-              targetNode?.x(node.x() - offsetX);
-              targetNode?.y(node.y() - offsetY);
-  
-            });
             //node.on('click', () => handleCircleClick(target));
             ////우클릭해야 변경하는 방향으로 수정
             node.on('contextmenu', (e) => {

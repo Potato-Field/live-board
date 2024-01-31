@@ -1201,9 +1201,9 @@ const App: FC = () => {
       
         <Layer></Layer>
         
-      <>
-        <MindMap stageRef = {stageRef} currentTool={tool} yDocRef = {yDocRef}/>
-      </>
+        {tool === Tools.MINDMAP && (
+          <MindMap stageRef={stageRef} currentTool={tool} yDocRef={yDocRef} />
+        )}
 
 
       </Stage>
