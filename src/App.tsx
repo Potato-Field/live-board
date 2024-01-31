@@ -4,7 +4,7 @@ import {
   , useRef
   , useEffect 
 } from 'react';
-import { Stage, Layer} from 'react-konva';
+import { Stage, Layer, Line, Text, Group } from 'react-konva';
 import { ButtonCustomGroup } from './component/ButtonCustomGroup';
 
 import { useTool } from './component/ToolContext';
@@ -643,9 +643,11 @@ const App: FC = () => {
   }
 
   
+  /* stamp, shape에만 사용 */
   const handleIconBtnClick = (id: string) => {
     setClickedIconBtn(id);  // 어떤 IconBtn 클릭했는지 변수 clickIconBtn에 저장
   }
+
 
   const handleMouseDown = (e: any) => {
     const stage = e.target.getStage()
@@ -1134,6 +1136,179 @@ const App: FC = () => {
     } 
     else if(tool === Tools.CURSOR){
 
+    }
+    else if (tool === Tools.POSTIT) {
+      let PostItGroup = new Konva.Group({
+        x: realPointerPosition.x,
+        y: realPointerPosition.y,
+        draggable: true,
+      });
+
+      const postItOptions = {
+        x: 0,
+        y: 0,
+      }
+
+      let PostItRect = new Konva.Rect({
+        ...postItOptions,
+        width: 250, // init size
+        height: 300,  // init size
+        fill: '#FFD966',
+        shadowColor: 'black',
+        shadowBlur: 15,
+        shadowOffsetX: 5,
+        shadowOffsetY: 5,
+        shadowOpacity: 0.2,
+      });
+      
+      let PostItText: any = new Konva.Text({
+        // id : idx,
+        ...postItOptions,
+        text: '',
+        fontSize: 20,
+        width: PostItRect.width(),
+        height: PostItRect.height(),
+        padding: 15,
+      });
+
+      let initText = new Konva.Text({
+        ...postItOptions,
+        text: 'Type anything! And also everyone in the meeting can vote on your topic by stamp👍🏽👎🏽',
+        fontSize: 20,
+        opacity: 0.4,
+        width: PostItRect.width(),
+        padding: 15,
+      });
+
+      PostItGroup.add(PostItRect);
+      PostItGroup.add(PostItText);
+      PostItGroup.add(initText);
+      layer.add(PostItGroup);
+      setTool(Tools.CURSOR);
+      
+      PostItGroup.on('dblclick dbltap', () => {
+        initText.hide();
+
+        if (PostItText.text() !== ''){
+          PostItText.hide();
+        }
+        
+        var textPosition = PostItText.absolutePosition();
+        
+        var areaPosition = {
+          x: stage.container().offsetLeft + textPosition.x,
+          y: stage.container().offsetTop + textPosition.y,
+        };
+        
+        var textarea = document.createElement('textarea');
+        document.body.appendChild(textarea);
+
+        textarea.value = PostItText.text();
+        textarea.style.position = 'absolute';
+        textarea.style.top = areaPosition.y + 'px';
+        textarea.style.left = areaPosition.x + 'px';
+        textarea.style.width = PostItText.width() - PostItText.padding() * 2 + 'px';
+        // textarea.style.height = PostItText.height() - PostItText.padding() * 2 + 'px';
+        textarea.style.fontSize = PostItText.fontSize() + 'px';
+        textarea.style.border = 'none';
+        textarea.style.padding = '15px';
+        textarea.style.margin = '0px';
+        textarea.style.overflow = 'hidden';
+        // textarea.style.background = 'gray';
+        textarea.style.background = 'none';
+        textarea.style.outline = 'none';
+        textarea.style.resize = 'none';
+        textarea.style.lineHeight = PostItText.lineHeight();
+        textarea.style.fontFamily = PostItText.fontFamily();
+        textarea.style.transformOrigin = 'left top';
+        textarea.style.textAlign = PostItText.align();
+        textarea.style.color = PostItText.fill();
+
+        const rotation = PostItText.rotation();
+        var transform = '';
+
+        if (rotation) {
+          transform += 'rotateZ(' + rotation + 'deg)';
+        }
+
+        var px = 0;
+        var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+        if (isFirefox) {
+          px += 2 + Math.round(PostItText.fontSize() / 20);
+        }
+
+        transform += 'translateY(-' + px + 'px)';
+        textarea.style.transform = transform;
+        
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 3 + 'px';
+
+        function setTextareaWidth(newWidth: any) {
+          if (!newWidth) {
+            // set width for placeholder
+            newWidth = PostItText.placeholder.length * PostItText.fontSize();
+          }
+          // some extra fixes on different browsers
+          var isSafari = /^((?!chrome|android).)*safari/i.test(
+            navigator.userAgent
+          );
+          var isFirefox =
+            navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+          if (isSafari || isFirefox) {
+            newWidth = Math.ceil(newWidth);
+          }
+
+          var isEdge =
+            document.DOCUMENT_NODE || /Edge/.test(navigator.userAgent);
+          if (isEdge) {
+            newWidth += 1;
+          }
+          textarea.style.width = newWidth + 'px';
+        }
+
+        /* 입력되는 텍스트 양에 따른 rect height 증가  */
+        textarea.addEventListener('keydown', function (e: any) {
+          scale = PostItText.getAbsoluteScale().x;
+          setTextareaWidth(PostItText.width() * scale - PostItText.padding() * 2);
+          textarea.style.height = 'auto';
+          textarea.style.height = textarea.scrollHeight + PostItText.fontSize() + 'px';
+         
+          // todo: PostItRect height 증가
+          console.log(textarea.style.height);
+          let textareaHeight = (parseInt(textarea.style.height.slice(0, -2)) as any);
+          console.log(textareaHeight);
+          if (textareaHeight > PostItRect.height) {
+            PostItRect.height = textareaHeight;
+            layer.batchDraw();  // 조건 만족할 때 PostItRect 사라짐
+          }
+          
+          const key = e.key.toLowerCase();
+          if (key == 'esc' || key == 'escape') {
+            PostItText.text(textarea.value);
+            PostItText.show();
+            textarea.remove();
+            stage.off('mouseup', handleOutsideClick);
+          }
+        });
+
+        function handleOutsideClick(e: any) {
+          if (textarea.value === '') {
+            initText.show();
+          }
+
+          if (e.target !== textarea) {
+            PostItText.text(textarea.value);
+            PostItText.show();
+            textarea.remove();
+            stage.off('mouseup', handleOutsideClick);
+          }
+        }
+        
+        if(textarea){
+          stage.on('mouseup', handleOutsideClick);
+          // PostItText.show();
+        }
+      });
     }
   };
 

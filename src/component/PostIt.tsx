@@ -4,11 +4,11 @@ import IconButton from '@mui/material/Button';
 import StickyNote2RoundedIcon from '@mui/icons-material/StickyNote2Rounded';
 
 interface PostItProps {
-    handleIconBtnClick: (e: any) => void;
+    // handleIconBtnClick: (e: any) => void;
     props: Tools;
 }
 
-export default function PostIt({ handleIconBtnClick, props }:PostItProps) {
+export default function PostIt({ props }:PostItProps) {
     const { setTool } = useTool();
 
     interface components {
@@ -23,7 +23,7 @@ export default function PostIt({ handleIconBtnClick, props }:PostItProps) {
 
     return(
         <>
-            <IconButton id={componentElem.id} onClick={()=>{handleIconBtnClick("postit"); setTool(props);}}>
+            <IconButton id={componentElem.id} onClick={()=>{setTool(props);}}>
                 <StickyNote2RoundedIcon fontSize='large'/>
             </IconButton>
         </>                                                               
