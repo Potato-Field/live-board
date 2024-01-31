@@ -25,53 +25,54 @@ const VoiceChat: React.FC = () => {
     });
 
     useEffect(() => {
-        initRtc();
+        // initRtc();
 
         return () => {
             leaveRoom();
         };
     }, []);
 
-    const initVolumeIndicator = () => {
-        if (rtcClientRef.current) {
-            rtcClientRef.current.enableAudioVolumeIndicator();
-            rtcClientRef.current.on("volume-indicator", (volumes) => {
-                volumes.forEach((volume) => {
-                    const items = document.getElementsByClassName(`user-rtc-${volume.uid}`);
-                    if (items.length > 0) {
-                        const item = items[0] as HTMLElement;
-                        item.style.borderColor = volume.level >= 50 ? '#00ff00' : "#fff";
-                    }
-                });
-            });
-        }
-    };
-
+    
     const initRtc = async () => {
+        const token = null
         const rtcClient: IAgoraRTCClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
         rtcClientRef.current = rtcClient;
         rtcClient.on('user-joined', handleUserJoined);
         rtcClient.on('user-published', handleUserPublished);
         rtcClient.on('user-left', handleUserLeft);
-
-        await rtcClient.join(appid, roomId, null, rtcUid);
-
+        
+        await rtcClient.join(appid, roomId, token, rtcUid);
+        
         const localAudioTrack: ILocalAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
         audioTracksRef.current.localAudioTrack = localAudioTrack;
-
+        
         localAudioTrack.setMuted(micMuted);
         await rtcClient.publish(localAudioTrack);
-
-
+        
+        
         console.log(rtcUid);
-
+        
         setMembers([rtcUid]);
         // 볼륨 인디케이터 초기화
         initVolumeIndicator();
-
+        
     };
-
-
+    
+    
+    const initVolumeIndicator = () => {
+        // if (rtcClientRef.current) {
+        //     rtcClientRef.current.enableAudioVolumeIndicator();
+        //     rtcClientRef.current.on("volume-indicator", (volumes) => {
+        //         volumes.forEach((volume) => {
+        //             const items = document.getElementsByClassName(`user-rtc-${volume.uid}`);
+        //             if (items.length > 0) {
+        //                 const item = items[0] as HTMLElement;
+        //                 item.style.borderColor = volume.level >= 50 ? '#00ff00' : "#fff";
+        //             }
+        //         });
+        //     });
+        // }
+    };
 
 
     const joinSubmit = async (e: React.FormEvent) => {
@@ -92,12 +93,12 @@ const VoiceChat: React.FC = () => {
     const handleUserJoined = (user: any) => {
         console.log('USER:', user);
         // 새로 참여한 사용자의 UID를 members 상태에 추가합니다.
-            // setMembers(prevMembers => {
-            //     // 새로운 사용자가 이미 목록에 있는지 확인합니다.
-            //     const isUserExist = prevMembers.includes(user.uid);
-            //     // 존재하지 않는 경우에만 목록에 추가합니다.
-            //     return isUserExist ? prevMembers : [...prevMembers, user.uid];
-            // });
+            setMembers(prevMembers => {
+                // 새로운 사용자가 이미 목록에 있는지 확인합니다.
+                const isUserExist = prevMembers.includes(user.uid);
+                // 존재하지 않는 경우에만 목록에 추가합니다.
+                return isUserExist ? prevMembers : [...prevMembers, user.uid];
+            });
     };
 
     const handleUserPublished = async (user: any, mediaType: "audio" | "video") => {
@@ -144,6 +145,13 @@ const VoiceChat: React.FC = () => {
                         onClick={leaveRoom}
                     >
                         <LogoutIcon fontSize='large' />
+                    </Button>
+                    <Button
+                        type="submit"
+                        onClick={joinSubmit} // Button 클릭 시 joinSubmit 함수 호출
+                    // ...기타 스타일과 속성...
+                    >
+                        Join
                     </Button>
                 </form>
             </div>
