@@ -29,7 +29,8 @@ import Konva from 'konva';
 import { uuidv4 } from 'lib0/random.js';
 import TextEditor, {TextInputProps} from './component/TextEditor';
 import { FastLayer } from 'konva/lib/FastLayer';
-import { Shape } from './component/UserShape';
+import { set } from 'lodash';
+import VoiceChat from './component/voicechat/voicechat';
 //import { number } from 'lib0';
 import MindMap from './component/MindMap';
 
@@ -1181,6 +1182,8 @@ const App: FC = () => {
   }
 
   return (
+    <>
+    <VoiceChat />
     <div style={{position: "relative", width: "100%"}}>
       <Stage
         width       = {window.innerWidth}
@@ -1211,6 +1214,7 @@ const App: FC = () => {
         <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} setUserId={setUserId}/>
       </ColorProvider>
     </div>
+    </>
   );
 }
 
