@@ -68,17 +68,18 @@ const App: FC = () => {
    */
   const dataLoaded = useRef(false);
 
+  
   //text 상태 저장
   // const [textInputs, setTextInputs] = useState<TextData[]>([]);
   const [textInputs, setTextInputs] = useState<TextInputProps[]>([]);
-
+  
   const stageRef = useRef<Konva.Stage>(null);
   const isDrawing = useRef(false);
   const isSelected = useRef(false);
   const isTrans = useRef(false);
   const isDrag = useRef(false);
   const isHand = useRef(false);
-
+  
   // Y.js 관련 상태를 useRef로 관리
   const yDocRef = useRef(new Y.Doc());
   
@@ -564,6 +565,8 @@ const App: FC = () => {
       });
       layer.add(newLine);
     }
+    else if(tool === Tools.MINDMAP){
+    }
   };
 
   const handleMouseMove = (e: any) => {
@@ -836,12 +839,12 @@ const App: FC = () => {
         <TextEditor textInputs={textInputs} setTextInputs={setTextInputs} yTextRef={yTextRef} yDocRef = {yDocRef} />
       </Layer>
       <>
-        <MindMap stageRef = {stageRef}/>
+        <MindMap stageRef = {stageRef} currentTool={tool}/>
       </>
 
       </Stage>
       <ColorProvider>
-        <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} setUserId={setUserId}/>
+        <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} setUserId={setUserId} yDocRef = {yDocRef}/>
       </ColorProvider>
     </div>
   );
