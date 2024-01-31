@@ -839,12 +839,12 @@ const App: FC = () => {
         <TextEditor textInputs={textInputs} setTextInputs={setTextInputs} yTextRef={yTextRef} yDocRef = {yDocRef} />
       </Layer>
       <>
-        <MindMap stageRef = {stageRef} currentTool={tool}/>
+        <MindMap stageRef = {stageRef} currentTool={tool} yDocRef = {yDocRef}/>
       </>
 
       </Stage>
       <ColorProvider>
-        <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} setUserId={setUserId} yDocRef = {yDocRef}/>
+        <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} setUserId={setUserId}/>
       </ColorProvider>
     </div>
   );

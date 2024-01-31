@@ -1,5 +1,9 @@
 import React, {useRef, useEffect, useState} from 'react';
 import Konva from 'konva';
+import { Tools } from './Tools';
+
+
+import * as Y from "yjs";
 
 type Target = {
     id: string;
@@ -17,7 +21,8 @@ type Target = {
 
 
 //const MindMap = forwardRef((ref: RefObject<Konva.Stage>) => {
-const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
+export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.RefObject<Konva.Stage>, currentTool: Tools 
+, yDocRef: React.MutableRefObject<Y.Doc>}) => {
     const [nodeTargets, setNodeTargets] = useState<Target[]>([]);
     const [connectors, setConnectors] = useState<Connector[]>([]);
     const layerRef = useRef<Konva.Layer>();
@@ -35,10 +40,36 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
     /*************************************************** */
     //초기 설정 useEffect app.tsx로 이동해야 할 로직
 
+   //주의 할 점 root 노드는 total 한 개다
+   //여러개 생성하고 싶은면 조건을 추가 해야 할 듯 단순한 클릭으로 작동하면 더블클릭 등의 기능이 작동하지 않는 문제점이 있다.
+
     useEffect(() => {
-      if(nodeTargets.length === 0)
-        setNodeTargets([{ id: 'target-0', x: 50, y: 50, value: "new-node" }]);
-    });
+     
+      if (stageRef.current) {
+        stageRef.current.on('click', () => {
+          if (currentTool === Tools.MINDMAP && nodeTargets.length === 0) {
+              const stage = stageRef.current;
+              const pointerPosition = stage?.getPointerPosition();
+  
+              if (stage && pointerPosition) {
+                  const newNode = {
+                      id: `target-${nodeTargets.length}`,
+                      x: pointerPosition.x,  
+                      y: pointerPosition.y,  
+                      value: "new-node",
+                  };
+                  setNodeTargets([...nodeTargets, newNode]);
+              }
+          }
+      });
+      }
+
+      return () => {
+          if (stageRef.current) {
+              stageRef.current.off('click');
+          }
+      };
+  }, [nodeTargets, currentTool, stageRef]);
 
 
 
@@ -47,9 +78,18 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
     const addNewCircleAndConnector = (targetId: string) => {
         const baseTarget = nodeTargets.find(t => t.id === targetId);
         if (!baseTarget) return;
+        
+        const nowCircle = layerRef.current?.findOne('#' + targetId);
+        const nowRadius = nowCircle?.attrs.radius;
 
-        let randomX = Math.random() * 100;
-        let randomY = Math.random() * 100;
+        let randomX = Math.random() * (nowRadius * 5);
+        let randomY = Math.random() * (nowRadius * 5);
+
+        if(randomX < nowRadius*2 && randomY < nowRadius*2){
+          randomX += nowRadius*2;
+          randomY += nowRadius*2;
+
+        }
 
         const dx = [1, 1, -1, -1];
         const dy = [1, -1, 1, -1];
@@ -58,7 +98,7 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
         randomX *= dx[quadrant];
         randomY *= dy[quadrant];
 
-        
+       
         const newX = baseTarget.x + randomX;
         const newY = baseTarget.y + randomY; 
     
@@ -83,14 +123,13 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
         if (!stage) return;
 
         const targetText = layerRef.current?.findOne("#text-"+target.id);
-        console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!\n", targetText);    //TEST
         targetText?.hide();
+        const targetTextPosition = targetText?.absolutePosition();
+        //console.log("!!!!! targetText", targetText, targetTextPosition?.x, targetTextPosition?.y);//TEST
     
         const areaPos = {
-          x: stage.container().offsetLeft + target.x,
-          y: stage.container().offsetTop + target.y
-          // x: stage.container().offsetLeft + targetText.x,
-          // y: stage.container().offsetTop + targetText.y
+          x: stage.container().offsetLeft + (targetTextPosition?.x??0),
+          y: stage.container().offsetTop + (targetTextPosition?.y??0),
         };
     
         var textArea = document.createElement('textarea');
@@ -102,8 +141,8 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
         textArea.style.border = 'none';
         textArea.style.padding = '0px';
         textArea.style.margin = '0px';
-        //textArea.style.overflow = 'hidden';
-        //textArea.style.background = 'none';
+        textArea.style.overflow = 'hidden';
+        textArea.style.background = 'none';
         textArea.style.outline = 'none';
         textArea.style.resize = 'none';
         textArea.style.transformOrigin = 'left top';
@@ -117,11 +156,11 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
             );
     
             textArea.parentNode?.removeChild(textArea);
+            targetText?.show();
           }
         });
     
         textArea.focus();
-        targetText?.show();
       };
 
       
@@ -143,6 +182,9 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
         }
       });
     });
+
+    
+    /*************************************************** */
 
 
     /*************************************************** */
@@ -182,8 +224,8 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
             fill: '#A9A9A9',
             radius: 20, 
             draggable: true,
-            stroke: 'black', // Color of the border
-            strokeWidth: 2, // Thickness of the border
+            stroke: 'black', 
+            strokeWidth: 2, 
           });
 
           const fontSize = 12;
@@ -230,17 +272,28 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
 
           });
 
+          if(currentTool === Tools.MINDMAP){
+            //node.on('click', () => handleCircleClick(target));
+            ////우클릭해야 변경하는 방향으로 수정
+            node.on('contextmenu', (e) => {
+              e.evt.preventDefault();
+              handleCircleClick(target);
+            });
+      
+            node.on('dblclick', () => {
+              addNewCircleAndConnector(target.id);
+            });
+            text.on('contextmenu', (e) => {
+              e.evt.preventDefault();
+              handleCircleClick(target);
+            });
+        
+            text.on('dblclick', () => {
+              addNewCircleAndConnector(target.id);
+            });
+          }
           
-          //node.on('click', () => handleCircleClick(target));
-          ////우클릭해야 변경하는 방향으로 수정
-          node.on('contextmenu', (e) => {
-            e.evt.preventDefault();
-            handleCircleClick(target);
-          });
-    
-          node.on('dblclick', () => {
-            addNewCircleAndConnector(target.id);
-          });
+
 
     
           layerRef.current?.add(node);
@@ -250,7 +303,7 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
     
       
         //layerRef.current.batchDraw();
-      }, [nodeTargets, connectors]);
+      }, [nodeTargets, connectors, currentTool]);
     
 
 
@@ -258,6 +311,7 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
       
     /*************************************************** */
 
+  // return {nodeTargets, setNodeTargets};
   return (<></>);
 });
 
