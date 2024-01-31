@@ -1,7 +1,7 @@
 //live-board/src/component/TextEditor.tsx
 import * as Y from "yjs";
-import React, { FC, useState, useEffect, useRef } from 'react';
-import { Layer, Text, Transformer} from 'react-konva';
+import React, { FC, useState } from 'react';
+import {Text, Rect} from 'react-konva';
 
 export interface TextInputProps {
   init: string;
@@ -18,12 +18,13 @@ export interface TextInputProps {
 //     y: number;
     
 // }
-// export interface TextAreaData {
-//     item: number;
-//     value: string;
-//     x: number;
-//     y: number;
-//   }
+
+export interface TextAreaData {
+    item: string;
+    value: string;
+    x: string;
+    y: string;
+  }
   
 //추가해야 할 요소 textTransformer
 //textArea 객체로 생성하고 삭제하는 함수 구현해야 함
@@ -41,12 +42,12 @@ interface TextEditorProps {
 }
 
 const TextEditor: FC<TextEditorProps> = ({ textInputs, setTextInputs, yTextRef, yDocRef }) => {
-
-//   const[textareaValue, setTextareaValue] = useState<string>("");
+  console.log(yDocRef)
+   const[textareaValues, setTextareaValues] = useState<TextAreaData[]>([]);
 //   const textareaRef = useRef(null);
 //const yTextRef = useRef<Y.Array<TextInputProps>>(yDocRef.current.getArray<TextInputProps>('texts'));
 // const [textAreas, setTextAreas] = useState<TextAreaData[]>([]);
-// const yTextAreaRef = useRef<Y.Array<TextAreaData>>(yDocRef.current.getArray<TextAreaData>('textareas'));
+   //const yTextAreaRef = useRef<Y.Array<TextAreaData>>(yDocRef.current.getArray<TextAreaData>('textareas'));
 
 // useEffect(() => {
 //     textInputs.forEach((tip, index) => {
@@ -59,13 +60,6 @@ const TextEditor: FC<TextEditorProps> = ({ textInputs, setTextInputs, yTextRef, 
 //     // console.log(yTextAreaRef);
 //   }, [textInputs, yTextAreaRef]);
 
-
-// const handleOnClick = (e: any, item: number) => {
-//     var tr = new Konva.Transformer({
-
-//     });
-
-// }
 
 const handleDbClick = (e: any, item: number) => {
     var now_text = e.target;
@@ -91,6 +85,20 @@ const handleDbClick = (e: any, item: number) => {
     //  yTextAreaRef.current.push([newTextAreaData]);
     // );
 
+    //변경하고자 하는 text 객체 
+    // const newText: TextInputProps = { init: 'Text Click', x: pos.x, y: pos.y, isEditing: true };
+    //   setTextInputs(prev => [...prev, newText]);
+    //   yTextRef.current.push([newText]);
+
+    
+
+    const newTextArea: TextAreaData = {item: textArea.id, value: textArea.value, x: textArea.style.left, y:textArea.style.top};
+    setTextareaValues(prev => [...prev, newTextArea]);
+    console.log(newTextArea);
+    console.log("settextarray!!!!!: ");
+    console.log(textareaValues);                //FIXME
+
+
     
    
     textArea.addEventListener('keydown', function(e) {
@@ -98,7 +106,14 @@ const handleDbClick = (e: any, item: number) => {
         const updatedTextInputs = textInputs.map((input, i) => 
             i === item ? { ...input, init: textArea.value} : input
         );
+        
+        // const updatedTextArea = textareaValues.map((input, i) => {
+        //     i === item ? {...input, value: textArea.value} : input 
+        // });
+
+
         setTextInputs(updatedTextInputs);
+        //setTextareaValues(updatedTextArea);
         yTextRef.current.delete(item, 1);
         yTextRef.current.insert(item, [{...updatedTextInputs[item]}]);
 
@@ -233,6 +248,14 @@ const handleDbClick = (e: any, item: number) => {
         
         </React.Fragment>
       ))}
+
+      {textareaValues.map((_textareaValues, i) => {
+        <React.Fragment key={i}>
+            <Rect 
+            
+            />
+        </React.Fragment>
+      })}
       
     </>
   );

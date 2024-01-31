@@ -8,6 +8,7 @@ import Eraser from './Eraser';
 import PostIt from './PostIt';
 import Stamp from './Stamp';
 import Shape from './Shape';
+import MindMap from './MindMapIndex';
 
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
@@ -25,7 +26,7 @@ interface ButtonCustomGroupProps {
 }
 
 export const ButtonCustomGroup = ({handleIconBtnClick, setUserId}: ButtonCustomGroupProps) =>{
-    const userIdBox = useRef(null);
+    const userIdBox:any = useRef(null);
 
     const { currentColor, setCurrentColor } = useColor();
 
@@ -35,10 +36,12 @@ export const ButtonCustomGroup = ({handleIconBtnClick, setUserId}: ButtonCustomG
     };
 
     const addUserId = ()=>{
-        setUserId(userIdBox.current.value)
+        if(userIdBox.current){
+            setUserId(userIdBox.current.value)
+        }
     };
     return(
-        <div className = "ToolBtnGroup" style={{position: "absolute", bottom: "2%", left: "50%", transform: "translate(-50%, 0)", backgroundColor: "white", maxWidth: "100%"}}>
+        <div className = "ToolBtnGroup" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", backgroundColor: "white", maxWidth: "100%"}}>
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
                 <input type="text" id="userId" placeholder='Input your ID' ref={userIdBox}></input>
                 <button type="button" onClick={addUserId}>submit</button>
@@ -68,7 +71,8 @@ export const ButtonCustomGroup = ({handleIconBtnClick, setUserId}: ButtonCustomG
                     <Stamp handleIconBtnClick={handleIconBtnClick} props={Tools.STAMP}/>
                     <Shape handleIconBtnClick={handleIconBtnClick} props={Tools.SHAPE}/>
                 </div>
-                <Button id='mindmap'>mindmap</Button>
+                <MindMap props = {Tools.MINDMAP}/>
+           
                 <Button className='singleColor' onClick={()=>{handleColorClick('#000000')}}><CircleIcon style={{color: '000000'}}/></Button>
                 <Button className='singleColor' onClick={()=>{handleColorClick('#E7464B')}}><CircleIcon style={{color: 'E7464B'}}/></Button>
                 <Button className='singleColor' onClick={()=>{handleColorClick('#3B7EF2')}}><CircleIcon style={{color: '3B7EF2'}}/></Button>
