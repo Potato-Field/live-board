@@ -31,6 +31,7 @@ import TextEditor, {TextInputProps} from './component/TextEditor';
 import { FastLayer } from 'konva/lib/FastLayer';
 import { Shape } from './component/UserShape';
 //import { number } from 'lib0';
+import MindMap from './component/MindMap';
 
 
 interface BaseData {
@@ -66,8 +67,8 @@ const App: FC = () => {
   //text 상태 저장
   // const [textInputs, setTextInputs] = useState<TextData[]>([]);
   const [textInputs, setTextInputs] = useState<TextInputProps[]>([]);
-
-  const stageRef = useRef(null);
+  
+  const stageRef = useRef<Konva.Stage>(null);
   const isDrawing = useRef(false);
   const isSelected = useRef(false);
   const isTrans = useRef(false);
@@ -881,6 +882,8 @@ const App: FC = () => {
       });
       layer.add(newLine);
     }
+    else if(tool === Tools.MINDMAP){
+    }
   };
 
   const handleMouseMove = (e: any) => {
@@ -965,7 +968,7 @@ const App: FC = () => {
         // update visibility in timeout, so we can check it in click event
         selectionRectangle.visible(false);
         selectionRectangle.destroy();
-        var shapes = stageRef.current.find('Shape, Line, Text');
+        var shapes = stageRef.current.find('Shape, Line, Text, Target');
         var box = selectionRectangle.getClientRect();
         
         const selected = shapes.filter((shape:any) =>
@@ -1199,6 +1202,13 @@ const App: FC = () => {
       >
       
         <Layer></Layer>
+
+      <Layer>
+        <TextEditor textInputs={textInputs} setTextInputs={setTextInputs} yTextRef={yTextRef} yDocRef = {yDocRef} />
+      </Layer>
+      <>
+        <MindMap stageRef = {stageRef} currentTool={tool} yDocRef = {yDocRef}/>
+      </>
 
       </Stage>
       <ColorProvider>
