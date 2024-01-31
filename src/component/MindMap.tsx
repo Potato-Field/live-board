@@ -5,114 +5,106 @@ import { Tools } from './Tools';
 
 import * as Y from "yjs";
 
-export type Target = {
+type Target = {
     id: string;
     x: number;
     y: number;
     value: string,
   };
   
-  export type Connector = {
+  type Connector = {
     id: string;
     from: string;
     to: string;
   };
   
- 
 
 
 //const MindMap = forwardRef((ref: RefObject<Konva.Stage>) => {
-export const MindMap = (({  nodeTargets , setNodeTargets, connectors, setConnectors, stageRef, currentTool, yDocRef }: { nodeTargets :any, setNodeTargets:any, connectors:any, setConnectors:any,stageRef: React.RefObject<Konva.Stage>, currentTool: Tools 
+export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.RefObject<Konva.Stage>, currentTool: Tools 
 , yDocRef: React.MutableRefObject<Y.Doc>}) => {
-
-    // const [nodeTargets, setNodeTargets] = useState<Target[]>([]);
-    // const [connectors, setConnectors] = useState<Connector[]>([]);
     const layerRef = useRef<Konva.Layer>();
 
+
+    const yTargets: Y.Map<Target> = yDocRef.current.getMap('targets');
+    const yConnectors: Y.Map<Connector> = yDocRef.current.getMap('connectors');
+
     useEffect(() => {
-      if(stageRef.current){
-        const layerName = 'nodeTargetLayer';
-        let layer = stageRef.current.getLayers().find(l => l.name() === layerName);
-          
-        if(!layer){
-          layer = new Konva.Layer();
-          layer.name(layerName);
-          stageRef.current.add(layer);
-        }
-        layerRef.current = layer;
+      if (stageRef.current && !layerRef.current) {
+          let layer = stageRef.current.getLayers()[0];
+          if (!layer) {
+              layer = new Konva.Layer();
+              stageRef.current.add(layer);
+          }
+          layerRef.current = layer;
       }
   }, [stageRef]);
-  console.log("!!!!!!!!!!!!!!", stageRef.current?.getLayers());//TEST
-  console.log("????????targets length", nodeTargets);
-
-    // useEffect(() => {
-    //     if(stageRef.current && !layerRef.current){
-    //         const layer = new Konva.Layer();
-    //         layerRef.current = layer;
-    //         stageRef.current.add(layer);
-    //     }
-        
-    // }, [stageRef]);
-
-  //   useEffect(() => {
-  //     if (stageRef.current && !layerRef.current) {
-  //         let layer = stageRef.current.getLayers()[0];
-  //         if (!layer) {
-  //             layer = new Konva.Layer();
-  //             stageRef.current.add(layer);
-  //         }
-  //         layerRef.current = layer;
-  //     }
-  // }, [stageRef]);
-    
-
+ 
     /*************************************************** */
-    //초기 설정 useEffect app.tsx로 이동해야 할 로직
-
-   //주의 할 점 root 노드는 total 한 개다
-   //여러개 생성하고 싶은면 조건을 추가 해야 할 듯 단순한 클릭으로 작동하면 더블클릭 등의 기능이 작동하지 않는 문제점이 있다.
 
     useEffect(() => {
-     
       if (stageRef.current) {
-        stageRef.current.on('click', () => {
-          if (currentTool === Tools.MINDMAP && nodeTargets.length === 0) {
-              const stage = stageRef.current;
-              const pointerPosition = stage?.getPointerPosition();
+          stageRef.current.on('click', () => {
+              if (currentTool === Tools.MINDMAP && yTargets.size === 0) {
+                  const stage = stageRef.current;
+                  const pointerPosition = stage?.getPointerPosition();
   
-              if (stage && pointerPosition) {
-                  const newNode = {
-                      id: `target-${nodeTargets.length}`,
-                      x: pointerPosition.x,  
-                      y: pointerPosition.y,  
-                      value: "new-node",
-                  };
-                  setNodeTargets([...nodeTargets, newNode]);
+                  if (stage && pointerPosition) {
+                      const newNodeId = `target-${yTargets.size}`;
+                      const newNode = {
+                          id: newNodeId,
+                          x: pointerPosition.x,  
+                          y: pointerPosition.y,  
+                          value: "new-node",
+                      };
+                      yTargets.set(newNodeId, newNode);
+                  }
               }
-          }
-      });
+          });
       }
-
-      return () => {
-          if (stageRef.current) {
-              stageRef.current.off('click');
-          }
-      };
-  }, [nodeTargets, currentTool, stageRef]);
+    });
 
 
 
-    /*************************************************** */
-    //더블클릭시 생성 
-    const addNewCircleAndConnector = (targetId: string) => {
-        const baseTarget = nodeTargets.find(t => t.id === targetId);
+  useEffect(() => {
+    const handleClick = (event:any) => {
+        if (currentTool === Tools.MINDMAP && yTargets.size === 0) {
+            const stage = stageRef.current;
+            const pointerPosition = stage?.getPointerPosition();
+            if (stage && pointerPosition) {
+                const newNodeId = `target-${yTargets.size}`;
+                const newNode = {
+                    id: newNodeId,
+                    x: pointerPosition.x,
+                    y: pointerPosition.y,
+                    value: "new-node",
+                };
+                yTargets.set(newNodeId, newNode);
+            }
+        }
+    };
+
+    if (stageRef.current) {
+        stageRef.current.on('click', handleClick);
+    }
+
+    return () => {
+        if (stageRef.current) {
+            stageRef.current.off('click', handleClick);
+        }
+    };
+}, [yTargets, currentTool, stageRef]);
+
+
+  useEffect(() => {
+      const addNewCircleAndConnector = (targetId:string) => {
+        const baseTarget = yTargets.get(targetId);
         if (!baseTarget) return;
-        
+    
         const nowCircle = layerRef.current?.findOne('#' + targetId);
         const nowRadius = nowCircle?.attrs.radius;
-
-        let randomX = Math.random() * (nowRadius * 5);
-        let randomY = Math.random() * (nowRadius * 5);
+        let randomX = Math.random() * (nowRadius * 5); // Example random range
+        let randomY = Math.random() * (nowRadius * 5); // Example random range
 
         if(randomX < nowRadius*2 && randomY < nowRadius*2){
           randomX += nowRadius*2;
@@ -123,38 +115,32 @@ export const MindMap = (({  nodeTargets , setNodeTargets, connectors, setConnect
         const dx = [1, 1, -1, -1];
         const dy = [1, -1, 1, -1];
     
-        const quadrant = nodeTargets.length % 4;
+        const quadrant = yTargets._map.size % 4;
         randomX *= dx[quadrant];
         randomY *= dy[quadrant];
-
-       
+    
         const newX = baseTarget.x + randomX;
-        const newY = baseTarget.y + randomY; 
+        const newY = baseTarget.y + randomY;
     
-        const newTargetId = 'target-' + nodeTargets.length;
-        const newTarget = { id: newTargetId, x: newX, y: newY, value: "new-node"+nodeTargets.length };
-        setNodeTargets([...nodeTargets, newTarget]);
+        const newTargetId = `target-${yTargets.size}`;
+        const newTarget = { id: newTargetId, x: newX, y: newY, value: `new-node${yTargets.size}` };
+        yTargets.set(newTargetId, newTarget);
     
-        const newConnector = { id: 'connector-' + connectors.length, from: targetId, to: newTargetId };
-        setConnectors([...connectors, newConnector]);
+        const newConnectorId = `connector-${yConnectors.size}`;
+        const newConnector = { id: newConnectorId, from: targetId, to: newTargetId };
+        yConnectors.set(newConnectorId, newConnector);
+          
       };
 
-      const getConnectorPoints = (from: Target, to: Target): number[] => {
-        return [from.x, from.y, to.x, to.y]; // Simple line from one node to another
-      };
 
-
-
-    /*************************************************** */
-      //click -> change text 텍스트 변경용 -> 수정해야 함 
-      const handleCircleClick = (target: Target) => {
+      const handleCircleClick = (event: any, targetId: string) => {
+        event.evt.preventDefault();
         const stage = stageRef.current;
         if (!stage) return;
 
-        const targetText = layerRef.current?.findOne("#text-"+target.id);
+        const targetText = layerRef.current?.findOne("#text-"+targetId);
         targetText?.hide();
         const targetTextPosition = targetText?.absolutePosition();
-        //console.log("!!!!! targetText", targetText, targetTextPosition?.x, targetTextPosition?.y);//TEST
     
         const areaPos = {
           x: stage.container().offsetLeft + (targetTextPosition?.x??0),
@@ -163,6 +149,14 @@ export const MindMap = (({  nodeTargets , setNodeTargets, connectors, setConnect
     
         var textArea = document.createElement('textarea');
         document.body.appendChild(textArea);
+        const target = yTargets.get(targetId);
+        if (!target) {
+          console.error("Target not found:", targetId);
+          return;
+      }
+  
+
+
         textArea.value = target.value;
         textArea.style.position = 'absolute';
         textArea.style.left = areaPos.x + 'px';
@@ -178,167 +172,122 @@ export const MindMap = (({  nodeTargets , setNodeTargets, connectors, setConnect
     
         textArea.addEventListener('keydown', function(e) {
           if (e.key === 'Enter' && !e.shiftKey) {
-            setNodeTargets(currentTargets => 
-              currentTargets.map(t => 
-                t.id === target.id ? { ...t, value: textArea.value } : t
-              )
-            );
-    
-            textArea.parentNode?.removeChild(textArea);
-            targetText?.show();
+              yTargets.set(targetId, { ...target, value: textArea.value });
+              textArea.parentNode?.removeChild(textArea);
+              targetText?.show();
           }
-        });
-    
-        textArea.focus();
-      };
+      });
+  
+      textArea.focus();
+    };
 
-      
-    /*************************************************** */
-    //update하는 방식으로 새로 구현한 코드 - line
-    const updateConnectors = ((draggedNodeId:string) => {
-      connectors.forEach((connector) => {
-        if (connector.from === draggedNodeId || connector.to === draggedNodeId) {
-          const fromNode = nodeTargets.find(n => n.id === connector.from);
-          const toNode = nodeTargets.find(n => n.id === connector.to);
+
+
+      const updateCanvas = () => {
+
+        yConnectors.forEach((connector, id) => {
+          //let line: Konva.Arrow = layerRef.current?.findOne(`#${id}`);
+          //let line: Konva.Arrow | null = layerRef.current?.findOne(`#${id}`);
+          const foundLine = layerRef.current?.findOne(`#${id}`);
+          let line: Konva.Arrow | null = null;
+          if (foundLine instanceof Konva.Arrow) {
+              line = foundLine;
+          } 
+
+
+          let fromNode = yTargets.get(connector.from);
+          let toNode = yTargets.get(connector.to);
           
           if (fromNode && toNode) {
-            const line = layerRef.current?.findOne('#' + connector.id) as Konva.Arrow;
-            if (line) {
-              line?.points([fromNode.x, fromNode.y, toNode.x, toNode.y]);
-              layerRef.current?.add(line);
+            const points = [fromNode.x, fromNode.y, toNode.x, toNode.y];
+
+            if (!line) {
+                line = new Konva.Arrow({
+                    id: id,
+                    points: points,
+                    stroke: 'black',
+                    fill: 'black',
+                    strokeWidth: 2,
+                });
+                layerRef.current?.add(line);
+            } 
+            else {
+                line.points(points);
             }
-          }
         }
-      });
-    });
-
-    
-    /*************************************************** */
-
-
-    /*************************************************** */
-    //useEffect  추후 코드 다시 정리해야 함
-
-      useEffect(() => {
-        if (!layerRef.current) return;
-        layerRef.current.removeChildren();
-
-          // //Create connectors
-          connectors.forEach((connector) => {
-            const fromNode = nodeTargets.find(n => n.id === connector.from);
-            const toNode = nodeTargets.find(n => n.id === connector.to);
-      
-            if (fromNode && toNode) {
-              //const points = [fromNode.x, fromNode.y, toNode.x, toNode.y];
-              const points = getConnectorPoints(fromNode, toNode);
-              const line = new Konva.Arrow({
-                id: connector.id,
-                points: points,
-                stroke: 'black',
-                fill: 'black',
-                strokeWidth: 2,
-              });
-              layerRef.current?.add(line);
-            }
-          });
-      
-    
-        // Create nodes
-        nodeTargets.forEach((target) => {
-          const node = new Konva.Circle({
-            id: target.id,
-            x: target.x,
-            y: target.y,
-            //fill: Konva.Util.getRandomColor(),
-            fill: '#A9A9A9',
-            radius: 20, 
-            draggable: true,
-            stroke: 'black', 
-            strokeWidth: 2, 
-          });
-
-          const fontSize = 12;
-          const textValue = target.value;
-          const textForMeasure = new Konva.Text({
-            text: textValue,
-            fontSize: fontSize,
-            fontFamily: 'Arial',
-          });
-
-          const textWidth = textForMeasure.width();
-          const textHeight = textForMeasure.height();
-          const offsetX = textWidth / 2;
-          const offsetY = textHeight / 2;
-
-        
-          const textX = target.x - offsetX;
-          const textY = target.y - offsetY;
-
-          const text = new Konva.Text({
-            id:'text-'+target.id,
-            x: textX,
-            y: textY,
-            text: target.value,
-            fontSize: fontSize,
-            fontFamily: 'Arial',
-            fill: 'black',
-          });
-          
-    
-          node.on('dragmove', () => {
-            const draggedNodeId = node.id();
-            const draggedNode = nodeTargets.find(t => t.id === draggedNodeId);
-            if(draggedNode){
-              draggedNode.x = node.x();
-              draggedNode.y = node.y();
-            }
-            updateConnectors(draggedNodeId);
-
-            //text 이동추가
-            const targetNode = layerRef.current?.findOne('#text-'+node.id());
-            targetNode?.x(node.x() - offsetX);
-            targetNode?.y(node.y() - offsetY);
-
-          });
-
-          if(currentTool === Tools.MINDMAP){
-            //node.on('click', () => handleCircleClick(target));
-            ////우클릭해야 변경하는 방향으로 수정
-            node.on('contextmenu', (e) => {
-              e.evt.preventDefault();
-              handleCircleClick(target);
-            });
-      
-            node.on('dblclick', () => {
-              addNewCircleAndConnector(target.id);
-            });
-            text.on('contextmenu', (e) => {
-              e.evt.preventDefault();
-              handleCircleClick(target);
-            });
-        
-            text.on('dblclick', () => {
-              addNewCircleAndConnector(target.id);
-            });
-          }
-          
-
-
-    
-          layerRef.current?.add(node);
-          layerRef.current?.add(text);
-         
         });
+
+          
+          yTargets.forEach((target, id) => {
+            let node = layerRef.current?.findOne(`#${id}`);
+            let textNode = layerRef.current?.findOne(`#text-${id}`) as Konva.Text;
+
+            if (!node) {
+                node = new Konva.Circle({
+                    id: id,
+                    x: target.x,
+                    y: target.y,
+                    fill: '#A9A9A9',
+                    radius: 20,
+                    draggable: true,
+                    stroke: 'black',
+                    strokeWidth: 2,
+                });
+                layerRef.current?.add(node as Konva.Circle);
+                
+            } else {
+                node.position({ x: target.x, y: target.y });
+            }
+            node.off('dblclick').on('dblclick', () => addNewCircleAndConnector(id));
+            node.off('contextmenu').on('contextmenu', (event) => handleCircleClick(event, id));
+
+
+            if (!textNode) {
+              const textX = target.x; // Define textX properly
+              const textY = target.y; // Define textY properly
+              const fontSize = 12; // Define fontSize as needed
+              
+              textNode = new Konva.Text({
+                id: 'text-' + target.id,
+                x: textX,
+                y: textY,
+                text: target.value,
+                fontSize: fontSize,
+                fontFamily: 'Arial',
+                fill: 'black',
+              });
+              layerRef.current?.add(textNode as Konva.Text);
+            } 
+            else {
+              textNode.position({ x: target.x, y: target.y });
+              textNode.text(target.value);
+            }
+        });
+      };
+
+      yTargets.observe(updateCanvas);
+      yConnectors.observe(updateCanvas);
+      console.log("!!!!upedate",yTargets, yConnectors);
+
+      return () => {
+          yTargets.unobserve(updateCanvas);
+          yConnectors.unobserve(updateCanvas);
+      };
+  }, [yTargets, yConnectors]);
+
     
-      
-        //layerRef.current.batchDraw();
-      }, [nodeTargets, connectors, currentTool]);
-    
 
 
 
-      
-    /*************************************************** */
+
+    console.log("!!!!!!!target, connector",yTargets, yConnectors);  //TEST
+    console.log("!!!!!!!!!!!!!!!!!!!!!!come out");//TEST
+
+
+
+
+   
+
 
   // return {nodeTargets, setNodeTargets};
   return (<></>);

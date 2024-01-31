@@ -1203,7 +1203,7 @@ const App: FC = () => {
       
         <Layer></Layer>
         
-        {tool === Tools.MINDMAP && (
+        {/* {tool === Tools.MINDMAP && (
           <MindMap 
           nodeTargets={nodeTargets}
           setNodeTargets={setNodeTargets}
@@ -1212,7 +1212,14 @@ const App: FC = () => {
           stageRef={stageRef} currentTool={tool} yDocRef={yDocRef} 
           
           />
+        )} */}
+        {tool === Tools.MINDMAP && (
+          <MindMap 
+          stageRef={stageRef} currentTool={tool} yDocRef={yDocRef} 
+          
+          />
         )}
+
 
 
       </Stage>
