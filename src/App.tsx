@@ -102,7 +102,7 @@ const App: FC = () => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current)
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current);
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://192.168.1.103:1235'] });
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://43.203.105.160:1235'] });
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://43.203.105.160:1235'] });
     
       
 
