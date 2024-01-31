@@ -29,6 +29,7 @@ import { uuidv4 } from 'lib0/random.js';
 import TextEditor, {TextInputProps} from './component/TextEditor';
 import { FastLayer } from 'konva/lib/FastLayer';
 import { set } from 'lodash';
+import { Canvas } from 'konva/lib/Canvas';
 //import { number } from 'lib0';
 
 
@@ -77,6 +78,7 @@ const App: FC = () => {
   const isTrans = useRef(false);
   const isDrag = useRef(false);
   const isHand = useRef(false);
+  const isWritten = useRef(false); // 포스트잇
 
   // Y.js 관련 상태를 useRef로 관리
   const yDocRef = useRef(new Y.Doc());
@@ -700,12 +702,13 @@ const App: FC = () => {
 
 
   const handleMouseClick = (e: any) => {
+    
     const stage = e.target.getStage()
     const pos = stage.getPointerPosition();
     const layers = stage.getLayers();
     const layer = layers[0];
-    const scale = stage.scaleX(); // 현재 스케일
-    const position = stage.position(); // 현재 위치
+    let scale = stage.scaleX(); // 현재 스케일
+    let position = stage.position(); // 현재 위치
     
     const realPointerPosition = {
       x: (pos.x - position.x) / scale,
@@ -728,6 +731,7 @@ const App: FC = () => {
           image: stampImg,
         });
         layer.add(newStamp);
+        setTool(Tools.CURSOR);
       }
     }
     else if (tool === Tools.SHAPE){
@@ -752,6 +756,7 @@ const App: FC = () => {
         });
       }
       layer.add(newShape);
+      setTool(Tools.CURSOR);
     } 
     else if(tool === Tools.CURSOR){
 
@@ -762,12 +767,16 @@ const App: FC = () => {
         y: realPointerPosition.y,
         draggable: true,
       });
-      
-      let PostItRect = new Konva.Rect({
+
+      const postItOptions = {
         x: 0,
         y: 0,
-        width: 250,
-        height: 300,
+      }
+
+      let PostItRect = new Konva.Rect({
+        ...postItOptions,
+        width: 250, // init size
+        height: 300,  // init size
         fill: '#FFD966',
         shadowColor: 'black',
         shadowBlur: 15,
@@ -775,34 +784,199 @@ const App: FC = () => {
         shadowOffsetY: 5,
         shadowOpacity: 0.2,
       });
-
-      const padding = 15;
-
+      
       let PostItText: any = new Konva.Text({
         // id : idx,
-        text: 'Type anything! And also everyone in the meeting can vote on your topic by stamp.',
-        // text: '22222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222221111111111111111111111111111114444444422222222222222222222222222222222222222222222223333333333322222222222222222eeeee222222222222222233333333333666666666666666666',
+        ...postItOptions,
+        text: 'Type anything! And also everyone in the meeting can vote on your topic by stamp👍🏽👎🏽',
         fontSize: 20,
-        opacity: 0.4, // TODO: 텍스트 작성시 1로 변경
-        x: padding,
-        y: padding,
-        width: PostItRect.width() - (2 * padding),  // 좌우에 패딩
-        height: PostItRect.height() - 45,
+        opacity: 0.4,
+        width: PostItRect.width(),
+        height: PostItRect.height(),
+        padding: 15,
       });
 
-      let PostItWriter: any = new Konva.Text({
-        text: '{User name}',  // TODO
-        fontSize: 15,
+      let initText = new Konva.Text({
+        ...postItOptions,
+        text: 'Type anything! And also everyone in the meeting can vote on your topic by stamp👍🏽👎🏽',
+        fontSize: 20,
         opacity: 0.4,
-        x: padding,
-        y: PostItRect.height() - padding - 15,  // 15-> PostItWriter.fontSize
-        width: PostItRect.width() - (2 * padding),  // 좌우에 패딩
+        width: PostItRect.width(),
+        padding: 15,
       });
+
+      // let PostItWriter: any = new Konva.Text({
+      //   text: '{User name}',  // TODO: 가장 최근에 수정한 user name으로 update 되도록
+      //   fontSize: 12,
+      //   opacity: 0.4,
+      //   x: padding,
+      //   y: PostItRect.height() - padding - 15,  // 15-> PostItWriter.fontSize
+      //   width: PostItRect.width() - (2 * padding),  // 좌우에 패딩
+      // });
 
       PostItGroup.add(PostItRect);
       PostItGroup.add(PostItText);
-      PostItGroup.add(PostItWriter);
+      //PostItGroup.add(initText);
+      // PostItGroup.add(PostItWriter);
+
       layer.add(PostItGroup);
+      setTool(Tools.CURSOR);
+      
+      
+      PostItGroup.on('dblclick dbltap', () => {
+        PostItText.text("");
+        PostItText.opacity(1);
+        //initText.hide();
+        
+        // at first lets find position of text node relative to the stage:
+        var textPosition = PostItText.absolutePosition();
+        
+        // so position of textarea will be the sum of positions above:
+        var areaPosition = {
+          x: stage.container().offsetLeft + textPosition.x,
+          y: stage.container().offsetTop + textPosition.y,
+          // x: stage.container().offsetLeft + textPosition.x + textNode.padding(),
+          // y: stage.container().offsetTop + textPosition.y + textNode.padding(),
+        };
+        
+        // create textarea and style it
+        var textarea = document.createElement('textarea');
+        document.body.appendChild(textarea);
+
+        // apply many styles to match text on canvas as close as possible
+        // remember that text rendering on canvas and on the textarea can be different
+        // and sometimes it is hard to make it 100% the same. But we will try...
+        textarea.value = PostItText.text();
+        textarea.style.position = 'absolute';
+        textarea.style.top = areaPosition.y + 'px';
+        textarea.style.left = areaPosition.x + 'px';
+        textarea.style.width = PostItText.width() - PostItText.padding() * 2 + 'px';
+        // textarea.style.height = PostItText.height() - PostItText.padding() * 2 + 'px';
+        textarea.style.fontSize = PostItText.fontSize() + 'px';
+        textarea.style.border = 'none';
+        textarea.style.padding = '15px';
+        textarea.style.margin = '0px';
+        textarea.style.overflow = 'hidden';
+        // textarea.style.background = 'gray';
+        textarea.style.background = 'none';
+        textarea.style.outline = 'none';
+        textarea.style.resize = 'none';
+        textarea.style.lineHeight = PostItText.lineHeight();
+        textarea.style.fontFamily = PostItText.fontFamily();
+        textarea.style.transformOrigin = 'left top';
+        textarea.style.textAlign = PostItText.align();
+        textarea.style.color = PostItText.fill();
+
+        const rotation = PostItText.rotation();
+        var transform = '';
+
+        if (rotation) {
+          transform += 'rotateZ(' + rotation + 'deg)';
+        }
+
+        var px = 0;
+
+        var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+        if (isFirefox) {
+          px += 2 + Math.round(PostItText.fontSize() / 20);
+        }
+
+        transform += 'translateY(-' + px + 'px)';
+        textarea.style.transform = transform;
+        
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 3 + 'px';
+
+        
+
+
+        /*
+        function removeTextarea() {
+          if (textarea.value === '') {
+            initText.show();
+          }
+
+          PostItText.parentNode.removeChild(textarea);
+          stage.removeEventListener('click', handleOutsideClick);
+          PostItText.show();
+          // tr.show();
+          // tr.forceUpdate();
+        }
+        */
+
+        // stage.on('click', (e: any) => {
+        //   const clickedPos = stage.getPointerPosition(e);
+
+        //   if (clickedPos.x < areaPosition.x && clickedPos.x > areaPosition.x + textarea.style.width){
+        //     console.log("밖");
+        //   }
+          
+        // });
+
+        // function setTextareaWidth(newWidth: any) {
+        //   if (!newWidth) {
+        //     // set width for placeholder
+        //     // 이해 안가는 부분
+        //     newWidth = PostItText.placeholder.length * PostItText.fontSize();
+        //   }
+        //   // some extra fixes on different browsers
+        //   var isSafari = /^((?!chrome|android).)*safari/i.test(
+        //     navigator.userAgent
+        //   );
+        //   var isFirefox =
+        //     navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+        //   if (isSafari || isFirefox) {
+        //     newWidth = Math.ceil(newWidth);
+        //   }
+
+        //   var isEdge =
+        //     document.DOCUMENT_NODE || /Edge/.test(navigator.userAgent);
+        //   if (isEdge) {
+        //     newWidth += 1;
+        //   }
+        //   textarea.style.width = newWidth + 'px';
+        // }
+
+        // // 안먹음
+        // textarea.addEventListener('keydown', function (e) {
+        //   // placeholder.hide();
+        //   // hide on enter
+        //   // but don't hide on shift + enter
+        //   if (e.key === 'Enter' && !e.shiftKey) {
+        //     PostItText.text(textarea.value);
+        //     //removeTextarea();
+        //   }
+        //   // on esc do not set value back to node
+        //   if (e.key === 'esc') {
+        //     //removeTextarea();
+        //   }
+        // });
+
+        // textarea.addEventListener('keydown', function (e: any) {
+        //   scale = PostItText.getAbsoluteScale().x;
+        //   setTextareaWidth(PostItText.width() * scale - PostItText.padding() * 2);
+        //   textarea.style.height = 'auto';
+        //   textarea.style.height =
+        //     textarea.scrollHeight + PostItText.fontSize() + 'px';
+        //   // todo
+        // });
+
+        // 안먹음
+        function handleOutsideClick(e: any) {
+          if (e.target !== textarea) {
+            PostItText.text(textarea.value);
+            textarea.remove()
+            stage.off('mouseup', handleOutsideClick);
+            // stage.on('click', handleMouseUp);
+            console.log(stage)
+          }
+        }
+        
+        if(textarea){
+          stage.on('mouseup', handleOutsideClick);
+        }
+
+      });
     }
   };
 
