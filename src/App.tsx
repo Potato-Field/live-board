@@ -55,6 +55,8 @@ const App: FC = () => {
   const [currentColor, setCurrentColor] = useState<string>('#000000');
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [clickedIconBtn, setClickedIconBtn] = useState<string | null>(null);
+  const [nodeTargets, setNodeTargets] = useState<Target[]>([]);
+  const [connectors, setConnectors] = useState<Connector[]>([]);
 
   /*
    * [CRDT] 
@@ -1202,7 +1204,14 @@ const App: FC = () => {
         <Layer></Layer>
         
         {tool === Tools.MINDMAP && (
-          <MindMap stageRef={stageRef} currentTool={tool} yDocRef={yDocRef} />
+          <MindMap 
+          nodeTargets={nodeTargets}
+          setNodeTargets={setNodeTargets}
+          connectors={connectors}
+          setConnectors={setConnectors}
+          stageRef={stageRef} currentTool={tool} yDocRef={yDocRef} 
+          
+          />
         )}
 
 
