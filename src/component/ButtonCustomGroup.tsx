@@ -25,7 +25,7 @@ interface ButtonCustomGroupProps {
 }
 
 export const ButtonCustomGroup = ({handleIconBtnClick, setUserId}: ButtonCustomGroupProps) =>{
-    const userIdBox = useRef(null);
+    const userIdBox:any = useRef(null);
 
     const { currentColor, setCurrentColor } = useColor();
 
@@ -35,7 +35,9 @@ export const ButtonCustomGroup = ({handleIconBtnClick, setUserId}: ButtonCustomG
     };
 
     const addUserId = ()=>{
-        setUserId(userIdBox.current.value)
+        if(userIdBox.current){
+            setUserId(userIdBox.current.value)
+        }
     };
     return(
         <div className = "ToolBtnGroup" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", backgroundColor: "white", maxWidth: "100%"}}>
