@@ -19,7 +19,6 @@ type Target = {
 //const MindMap = forwardRef((ref: RefObject<Konva.Stage>) => {
 const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
     const [nodeTargets, setNodeTargets] = useState<Target[]>([]);
-    //const [isCreatingNode, setIsCreatingNode] = useState();
     const [connectors, setConnectors] = useState<Connector[]>([]);
     const layerRef = useRef<Konva.Layer>();
 
@@ -34,24 +33,6 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
     
 
     /*************************************************** */
-
-
-
-    //클릭하면 생성하는 걸로 하려 했는데 변경 - 안쓰는 함수
-    const addNodeAtPosition = (x: number, y: number) =>{
-        const newTarget = {
-            id: 'target-' + nodeTargets.length,
-            x: x,
-            y: y,
-            value: "new-node",
-        };
-        setNodeTargets([...nodeTargets, newTarget]);
-        //setIsCreatingNode(false);
-        console.log("new Target");
-        console.log(newTarget);
-
-    }
-
     //초기 설정 useEffect app.tsx로 이동해야 할 로직
 
     useEffect(() => {
@@ -66,12 +47,31 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
     const addNewCircleAndConnector = (targetId: string) => {
         const baseTarget = nodeTargets.find(t => t.id === targetId);
         if (!baseTarget) return;
+        
+        const nowCircle = layerRef.current?.findOne('#' + targetId);
+        const nowRadius = nowCircle?.attrs.radius;
+
+        let randomX = Math.random() * (nowRadius * 5);
+        let randomY = Math.random() * (nowRadius * 5);
+
+        if(randomX*randomX + randomY*randomY < nowRadius*nowRadius){
+          randomX += nowRadius*5;
+          randomY += nowRadius*5;
+        }
+
+        const dx = [1, 1, -1, -1];
+        const dy = [1, -1, 1, -1];
     
-        const newX = baseTarget.x + 100;
-        const newY = baseTarget.y + 100; 
+        const quadrant = nodeTargets.length % 4;
+        randomX *= dx[quadrant];
+        randomY *= dy[quadrant];
+
+        
+        const newX = baseTarget.x + randomX;
+        const newY = baseTarget.y + randomY; 
     
         const newTargetId = 'target-' + nodeTargets.length;
-        const newTarget = { id: newTargetId, x: newX, y: newY, value: "new-node" };
+        const newTarget = { id: newTargetId, x: newX, y: newY, value: "new-node"+nodeTargets.length };
         setNodeTargets([...nodeTargets, newTarget]);
     
         const newConnector = { id: 'connector-' + connectors.length, from: targetId, to: newTargetId };
@@ -89,10 +89,15 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
       const handleCircleClick = (target: Target) => {
         const stage = stageRef.current;
         if (!stage) return;
+
+        const targetText = layerRef.current?.findOne("#text-"+target.id);
+        targetText?.hide();
     
         const areaPos = {
           x: stage.container().offsetLeft + target.x,
           y: stage.container().offsetTop + target.y
+          // x: stage.container().offsetLeft + targetText.x,
+          // y: stage.container().offsetTop + targetText.y
         };
     
         var textArea = document.createElement('textarea');
@@ -104,8 +109,8 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
         textArea.style.border = 'none';
         textArea.style.padding = '0px';
         textArea.style.margin = '0px';
-        textArea.style.overflow = 'hidden';
-        textArea.style.background = 'none';
+        //textArea.style.overflow = 'hidden';
+        //textArea.style.background = 'none';
         textArea.style.outline = 'none';
         textArea.style.resize = 'none';
         textArea.style.transformOrigin = 'left top';
@@ -123,13 +128,13 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
         });
     
         textArea.focus();
+        targetText?.show();
       };
 
       
     /*************************************************** */
     //update하는 방식으로 새로 구현한 코드 - line
     const updateConnectors = ((draggedNodeId:string) => {
-      //console.log("!!!!!!!!!!!!!!imhere!!!!!!!!!!!!!!!!!!!!!!!!!!");//TEST
       connectors.forEach((connector) => {
         if (connector.from === draggedNodeId || connector.to === draggedNodeId) {
           const fromNode = nodeTargets.find(n => n.id === connector.from);
@@ -137,24 +142,17 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
           
           if (fromNode && toNode) {
             const line = layerRef.current?.findOne('#' + connector.id) as Konva.Arrow;
-            // console.log(layerRef.current?.getChildren().map(child => child.id())); 
-            // // This will log the IDs of all children in the layer
-            // console.log(connector);//TEST
-            // console.log(line)//TEST
             if (line) {
               line?.points([fromNode.x, fromNode.y, toNode.x, toNode.y]);
               layerRef.current?.add(line);
-              //console.log("!!!!!!!!!!!! test drag new ways", draggedNodeId, line);    //TEST
             }
           }
         }
       });
-      
     });
 
-
     
-
+    /*************************************************** */
 
 
     /*************************************************** */
@@ -163,6 +161,26 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
       useEffect(() => {
         if (!layerRef.current) return;
         layerRef.current.removeChildren();
+
+          // //Create connectors
+          connectors.forEach((connector) => {
+            const fromNode = nodeTargets.find(n => n.id === connector.from);
+            const toNode = nodeTargets.find(n => n.id === connector.to);
+      
+            if (fromNode && toNode) {
+              //const points = [fromNode.x, fromNode.y, toNode.x, toNode.y];
+              const points = getConnectorPoints(fromNode, toNode);
+              const line = new Konva.Arrow({
+                id: connector.id,
+                points: points,
+                stroke: 'black',
+                fill: 'black',
+                strokeWidth: 2,
+              });
+              layerRef.current?.add(line);
+            }
+          });
+      
     
         // Create nodes
         nodeTargets.forEach((target) => {
@@ -174,24 +192,39 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
             fill: '#A9A9A9',
             radius: 20, 
             draggable: true,
-            //zindex: 998,
+            stroke: 'black', // Color of the border
+            strokeWidth: 2, // Thickness of the border
           });
+
+          const fontSize = 12;
+          const textValue = target.value;
+          const textForMeasure = new Konva.Text({
+            text: textValue,
+            fontSize: fontSize,
+            fontFamily: 'Arial',
+          });
+
+          const textWidth = textForMeasure.width();
+          const textHeight = textForMeasure.height();
+          const offsetX = textWidth / 2;
+          const offsetY = textHeight / 2;
+
+        
+          const textX = target.x - offsetX;
+          const textY = target.y - offsetY;
 
           const text = new Konva.Text({
             id:'text-'+target.id,
-            x: target.x,
-            y: target.y,
+            x: textX,
+            y: textY,
             text: target.value,
-            fontSize: 12,
+            fontSize: fontSize,
             fontFamily: 'Arial',
             fill: 'black',
-            //zindex: 999,
           });
           
     
           node.on('dragmove', () => {
-            //////////////////////////////////////////////////////////////
-            /////version3
             const draggedNodeId = node.id();
             const draggedNode = nodeTargets.find(t => t.id === draggedNodeId);
             if(draggedNode){
@@ -202,8 +235,8 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
 
             //text 이동추가
             const targetNode = layerRef.current?.findOne('#text-'+node.id());
-            targetNode?.x(node.x());
-            targetNode?.y(node.y());
+            targetNode?.x(node.x() - offsetX);
+            targetNode?.y(node.y() - offsetY);
 
           });
 
@@ -225,25 +258,7 @@ const MindMap = (({ stageRef }: { stageRef: React.RefObject<Konva.Stage> }) => {
          
         });
     
-        // //Create connectors
-        connectors.forEach((connector) => {
-          const fromNode = nodeTargets.find(n => n.id === connector.from);
-          const toNode = nodeTargets.find(n => n.id === connector.to);
-    
-          if (fromNode && toNode) {
-            //const points = [fromNode.x, fromNode.y, toNode.x, toNode.y];
-            const points = getConnectorPoints(fromNode, toNode);
-            const line = new Konva.Arrow({
-              id: connector.id,
-              points: points,
-              stroke: 'black',
-              fill: 'black',
-              strokeWidth: 2,
-            });
-            layerRef.current?.add(line);
-          }
-        });
-    
+      
         //layerRef.current.batchDraw();
       }, [nodeTargets, connectors]);
     
