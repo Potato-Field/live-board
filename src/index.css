@@ -38,7 +38,7 @@ body {
   display: flex;
   justify-content: flex-end; 
   align-items: flex-end; 
-  width: 100%; 
+  width: 90%; 
 }
 
 .speaker {
