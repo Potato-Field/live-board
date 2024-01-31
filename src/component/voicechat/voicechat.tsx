@@ -6,7 +6,9 @@ import MicOffIcon from '@mui/icons-material/MicOff';
 import LogoutIcon from '@mui/icons-material/Logout';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
-import { deepOrange } from '@mui/material/colors';
+import Box from '@mui/material/Box';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
 interface AudioTracks {
     localAudioTrack: ILocalAudioTrack | null;
@@ -19,6 +21,7 @@ const VoiceChat: React.FC = () => {
     const [members, setMembers] = useState<Array<number>>([]); // 사용자 목록 상태 추가
     const rtcUid = Math.floor(Math.random() * 2032);
     const rtcClientRef = useRef<IAgoraRTCClient | null>(null);
+    const [userVolumes, setUserVolumes] = useState<{ [uid: string]: number }>({});
     const audioTracksRef = useRef<AudioTracks>({
         localAudioTrack: null,
         remoteAudioTracks: {},
@@ -32,7 +35,7 @@ const VoiceChat: React.FC = () => {
         };
     }, []);
 
-    
+
     const initRtc = async () => {
         const token = null
         const rtcClient: IAgoraRTCClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
@@ -40,38 +43,39 @@ const VoiceChat: React.FC = () => {
         rtcClient.on('user-joined', handleUserJoined);
         rtcClient.on('user-published', handleUserPublished);
         rtcClient.on('user-left', handleUserLeft);
-        
+
         await rtcClient.join(appid, roomId, token, rtcUid);
-        
+
         const localAudioTrack: ILocalAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
         audioTracksRef.current.localAudioTrack = localAudioTrack;
-        
+
         localAudioTrack.setMuted(micMuted);
         await rtcClient.publish(localAudioTrack);
-        
-        
+
+
         console.log(rtcUid);
-        
+
         setMembers([rtcUid]);
         // 볼륨 인디케이터 초기화
         initVolumeIndicator();
-        
+
     };
-    
-    
+
+
     const initVolumeIndicator = () => {
-        // if (rtcClientRef.current) {
-        //     rtcClientRef.current.enableAudioVolumeIndicator();
-        //     rtcClientRef.current.on("volume-indicator", (volumes) => {
-        //         volumes.forEach((volume) => {
-        //             const items = document.getElementsByClassName(`user-rtc-${volume.uid}`);
-        //             if (items.length > 0) {
-        //                 const item = items[0] as HTMLElement;
-        //                 item.style.borderColor = volume.level >= 50 ? '#00ff00' : "#fff";
-        //             }
-        //         });
-        //     });
-        // }
+        if (!rtcClientRef.current) {
+            console.warn("RTC Client is not initialized");
+            return;
+        }
+
+        rtcClientRef.current.enableAudioVolumeIndicator();
+        rtcClientRef.current.on("volume-indicator", volumes => {
+            const newVolumes = { ...userVolumes };
+            volumes.forEach((volume) => {
+                newVolumes[volume.uid] = volume.level;
+            });
+            setUserVolumes(newVolumes);
+        });
     };
 
 
@@ -93,12 +97,12 @@ const VoiceChat: React.FC = () => {
     const handleUserJoined = (user: any) => {
         console.log('USER:', user);
         // 새로 참여한 사용자의 UID를 members 상태에 추가합니다.
-            setMembers(prevMembers => {
-                // 새로운 사용자가 이미 목록에 있는지 확인합니다.
-                const isUserExist = prevMembers.includes(user.uid);
-                // 존재하지 않는 경우에만 목록에 추가합니다.
-                return isUserExist ? prevMembers : [...prevMembers, user.uid];
-            });
+        setMembers(prevMembers => {
+            // 새로운 사용자가 이미 목록에 있는지 확인합니다.
+            const isUserExist = prevMembers.includes(user.uid);
+            // 존재하지 않는 경우에만 목록에 추가합니다.
+            return isUserExist ? prevMembers : [...prevMembers, user.uid];
+        });
     };
 
     const handleUserPublished = async (user: any, mediaType: "audio" | "video") => {
@@ -124,38 +128,69 @@ const VoiceChat: React.FC = () => {
     };
 
     return (
-        <div id='container'>
-            <div id="room-header-controls">
-                <span id="members">
-                    {members.map((uid) => (
-                        <span key={uid} className={`speaker user-rtc-${uid}`}>
-                            <Avatar sx={{ bgcolor: deepOrange[500] }}>{uid}</Avatar>
+                <Toolbar disableGutters>
+                    <Typography
+                        variant="h6"
+                        noWrap
+                        component="a"
+                        sx={{
+                            mr: 2,
+                            display: { xs: 'none', md: 'flex' },
+                            fontFamily: 'monospace',
+                            fontWeight: 700,
+                            letterSpacing: '.1rem',
+                            color: 'inherit',
+                            textDecoration: 'none',
+                            padding: 2,
+                        }}
+                    >
+                        PHOTATO FIELD
+                    </Typography>
+                    <div id="room-header-controls">
+                        <span id="members">
+                            {members.map((uid) => (
+                                <Box
+                                    key={uid}
+                                    className={`speaker user-rtc-${uid}`}
+                                    sx={{
+                                        display: 'inline-flex',
+                                        borderRadius: '50%', // Ensures the Box is circular
+                                        p: '2px', // Adjust padding to control the "border" thickness
+                                        bgcolor: userVolumes[uid] >= 40 ? '#00ff00' : '#fff', // Background color of the Box acts as the border color
+                                        border: '2px solid', // Optional: if you want an outer border as well
+                                        borderColor: 'transparent' // Makes the outer border transparent; adjust as needed
+                                    }}
+                                >
+                                    <Avatar sx={{ bgcolor: '#ffc107', width: 56, height: 56 }}>{uid}</Avatar>
+                                </Box>
+                            ))}
                         </span>
-                    ))}
-                </span>
-                <form id="joinForm" onSubmit={joinSubmit}>
-                    <Button
-                        onClick={toggleMic}
-                        style={{ backgroundColor: micMuted ? 'indianred' : 'ivory' }}
-                        startIcon={micMuted ? <MicOffIcon /> : <MicIcon />}
-                    >
-                        {micMuted ? 'Unmute' : 'Mute'}
-                    </Button>
-                    <Button
-                        onClick={leaveRoom}
-                    >
-                        <LogoutIcon fontSize='large' />
-                    </Button>
-                    <Button
-                        type="submit"
-                        onClick={joinSubmit} // Button 클릭 시 joinSubmit 함수 호출
-                    // ...기타 스타일과 속성...
-                    >
-                        Join
-                    </Button>
-                </form>
-            </div>
-        </div>
+                        <form id="joinForm" onSubmit={joinSubmit} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <Button
+                                variant="outlined"
+                                onClick={toggleMic}
+                                style={{ backgroundColor: micMuted ? '#db5858' : 'ivory' }}
+                                startIcon={micMuted ? <MicOffIcon /> : <MicIcon />}
+                            >
+                                {micMuted ? 'Unmute' : 'Mute'}
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                type="submit"
+                                onClick={joinSubmit} // Button 클릭 시 joinSubmit 함수 호출
+                                style={{ backgroundColor: 'ivory' }}
+                            >
+                                Join
+                            </Button>
+                            <Button
+                                style={{ backgroundColor: 'ivory' }}
+                                onClick={leaveRoom}
+                            >
+                                <LogoutIcon />
+                            </Button>
+                        </form>
+                    </div>
+                </Toolbar>
     );
 };
 
