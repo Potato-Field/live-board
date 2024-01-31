@@ -811,6 +811,10 @@ const App: FC = () => {
       
       PostItGroup.on('dblclick dbltap', () => {
         initText.hide();
+
+        if (PostItText.text() !== ''){
+          PostItText.hide();
+        }
         
         var textPosition = PostItText.absolutePosition();
         
@@ -851,7 +855,6 @@ const App: FC = () => {
         }
 
         var px = 0;
-
         var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
         if (isFirefox) {
           px += 2 + Math.round(PostItText.fontSize() / 20);
@@ -886,18 +889,26 @@ const App: FC = () => {
           textarea.style.width = newWidth + 'px';
         }
 
-        /* 입력되는 라인에 따라 rect height 증가  */
+        /* 입력되는 텍스트 양에 따른 rect height 증가  */
         textarea.addEventListener('keydown', function (e: any) {
           scale = PostItText.getAbsoluteScale().x;
           setTextareaWidth(PostItText.width() * scale - PostItText.padding() * 2);
           textarea.style.height = 'auto';
-          textarea.style.height =
-          textarea.scrollHeight + PostItText.fontSize() + 'px';
+          textarea.style.height = textarea.scrollHeight + PostItText.fontSize() + 'px';
+         
           // todo: PostItRect height 증가
+          console.log(textarea.style.height);
+          let textareaHeight = (parseInt(textarea.style.height.slice(0, -2)) as any);
+          console.log(textareaHeight);
+          if (textareaHeight > PostItRect.height) {
+            PostItRect.height = textareaHeight;
+            layer.batchDraw();  // 조건 만족할 때 PostItRect 사라짐
+          }
           
           const key = e.key.toLowerCase();
           if (key == 'esc' || key == 'escape') {
             PostItText.text(textarea.value);
+            PostItText.show();
             textarea.remove();
             stage.off('mouseup', handleOutsideClick);
           }
@@ -910,6 +921,7 @@ const App: FC = () => {
 
           if (e.target !== textarea) {
             PostItText.text(textarea.value);
+            PostItText.show();
             textarea.remove();
             stage.off('mouseup', handleOutsideClick);
           }
@@ -917,6 +929,7 @@ const App: FC = () => {
         
         if(textarea){
           stage.on('mouseup', handleOutsideClick);
+          // PostItText.show();
         }
       });
     }
