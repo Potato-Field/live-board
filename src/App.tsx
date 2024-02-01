@@ -1479,9 +1479,9 @@ const App: FC = () => {
       
         <Layer></Layer>
         
-      <>
+      {/* <>
         <MindMap stageRef = {stageRef} currentTool={tool} yDocRef = {yDocRef}/>
-      </>
+      </> */}
 
 
       </Stage>
