@@ -82,7 +82,7 @@ const App: FC = () => {
   const yText = yDocRef.current.getMap('text');
 
   //Text contents 저장
-  const yContents = yDocRef.current.getText('contents');
+  //const yContents = yDocRef.current.getText('contents');
   
 
   //Shape 저장
@@ -141,7 +141,7 @@ const App: FC = () => {
         const node = stageRef.current.children[0].findOne("#"+index)
         let newShape:any;
         if(node) return;
-        newShape = createNewText(index, {x: konvaData.x, y: konvaData.y})
+        newShape = createNewText(index, {x: konvaData.x, y: konvaData.y}, konvaData.text)
         stageRef.current.getLayers()[0].add(newShape);
         yText.delete(index);
       });
@@ -485,7 +485,7 @@ const App: FC = () => {
 
     const textNode:any = new Konva.Text({
       id : id,
-      text: text == null?'Some text here':text,
+      text: text == ""?'Some text here':text,
       x: pos.x,
       y: pos.y,
       fontSize: 20,
@@ -1162,7 +1162,7 @@ const App: FC = () => {
     } 
     else if (tool === Tools.TEXT) {
       
-      var textNode:any = createNewText(idx, realPointerPosition);
+      var textNode:any = createNewText(idx, realPointerPosition, "");
       const konvaData = {
         id       : textNode.id(),
         text     : textNode.text(),
