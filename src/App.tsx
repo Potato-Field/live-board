@@ -32,6 +32,7 @@ import {TextInputProps} from './component/TextEditor';
 import { Shape } from './component/UserShape';
 //import { set } from 'lodash';
 import VoiceChat from './component/voicechat/voicechat';
+import { MindMap } from './component/MindMap';
 //import { number } from 'lib0';
 //import MindMap from './component/MindMap';
 
@@ -112,8 +113,8 @@ const App: FC = () => {
   useEffect(() => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current)
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current);
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
     
       
 
@@ -1478,9 +1479,9 @@ const App: FC = () => {
       
         <Layer></Layer>
         
-      {/* <>
+      <>
         <MindMap stageRef = {stageRef} currentTool={tool} yDocRef = {yDocRef}/>
-      </> */}
+      </>
 
 
       </Stage>
