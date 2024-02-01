@@ -32,7 +32,7 @@ import {TextInputProps} from './component/TextEditor';
 import { Shape } from './component/UserShape';
 //import { set } from 'lodash';
 import VoiceChat from './component/voicechat/voicechat';
-import { MindMap } from './component/MindMap';
+//import { MindMap } from './component/MindMap';
 //import { number } from 'lib0';
 //import MindMap from './component/MindMap';
 
