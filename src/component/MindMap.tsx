@@ -69,6 +69,7 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
 
 
     const handleClick = (event:any) => {
+      console.log("!!!!targets, and connectors", yTargets, yConnectors);
         if (currentTool === Tools.MINDMAP && yTargets.size === 0) {
             const stage = stageRef.current;
             const pointerPosition = stage?.getPointerPosition();
@@ -140,7 +141,7 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
       if (!target) {
         console.error("Target not found:", targetId);
         return;
-    }
+      }
 
 
 
@@ -157,16 +158,31 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
       textArea.style.resize = 'none';
       textArea.style.transformOrigin = 'left top';
   
+      
       textArea.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             yTargets.set(targetId, { ...target, value: textArea.value });
             textArea.parentNode?.removeChild(textArea);
             targetText?.show();
-        }
-    });
-
+            console.log(targetText, targetText?.attrs.text, "targetText!!!!!!!!!!");//TEST
+            //layerRef.current?.add(targetText);
+          }
+      });
+        //console.log(targetText);
+        //targetText?.attrs.text(textArea.value);
     textArea.focus();
   };
+
+
+
+  // const deleteTarget = (targetId: string) => {
+
+
+
+  // }
+
+
+
 
   const updateConnectors = (targetId:string) => {
 
@@ -189,6 +205,7 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
 
   }
 
+  
   
     
 
@@ -239,6 +256,8 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
                 y: target.y,
                 fill: '#A9A9A9',
                 radius: 20,
+                //innerRadius: 20,
+                //outerRadius: 0,
                 draggable: true,
                 stroke: 'black',
                 strokeWidth: 2,
@@ -248,26 +267,63 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
         } else {
             node.position({ x: target.x, y: target.y });
         }
-        node.off('dblclick').on('dblclick', () => {
+        node.off('dblclick').on('dblclick', (event) => {
           if (currentTool === Tools.MINDMAP) {
-              addNewCircleAndConnector(id);
+              //addNewCircleAndConnector(id);
+              handleCircleClick(event, id);
           }
           
       });
   
       node.off('contextmenu').on('contextmenu', (event) => {
+        event.evt.preventDefault();
           if (currentTool === Tools.MINDMAP) {
-              handleCircleClick(event, id);
-          }
-      });
 
+              let menu = document.getElementById('contextMenu'+ node?.id());
+           
+            
+              if(!menu){
+                const menu = document.createElement('div');
+                menu.id = 'contextMenu' + node?.id();
+                document.body.appendChild(menu);
+                
+                const createButton = document.createElement('button');
+                createButton.innerHTML = 'Create';
+                createButton.id = 'create' + menu.id;
+                createButton.onclick = function (){
+                  addNewCircleAndConnector(id);
+                  menu.style.display = 'none';
+                }
+                
+                const deleteButton = document.createElement('button');
+                deleteButton.innerHTML = 'Delete';
+                deleteButton.id = 'delete' + menu.id;
+                deleteButton.onclick = function (){
+                  deleteTarget(id);
+                  menu.style.display = 'none';
+                }
+                
+                
+                menu.appendChild(createButton);
+                menu.appendChild(deleteButton);
+              }
+
+              if(menu){
+                menu.style.display = 'block';
+                menu.style.position = 'absolute';
+                menu.style.left = `${event.evt.clientX}px`;
+                menu.style.top = `${event.evt.clientY}px`;
+                menu.style.backgroundColor = '#f9f9f9';
+                menu.style.boxShadow = '0px 8px 16px 0px rgba(0,0,0,0.2)';
+                menu.style.zIndex = '1000';
+                menu.style.padding = '10px';
+                
+              }
+            }
+          });
+          
       node.on('dragmove', () => {
         if(currentTool === Tools.MINDMAP){
-          //console.log("!!!!dragged node!!!!", node?.x(), node?.y());
-          // const nowTarget = layerRef.current?.findOne('#' + node?.id());
-          // layerRef.current?.add(nowTarget);
-          //console.log("now layerRef find Target!!!!", nowTarget);
-          //console.log(target.x, target.y, "!!!!!!!now Target position");
 
           const target = yTargets.get(id);
           if(target){
@@ -280,7 +336,7 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
             layerRef.current?.add(target);
           }
           //need to update yTarget and yconnector code
-
+          
           updateConnectors(id);
         }
       });
@@ -318,8 +374,9 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
         } 
         else {
           textNode.position({ x: textX, y: textY });
-          //textNode.text(target.value);
+          textNode.text(textValue);
         }
+
         if (node) {
           //node.zIndex(100);
       }
@@ -328,6 +385,7 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
       }
     });
   };
+
 
   useEffect(() => {
     if (stageRef.current) {
