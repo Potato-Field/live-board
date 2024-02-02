@@ -1,7 +1,7 @@
 //live-board/src/component/TextEditor.tsx
 import * as Y from "yjs";
-import React, { FC, useState, useEffect, useRef } from 'react';
-import { Layer, Text, Rect, Transformer} from 'react-konva';
+import React, { FC, useState } from 'react';
+import {Text, Rect} from 'react-konva';
 
 export interface TextInputProps {
   init: string;
@@ -42,12 +42,12 @@ interface TextEditorProps {
 }
 
 const TextEditor: FC<TextEditorProps> = ({ textInputs, setTextInputs, yTextRef, yDocRef }) => {
-
+  console.log(yDocRef)
    const[textareaValues, setTextareaValues] = useState<TextAreaData[]>([]);
 //   const textareaRef = useRef(null);
 //const yTextRef = useRef<Y.Array<TextInputProps>>(yDocRef.current.getArray<TextInputProps>('texts'));
 // const [textAreas, setTextAreas] = useState<TextAreaData[]>([]);
-   const yTextAreaRef = useRef<Y.Array<TextAreaData>>(yDocRef.current.getArray<TextAreaData>('textareas'));
+   //const yTextAreaRef = useRef<Y.Array<TextAreaData>>(yDocRef.current.getArray<TextAreaData>('textareas'));
 
 // useEffect(() => {
 //     textInputs.forEach((tip, index) => {
@@ -107,9 +107,9 @@ const handleDbClick = (e: any, item: number) => {
             i === item ? { ...input, init: textArea.value} : input
         );
         
-        const updatedTextArea = textareaValues.map((input, i) => {
-            i === item ? {...input, value: textArea.value} : input 
-        });
+        // const updatedTextArea = textareaValues.map((input, i) => {
+        //     i === item ? {...input, value: textArea.value} : input 
+        // });
 
 
         setTextInputs(updatedTextInputs);
@@ -249,7 +249,7 @@ const handleDbClick = (e: any, item: number) => {
         </React.Fragment>
       ))}
 
-      {textareaValues.map((textareaValues, i) => {
+      {textareaValues.map((_textareaValues, i) => {
         <React.Fragment key={i}>
             <Rect 
             

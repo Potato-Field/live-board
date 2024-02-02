@@ -4,6 +4,7 @@ import Hand from './Hand';
 import Cursor from './Cursor';
 import Text from './Text';
 import Pen from './Pen';
+import Eraser from './Eraser';
 import PostIt from './PostIt';
 import Stamp from './Stamp';
 import Shape from './Shape';
@@ -25,7 +26,7 @@ interface ButtonCustomGroupProps {
 }
 
 export const ButtonCustomGroup = ({handleIconBtnClick, setUserId}: ButtonCustomGroupProps) =>{
-    const userIdBox = useRef(null);
+    const userIdBox:any = useRef(null);
 
     const { currentColor, setCurrentColor } = useColor();
 
@@ -35,10 +36,12 @@ export const ButtonCustomGroup = ({handleIconBtnClick, setUserId}: ButtonCustomG
     };
 
     const addUserId = ()=>{
-        setUserId(userIdBox.current.value)
+        if(userIdBox.current){
+            setUserId(userIdBox.current.value)
+        }
     };
     return(
-        <div className = "ToolBtnGroup" style={{position: "absolute", bottom: "2%", left: "50%", transform: "translate(-50%, 0)", backgroundColor: "white", maxWidth: "100%"}}>
+        <div className = "ToolBtnGroup" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", backgroundColor: "white", maxWidth: "100%"}}>
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
                 <input type="text" id="userId" placeholder='Input your ID' ref={userIdBox}></input>
                 <button type="button" onClick={addUserId}>submit</button>
@@ -62,8 +65,8 @@ export const ButtonCustomGroup = ({handleIconBtnClick, setUserId}: ButtonCustomG
                 <Text   props = {Tools.TEXT}/>
                 <Pen    props = {Tools.PEN} icon = {faPen}/>
                 <Pen    props = {Tools.HIGHLIGHTER} icon = {faHighlighter}/>
-                <Button id='eraser'>eraser</Button>
-                <PostIt handleIconBtnClick={handleIconBtnClick} props={Tools.POSTIT}/>
+                <Eraser props = {Tools.ERASER} />
+                <PostIt props={Tools.POSTIT}/>
                 <div className='shapeBox'>
                     <Stamp handleIconBtnClick={handleIconBtnClick} props={Tools.STAMP}/>
                     <Shape handleIconBtnClick={handleIconBtnClick} props={Tools.SHAPE}/>
