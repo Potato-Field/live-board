@@ -69,7 +69,8 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
 
 
     const handleClick = (event:any) => {
-      console.log("!!!!targets, and connectors", yTargets, yConnectors);
+      console.log("!!!!targets, and connectors", yTargets, yConnectors, yTargets._map.size, yConnectors._map.size);
+      console.log(yTargets.size, yConnectors.size);
         if (currentTool === Tools.MINDMAP && yTargets.size === 0) {
             const stage = stageRef.current;
             const pointerPosition = stage?.getPointerPosition();
@@ -164,22 +165,42 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
             yTargets.set(targetId, { ...target, value: textArea.value });
             textArea.parentNode?.removeChild(textArea);
             targetText?.show();
-            console.log(targetText, targetText?.attrs.text, "targetText!!!!!!!!!!");//TEST
-            //layerRef.current?.add(targetText);
           }
       });
-        //console.log(targetText);
-        //targetText?.attrs.text(textArea.value);
     textArea.focus();
   };
 
 
 
-  // const deleteTarget = (targetId: string) => {
+  const deleteTarget = (targetId: string) => {
+   
+    console.log("delete before target, connector", yTargets, yConnectors);
+    const node = layerRef.current?.findOne('#' + targetId);
+    const textNode = layerRef.current?.findOne('#text-'+targetId);
+    node?.destroy();
+    textNode?.destroy();
+    
+    //console.log("Does target exist before deletion?", yTargets.has(targetId)); 
+    yTargets.delete(targetId);
+    //console.log("Does target exist after deletion?", yTargets.has(targetId));
+
+    yConnectors.forEach((connector, connectorId) => {
+      if (connector.from === targetId || connector.to === targetId) {
+        const line = layerRef.current?.findOne('#' + connectorId);
+        line?.destroy();
+  
+        console.log("Connector count before deletion:", yConnectors.size);
+        yConnectors.delete(connectorId); 
+        console.log("Connector count after deletion:", yConnectors.size);
+      }
+    });
+    console.log("delete after target, connecotr", yTargets, yConnectors);
 
 
 
-  // }
+    
+
+  }
 
 
 
