@@ -32,9 +32,8 @@ import {TextInputProps} from './component/TextEditor';
 import { Shape } from './component/UserShape';
 //import { set } from 'lodash';
 import VoiceChat from './component/voicechat/voicechat';
-//import { MindMap } from './component/MindMap';
 //import { number } from 'lib0';
-//import MindMap from './component/MindMap';
+import MindMap from './component/MindMap';
 
 let multiSelectBlocker = {
   x1:0,
@@ -1481,9 +1480,9 @@ const App: FC = () => {
       
         <Layer></Layer>
         
-      {/* <>
+      <>
         <MindMap stageRef = {stageRef} currentTool={tool} yDocRef = {yDocRef}/>
-      </> */}
+      </>
 
 
       </Stage>

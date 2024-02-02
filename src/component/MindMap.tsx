@@ -4,6 +4,7 @@ import { Tools } from './Tools';
 
 
 import * as Y from "yjs";
+import { layer } from '@fortawesome/fontawesome-svg-core';
 
 type Target = {
     id: string;
@@ -167,6 +168,27 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
     textArea.focus();
   };
 
+  const updateConnectors = (targetId:string) => {
+
+    yConnectors.forEach((connector, connectorId) => {
+      if (connector.from === targetId || connector.to === targetId) {
+        const fromNode = yTargets.get(connector.from);
+        const toNode = yTargets.get(connector.to);
+        
+        if (fromNode && toNode) {
+          const foundLine = layerRef.current?.findOne('#' + connectorId) as Konva.Arrow;
+          if (foundLine) {
+            foundLine.points([fromNode.x, fromNode.y, toNode.x, toNode.y]);
+            // Optionally, update connector positions in yConnectors if needed
+            // This depends on whether your yConnectors map stores positional data or just relationships
+            layerRef.current?.add(foundLine);
+          }
+        }
+      }
+    });
+
+  }
+
   
     
 
@@ -239,6 +261,30 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
           }
       });
 
+      node.on('dragmove', () => {
+        if(currentTool === Tools.MINDMAP){
+          //console.log("!!!!dragged node!!!!", node?.x(), node?.y());
+          // const nowTarget = layerRef.current?.findOne('#' + node?.id());
+          // layerRef.current?.add(nowTarget);
+          //console.log("now layerRef find Target!!!!", nowTarget);
+          //console.log(target.x, target.y, "!!!!!!!now Target position");
+
+          const target = yTargets.get(id);
+          if(target){
+            const updatedTarget: Target = {
+              ...target, 
+              x: node?.x()??target.x,
+              y: node?.y()??target.y,
+            }
+            yTargets.set(id, updatedTarget);
+            layerRef.current?.add(target);
+          }
+          //need to update yTarget and yconnector code
+
+          updateConnectors(id);
+        }
+      });
+
       const fontSize = 12; 
 
       const textValue = target.value;
@@ -272,13 +318,13 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
         } 
         else {
           textNode.position({ x: textX, y: textY });
-          textNode.text(target.value);
+          //textNode.text(target.value);
         }
         if (node) {
-          node.zIndex(100);
+          //node.zIndex(100);
       }
         if (textNode) {
-          textNode.zIndex(200);
+          //textNode.zIndex(200);
       }
     });
   };
