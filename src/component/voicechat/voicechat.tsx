@@ -144,7 +144,7 @@ const VoiceChat: React.FC = () => {
                             padding: 2,
                         }}
                     >
-                        PHOTATO FIELD
+                        POTATO FIELD
                     </Typography>
                     <div id="room-header-controls">
                         <span id="members">
@@ -186,7 +186,7 @@ const VoiceChat: React.FC = () => {
                                 style={{ backgroundColor: 'ivory' }}
                                 onClick={leaveRoom}
                             >
-                                <LogoutIcon />
+                                <LogoutIcon fontSize='large' />
                             </Button>
                         </form>
                     </div>
