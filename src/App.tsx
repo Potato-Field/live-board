@@ -112,9 +112,9 @@ const App: FC = () => {
   //load() 역할을 하는 듯
   useEffect(() => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current)
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current);
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
     
       
 
@@ -140,6 +140,7 @@ const App: FC = () => {
       yText.forEach((konvaData:any, index:string)=>{
         const node = stageRef.current.children[0].findOne("#"+index)
         let newShape:any;
+        console.log(konvaData)
         if(node) return;
         newShape = createNewText(index, {x: konvaData.x, y: konvaData.y}, konvaData.text)
         stageRef.current.getLayers()[0].add(newShape);
@@ -479,6 +480,22 @@ const App: FC = () => {
     })
     return newShape
   }
+
+  function findFirstDiffIndex(oldStr:string, newStr:string) {
+    let start = 0;
+    while (start < oldStr.length && start < newStr.length && oldStr[start] === newStr[start]) {
+        start++;
+    }
+
+    let endOld = oldStr.length - 1;
+    let endNew = newStr.length - 1;
+    while (endOld >= start && endNew >= start && oldStr[endOld] === newStr[endNew]) {
+        endOld--;
+        endNew--;
+    }
+
+    return { start, endOld: endOld + 1, endNew: endNew + 1 };
+  }
   
   const createNewText = (id:string, pos:{x:number, y:number}, text:string)=>{
     const yTextData = yDocRef.current.getText(id);
@@ -515,13 +532,13 @@ const App: FC = () => {
     let textarea:HTMLTextAreaElement;
     
     yTextData.observe(() => {
-      
-      if (textarea !== document.activeElement) {
-        textarea.value = yTextData.toString();
-      }
+
       textNode.text(yTextData.toString());
     });
-
+    // if (textarea !== document.activeElement) {
+    //   textarea.value = yTextData.toString();
+    // }
+    
     textNode.on('dblclick dbltap', () => {
       textNode.hide();
       
@@ -533,12 +550,43 @@ const App: FC = () => {
       textarea = createNewTextArea(textNode, areaPosition);
       textarea.value = yTextData.toString();
 
-      textarea.addEventListener('input', () => {
-        // Y.Text 내용을 textarea의 값으로 업데이트
-        yTextData.delete(0, yTextData.length);
-        yTextData.insert(0, textarea.value);
+
+      let isComposing = false;
+
+      textarea.addEventListener('compositionstart', () => {
+          isComposing = true; // 한글 입력 시작
       });
-  
+
+      textarea.addEventListener('compositionend', () => {
+          isComposing = false; // 한글 입력 완료
+          
+          syncText(); // 입력 완료 후 동기화 함수 호출
+      });
+
+      textarea.addEventListener('input', () => {
+        if (!isComposing) {
+          // 한글 입력이 아니거나 입력이 완료된 경우에만 동기화 진행
+          syncText();
+        }
+      });
+
+      const syncText = ()=>{
+        const currentText = textarea.value;
+        // Y.Text 객체의 현재 내용
+        const yCurrentText = yTextData.toString();
+      
+        const { start, endOld, endNew } = findFirstDiffIndex(yCurrentText, currentText);
+
+        if (start !== endOld) {
+            yTextData.delete(start, endOld - start);
+        }
+
+        // 그리고 새로운 문자열을 삽입
+        const newText = currentText.substring(start, endNew);
+        if (newText.length > 0) {
+            yTextData.insert(start, newText);
+        }
+      }
       
       function removeTextarea() {
         if(!textarea.parentNode) return;
@@ -556,6 +604,7 @@ const App: FC = () => {
           text      : textNode.text(),
           draggable : true,
         }
+        console.log(konvaData)
         yObjects.set(textNode.id(), konvaData);
       }
 
@@ -635,8 +684,8 @@ const App: FC = () => {
         }
         yMove.set(node.id(), changeInfo);
       });
-
     });
+
     tr.on('dragend', function() {
       isDrag.current = false;
       let type:any;
