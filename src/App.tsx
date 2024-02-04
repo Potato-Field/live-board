@@ -108,6 +108,9 @@ const App: FC = () => {
   //사용자 마우스 위치 저장
   const yMousePositions = yDocRef.current.getMap('mousePositions');
   
+  // 선택 영역 데이터 구조 정의
+  //const ySelectedNodes = yDocRef.current.getMap('selectedNodes');
+  
   const yTextRef = useRef<Y.Array<TextInputProps>>(yDocRef.current.getArray<TextInputProps>('texts'));
   
   //블록 변수
@@ -140,17 +143,27 @@ const App: FC = () => {
       mouseIcon.id = `mouse-${userId}`;
       // 마우스 아이콘 스타일 설정
       mouseIcon.style.position = 'absolute';
-      mouseIcon.setAttribute("class", "cursor-div");
-      mouseIcon.style.borderTop = "20px solid "+getRandomColor();
+      mouseIcon.setAttribute("class", `tool-${Tools[mousePosition.selectTool]}`);
+      //mouseIcon.style.borderTop = "20px solid "+getRandomColor();
 
       let mouseUser = document.createElement('p');
+      
       mouseUser.textContent = `${userId}`;
       mouseUser.style.minWidth = '100px';
+      mouseUser.style.marginTop = '30px';
+      mouseUser.style.marginLeft = '10px';
+      mouseUser.style.color = 'white';
+      mouseUser.style.backgroundColor = getRandomColor()
 
       mouseIcon.appendChild(mouseUser);
+      
       // 사용자별 마우스 아이콘을 구분하기 위한 스타일 추가
       document.body.appendChild(mouseIcon);
     }
+    
+    const userCurrentTool = Tools[mousePosition.selectTool];
+
+    mouseIcon.setAttribute("class", `tool-${userCurrentTool}`);
     mouseIcon.style.left = `${mousePosition.x}px`;
     mouseIcon.style.top = `${mousePosition.y}px`;
   }
@@ -164,10 +177,10 @@ const App: FC = () => {
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     /* 병철 로컬에서 작동 */
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
 
     /* 배포시 사용 */
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
     
       
 
@@ -201,6 +214,16 @@ const App: FC = () => {
         }
       });
     });
+
+    //영역 전개 감지
+    // ySelectedNodes.observe((event) =>{
+    //   event.changes.keys.forEach((change, key)=>{
+    //     if(key == userId.current) return;
+    //     const node = stageRef.current.children[0].findOne(`#user-tr-${key}`);
+    //     const yArr:any= ySelectedNodes.get(key);
+        
+    //   });
+    // });
 
 
     yText.observe(() => {
@@ -728,6 +751,11 @@ const App: FC = () => {
     return textNode
   }
   
+  const createUserTr = (userId:string)=>{
+    const tr = new Konva.Transformer({ flipEnabled: false, id:`user-tr-${userId}`, enabledAnchors: []});
+    return tr;
+  }
+
   const createNewTr = ()=>{
     //if (groupTr != null) return;
     const tr = new Konva.Transformer({ flipEnabled: false });
@@ -1036,7 +1064,7 @@ const App: FC = () => {
   };
 
   const handleMouseMove = (e: any) => {
-    const mousePosition = { x: e.evt.clientX, y: e.evt.clientY };
+    const mousePosition = { x: e.evt.clientX, y: e.evt.clientY, selectTool : toolRef.current };
     if(userId.current){
       yMousePositions.set(userId.current, mousePosition);
     }
