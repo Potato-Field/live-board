@@ -16,7 +16,8 @@ import { Tools } from './component/Tools';
 //import Stamp from './component/Stamp';
 // import MindMap from './component/MindMap';
 //import EditableText from "./component/EditableText";
-import VoiceChat from './component/voicechat/voicechat';
+import NavBarRoom from './component/NavBarRoom';
+// import NavBarLobby from './component/NavBarLobby';
 
 import thumbUpImg from './assets/thumbup.png';
 import thumbDownImg from './assets/thumbdown.png'
@@ -39,7 +40,6 @@ let multiSelectBlocker = {
   y1:0,
   x2:0,
   y2:0,
-
 }
 
 /* 블록 하는 좌표 */
@@ -56,10 +56,11 @@ const App: FC = () => {
   
   const POSTIT_MIN_WIDTH = 250;  // init size
   const POSTIT_MIN_HEIGHT = 300; // init size
-  const [textHeight, setTextHeight] = useState<number>(POSTIT_MIN_HEIGHT); // 포스트잇 텍스트 높이
-  const [textareaHeight, setTextareaHeight] = useState<number | undefined>(NaN); // 포스트잇 텍스트 영역 높이
-  const textHeightRef = useRef<number>();  // 포스트잇 텍스트 높이
-  const textareaHeightRef = useRef<number | undefined>();  // 포스트잇 텍스트 영역 높이
+  const [textHeight] = useState<number>(POSTIT_MIN_HEIGHT); // 포스트잇 텍스트 높이
+  // const [textHeight, setTextHeight] = useState<number>(POSTIT_MIN_HEIGHT); // 포스트잇 텍스트 높이
+  // const [textareaHeight, setTextareaHeight] = useState<number | undefined>(NaN); // 포스트잇 텍스트 영역 높이
+  // const textHeightRef = useRef<number>();  // 포스트잇 텍스트 높이
+  // const textareaHeightRef = useRef<number | undefined>();  // 포스트잇 텍스트 영역 높이
 
   /*
    * [CRDT] 
@@ -1564,7 +1565,8 @@ const App: FC = () => {
 
   return (
     <div style={{position: "relative", width: "100%"}}>
-      <VoiceChat />
+      {/* <NavBarLobby /> */}
+      <NavBarRoom />
       <Stage
         width        = {window.innerWidth}
         height       = {window.innerHeight}
