@@ -4,6 +4,7 @@ import {
   , useRef
   , useEffect 
 } from 'react';
+import Konva from 'konva';
 import { Stage, Layer } from 'react-konva';
 import { ButtonCustomGroup } from './component/ButtonCustomGroup';
 
@@ -13,27 +14,25 @@ import { ColorProvider } from './component/ColorContext';
 import { Tools } from './component/Tools';
 
 //import Stamp from './component/Stamp';
+// import MindMap from './component/MindMap';
+//import EditableText from "./component/EditableText";
+import VoiceChat from './component/voicechat/voicechat';
 
 import thumbUpImg from './assets/thumbup.png';
 import thumbDownImg from './assets/thumbdown.png'
 
 import "./index.css"
 
-//import EditableText from "./component/EditableText";
-
 //-----------CRDT---------------------
 import * as Y from "yjs";
 //import { WebsocketProvider } from "y-websocket";
 import { WebrtcProvider } from "y-webrtc";
-import Konva from 'konva';
 import { uuidv4 } from 'lib0/random.js';
 import {TextInputProps} from './component/TextEditor';
 //import { FastLayer } from 'konva/lib/FastLayer';
 import { Shape } from './component/UserShape';
 //import { set } from 'lodash';
-import VoiceChat from './component/voicechat/voicechat';
 //import { number } from 'lib0';
-// import MindMap from './component/MindMap';
 
 let multiSelectBlocker = {
   x1:0,
@@ -45,6 +44,7 @@ let multiSelectBlocker = {
 
 /* 블록 하는 좌표 */
 let groupTr:Konva.Transformer | null = null;
+
 //Container Components
 const App: FC = () => {
 
@@ -53,6 +53,13 @@ const App: FC = () => {
   //const [currentColor, setCurrentColor] = useState<string>('#000000');
   //const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [clickedIconBtn, setClickedIconBtn] = useState<string | null>(null);
+  
+  const POSTIT_MIN_WIDTH = 250;  // init size
+  const POSTIT_MIN_HEIGHT = 300; // init size
+  const [textHeight, setTextHeight] = useState<number>(POSTIT_MIN_HEIGHT); // 포스트잇 텍스트 높이
+  const [textareaHeight, setTextareaHeight] = useState<number | undefined>(NaN); // 포스트잇 텍스트 영역 높이
+  const textHeightRef = useRef<number>();  // 포스트잇 텍스트 높이
+  const textareaHeightRef = useRef<number | undefined>();  // 포스트잇 텍스트 영역 높이
 
   /*
    * [CRDT] 
@@ -73,6 +80,7 @@ const App: FC = () => {
   const isDrag = useRef(false);
   const isHand = useRef(false);
   const toolRef = useRef(tool);
+
   // Y.js 관련 상태를 useRef로 관리
   const yDocRef = useRef(new Y.Doc());
   
@@ -110,6 +118,8 @@ const App: FC = () => {
   const setUserId = (param:string)=>{
     userId.current = param
   }
+
+
   //load() 역할을 하는 듯
   useEffect(() => {
     /* 웹소켓 방식 */
@@ -318,6 +328,7 @@ const App: FC = () => {
       yDocRef.current.destroy();
     };
   }, []);
+
 
   useEffect(() => {
     toolRef.current = tool;
@@ -1254,12 +1265,12 @@ const App: FC = () => {
       let PostItText: any = new Konva.Text({
         name: 'PostItText',
         ...postItOptions, // x, y
-        width: 250, // init size
-        height: 300,  // init size
+        width: POSTIT_MIN_WIDTH,
+        height: textHeight, // POSTIT_MIN_HEIGHT
         text: '',
         fontSize: 20,
         padding: 15,
-      });  
+      });
       
       let initText = new Konva.Text({
         name: 'initText',
@@ -1289,7 +1300,7 @@ const App: FC = () => {
       PostItGroup.add(initText);
       layer.add(PostItGroup);
       setTool(Tools.CURSOR);
-      
+
       PostItGroup.on('dblclick dbltap', () => {
         initText.hide();
 
@@ -1381,11 +1392,7 @@ const App: FC = () => {
           console.log(textarea.style.height);
           let textareaHeight = (parseInt(textarea.style.height.slice(0, -2)) as any);
           console.log(textareaHeight);
-          // if (textareaHeight > PostItRect.height) {
-          //   PostItRect.height = textareaHeight;
-          //   layer.batchDraw();  // 조건 만족할 때 PostItRect 사라짐
-          // }
-          
+
           const key = e.key.toLowerCase();
           if (key == 'esc' || key == 'escape') {
             PostItText.text(textarea.value);
@@ -1414,12 +1421,7 @@ const App: FC = () => {
         }
       });
 
-      PostItGroup.on('click', (e:any)=>{
-        const MIN_WIDTH = 180;
-        const MIN_HEIGHT = 180;
-
-        console.log(e); // target: Text, currentTarget: Group
-        
+      PostItGroup.on('click', (e:any)=>{  // e.target: Text, e.currentTarget: Group       
         if (groupTr === null) {
           createNewTr();
         } 
@@ -1429,26 +1431,33 @@ const App: FC = () => {
     
         const text = PostItGroup.findOne('.PostItText')
         const rect = PostItGroup.findOne('.PostItRect')
+        const init = PostItGroup.findOne('.initText')
         
-        if(!text || !rect) return;
-    
-        text.on('transform', () => {
-          text.setAttrs({
-            width: Math.max(text.width() * text.scaleX(), MIN_WIDTH),
-            height : Math.max(text.height() * text.scaleY(), MIN_HEIGHT),
-            scaleX: 1,
-            scaleY: 1,
-          });
-    
-          // text의 크기가 변경될 때 rect의 크기도 업데이트
-          rect.setAttrs({
-            width: text.width(),
-            height: text.height(),
-          });
+        if (text && rect) {
+          text.on('transform', () => {
+            text.setAttrs({
+              width: Math.max(text.width() * text.scaleX(), POSTIT_MIN_WIDTH),
+              height : Math.max(text.height() * text.scaleY(), POSTIT_MIN_HEIGHT),
+              scaleX: 1,
+              scaleY: 1,
+            });
+      
+            // text의 크기가 변경될 때 rect의 크기도 업데이트
+            rect.setAttrs({
+              width: text.width(),
+              height: text.height(),
+            });
 
-          // 레이어 다시 그리기
-          // layer.draw();
-        });
+            // text의 너비가 변경될 때 initText의 너비도 업데이트
+            if (init) {
+              init.setAttrs({
+                width: text.width(),
+              })
+            }
+
+            // console.log('텍', text.height());
+          });
+        }
       })
     } 
   };    
@@ -1506,7 +1515,7 @@ const App: FC = () => {
   const handleMouseWheel = (e: any) => {
     e.evt.preventDefault();
     const stage = e.target.getStage();
-;
+
     var oldScale = stage.scaleX();
     var pointer = stage.getPointerPosition();
     var scaleBy = 1.1;
