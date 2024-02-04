@@ -57,10 +57,11 @@ const App: FC = () => {
   
   const POSTIT_MIN_WIDTH = 250;  // init size
   const POSTIT_MIN_HEIGHT = 300; // init size
-  const [textHeight, setTextHeight] = useState<number>(POSTIT_MIN_HEIGHT); // 포스트잇 텍스트 높이
-  const [textareaHeight, setTextareaHeight] = useState<number | undefined>(NaN); // 포스트잇 텍스트 영역 높이
-  const textHeightRef = useRef<number>();  // 포스트잇 텍스트 높이
-  const textareaHeightRef = useRef<number | undefined>();  // 포스트잇 텍스트 영역 높이
+  const [textHeight] = useState<number>(POSTIT_MIN_HEIGHT); // 포스트잇 텍스트 높이
+  // const [textHeight, setTextHeight] = useState<number>(POSTIT_MIN_HEIGHT); // 포스트잇 텍스트 높이
+  // const [textareaHeight, setTextareaHeight] = useState<number | undefined>(NaN); // 포스트잇 텍스트 영역 높이
+  // const textHeightRef = useRef<number>();  // 포스트잇 텍스트 높이
+  // const textareaHeightRef = useRef<number | undefined>();  // 포스트잇 텍스트 영역 높이
 
   /*
    * [CRDT] 
