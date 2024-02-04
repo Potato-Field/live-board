@@ -13,9 +13,6 @@ import { ColorProvider } from './component/ColorContext';
 
 import { Tools } from './component/Tools';
 
-//import Stamp from './component/Stamp';
-// import MindMap from './component/MindMap';
-//import EditableText from "./component/EditableText";
 import NavBarRoom from './component/NavBarRoom';
 // import NavBarLobby from './component/NavBarLobby';
 
@@ -1330,8 +1327,8 @@ const App: FC = () => {
         textarea.style.padding = '15px';
         textarea.style.margin = '0px';
         textarea.style.overflow = 'hidden';
-        textarea.style.background = 'gray';
-        // textarea.style.background = 'none';
+        // textarea.style.background = 'gray';
+        textarea.style.background = 'none';
         textarea.style.outline = 'none';
         textarea.style.resize = 'none';
         textarea.style.lineHeight = PostItText.lineHeight();
@@ -1592,7 +1589,7 @@ const App: FC = () => {
 
       </Stage>
       <ColorProvider>
-        <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} setUserId={setUserId}/>
+        <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} />
       </ColorProvider>
     </div>
   );

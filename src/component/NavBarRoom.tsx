@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useState } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -6,13 +7,13 @@ import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import HowToVoteIcon from '@mui/icons-material/HowToVote';
 import TimerIcon from '@mui/icons-material/Timer';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { Button } from '@mui/material';
+import { VoteDrawer } from './VoteDrawer';
 // import VoiceChat from "./voicechat/voicechat";
 
 export default function NavBar() {
@@ -53,7 +54,7 @@ export default function NavBar() {
       <MenuItem>
         참가자 2
       </MenuItem>
-      {/* 초대 - menuitem 클릭하면 popover 뜨도록 */}
+      {/* 초대 - menuitem 클릭하면 방번호 popover 뜨도록 */}
       <MenuItem >
         <IconButton
           size="large"
@@ -79,14 +80,13 @@ export default function NavBar() {
             aria-label="Exit room"
             // 클릭시 '나가시겠습니까?' 알림 뜨도록
             >
-            <ArrowBackIosIcon />
+            <ArrowBackIosIcon fontSize='large' />
           </IconButton>
 
-          <IconButton size="large" aria-label="Postit vote" color="inherit">
-            <HowToVoteIcon />
-          </IconButton>
+          <VoteDrawer />
+
           <IconButton size="large" aria-label="Stop watch" color="inherit">
-            <TimerIcon />
+            <TimerIcon fontSize='large' />
           </IconButton>
 
           {/* 중간 빈 공간 */}
@@ -107,7 +107,8 @@ export default function NavBar() {
               aria-haspopup="true"
               color="inherit"
             >
-              <PersonAddIcon />
+              <PersonAddIcon fontSize='large' />
+              {/* 클릭시 방번호 popover 뜨도록 */}
             </IconButton>
           </Box>
 
@@ -121,12 +122,12 @@ export default function NavBar() {
               onClick={handleMobileMenuOpen}
               color="inherit"
             >
-              <PeopleAltIcon />
+              <PeopleAltIcon fontSize='large' />
             </IconButton>
           </Box>
 
           <IconButton size="large" aria-label="Export" color="inherit">
-              <FileDownloadIcon />
+              <FileDownloadIcon fontSize='large' />
           </IconButton>
         </Toolbar>
       </AppBar>
