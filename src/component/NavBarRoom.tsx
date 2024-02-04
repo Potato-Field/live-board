@@ -10,7 +10,7 @@ import HowToVoteIcon from '@mui/icons-material/HowToVote';
 import TimerIcon from '@mui/icons-material/Timer';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
-import GroupAddIcon from '@mui/icons-material/GroupAdd';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { Button } from '@mui/material';
 // import VoiceChat from "./voicechat/voicechat";
@@ -20,13 +20,13 @@ export default function NavBar() {
     React.useState<null | HTMLElement>(null);
 
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+  
+  const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setMobileMoreAnchorEl(event.currentTarget);
+  };
 
   const handleMobileMenuClose = () => {
     setMobileMoreAnchorEl(null);
-  };
-
-  const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setMobileMoreAnchorEl(event.currentTarget);
   };
 
   const mobileMenuId = 'primary-search-account-menu-mobile';
@@ -34,14 +34,14 @@ export default function NavBar() {
     <Menu
       anchorEl={mobileMoreAnchorEl}
       anchorOrigin={{
-        vertical: 'top',
-        horizontal: 'right',
+        vertical: 'bottom',
+        horizontal: 'center',
       }}
       id={mobileMenuId}
       keepMounted
       transformOrigin={{
         vertical: 'top',
-        horizontal: 'right',
+        horizontal: 'center',
       }}
       open={isMobileMenuOpen}
       onClose={handleMobileMenuClose}
@@ -82,20 +82,16 @@ export default function NavBar() {
             <ArrowBackIosIcon />
           </IconButton>
 
-          {/* 왼쪽 아이콘 박스 - 투표, 타이머 */}
-          <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            <IconButton size="large" aria-label="Postit vote" color="inherit">
-              <HowToVoteIcon />
-            </IconButton>
-            <IconButton size="large" aria-label="Stop watch" color="inherit">
-              <TimerIcon />
-            </IconButton>
-          </Box>
+          <IconButton size="large" aria-label="Postit vote" color="inherit">
+            <HowToVoteIcon />
+          </IconButton>
+          <IconButton size="large" aria-label="Stop watch" color="inherit">
+            <TimerIcon />
+          </IconButton>
 
           {/* 중간 빈 공간 */}
           <Box sx={{ flexGrow: 1 }} />
 
-          {/* 오른쪽 - 아바타 & 초대 */}
           <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
             <Button
               size="large"
@@ -111,11 +107,11 @@ export default function NavBar() {
               aria-haspopup="true"
               color="inherit"
             >
-              <GroupAddIcon />
+              <PersonAddIcon />
             </IconButton>
           </Box>
 
-          {/* 오른쪽 - 화면 작아졌을 때 */}
+          {/* 화면 작아졌을 때 바로 위의 Box 사라지고 이 Box가 나타남 */}
           <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
             <IconButton
               size="large"
@@ -129,15 +125,12 @@ export default function NavBar() {
             </IconButton>
           </Box>
 
-          {/* 오른쪽 -  */}
           <IconButton size="large" aria-label="Export" color="inherit">
               <FileDownloadIcon />
           </IconButton>
-
         </Toolbar>
       </AppBar>
       {renderMobileMenu}
-      {/* {renderMenu} */}
     </Box>
   );
 }
