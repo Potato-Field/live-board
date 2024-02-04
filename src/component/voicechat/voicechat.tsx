@@ -20,7 +20,7 @@ interface VolumeIndicator {
     nickname: string; // 'uid' 대신 'nickname' 사용
     level: number;
 }
-const socket = io("http://localhost:1111");
+const socket = io("https://www.jungleweb.duckdns.org:1111");
 
 const VoiceChat: React.FC = () => {
     

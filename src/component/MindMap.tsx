@@ -24,7 +24,7 @@ type Target = {
 //const MindMap = forwardRef((ref: RefObject<Konva.Stage>) => {
 export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.RefObject<Konva.Stage>, currentTool: Tools 
 , yDocRef: React.MutableRefObject<Y.Doc>}) => {
-    console.log(yDocRef)
+    //console.log(yDocRef)
     // const [nodeTargets, setNodeTargets] = useState<Target[]>([]);
     // const [connectors, setConnectors] = useState<Connector[]>([]);
     const layerRef = useRef<Konva.Layer>();
@@ -73,7 +73,7 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
       // console.log("!!!!targets, and connectors", yTargets, yConnectors, yTargets._map.size, yConnectors._map.size);
       // console.log(yTargets.size, yConnectors.size);
       if(event){
-        console.log(makeTextTravel());
+        //console.log(makeTextTravel());
       }
         if (currentTool === Tools.MINDMAP && yTargets.size === 0) {
             const stage = stageRef.current;
@@ -481,7 +481,7 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
   useEffect(() => {
       yConnectors.observe(updateCanvas);
       yTargets.observe(updateCanvas);
-      console.log("!!!!upedate",yTargets, yConnectors);     //TEST
+      //console.log("!!!!upedate",yTargets, yConnectors);     //TEST
     return () => {
             yTargets.unobserve(updateCanvas);
             yConnectors.unobserve(updateCanvas);
