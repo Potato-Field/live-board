@@ -19,12 +19,15 @@ import RedoRoundedIcon from '@mui/icons-material/RedoRounded';
 import { faPen, faHighlighter } from '@fortawesome/free-solid-svg-icons'
 import CircleIcon from '@mui/icons-material/Circle';
 
+import { useRef } from 'react';
+
 interface ButtonCustomGroupProps {
     handleIconBtnClick: (id: string) => void;
+    setUserId : (userId:any) =>any;
 }
 
-export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) =>{
-
+export const ButtonCustomGroup = ({handleIconBtnClick, setUserId}: ButtonCustomGroupProps) =>{
+    const userIdBox:any = useRef(null);
     const { currentColor, setCurrentColor } = useColor();
 
     // 색상 변경
@@ -32,9 +35,17 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
         setCurrentColor(e);
     };
 
+    const addUserId = ()=>{
+        if(userIdBox.current){
+            setUserId(userIdBox.current.value)
+        }
+    };
+
     return(
         <div className = "ToolBtnGroup" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", backgroundColor: "white", maxWidth: "100%"}}>
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
+                <input type="text" id="userId" placeholder='Input your ID' ref={userIdBox}></input>
+                <button type="button" onClick={addUserId}>submit</button>
                 <IconButton><UndoRoundedIcon /></IconButton>
                 <IconButton><RedoRoundedIcon /></IconButton>
                 {

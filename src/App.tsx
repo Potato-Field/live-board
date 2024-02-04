@@ -13,8 +13,10 @@ import { ColorProvider } from './component/ColorContext';
 
 import { Tools } from './component/Tools';
 
-import NavBarRoom from './component/NavBarRoom';
 // import NavBarLobby from './component/NavBarLobby';
+
+// import VoiceChat from './component/voicechat/voicechat';
+import NavBarRoom from './component/NavBarRoom';
 
 import thumbUpImg from './assets/thumbup.png';
 import thumbDownImg from './assets/thumbdown.png'
@@ -1636,6 +1638,8 @@ const App: FC = () => {
   return (
     <div style={{position: "relative", width: "100%"}}>
       {/* <NavBarLobby /> */}
+
+      {/* <VoiceChat /> */}
       <NavBarRoom />
       <Stage
         width        = {window.innerWidth}
@@ -1662,7 +1666,7 @@ const App: FC = () => {
 
       </Stage>
       <ColorProvider>
-        <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} />
+        <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} setUserId={setUserId} />
       </ColorProvider>
     </div>
   );
