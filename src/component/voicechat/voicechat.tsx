@@ -211,7 +211,10 @@ const VoiceChat: React.FC = () => {
                                 }}
                             >
                                 <Avatar sx={{ bgcolor: '#ffc107', width: 56, height: 56 }}>
-                                    {nickname[0].toUpperCase()} {/* 첫 글자를 대문자로 표시 */}
+                                    {/*
+                                        {nickname[0].toUpperCase()} 
+                                    */}
+                                    {nickname[0]} {/* 첫 글자를 대문자로 표시 */}
                                 </Avatar>
                             </Box>
                         ))}
