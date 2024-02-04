@@ -24,6 +24,7 @@ body {
   display: flex;
   place-items: center;
   overflow: hidden;
+  justify-content: center;
 }
 
 #container {
@@ -41,10 +42,21 @@ body {
   width: 90%; 
 }
 
-.speaker {
-  display: inline-block; 
-  margin-right: 10px; 
+#welcome {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
 
+#center-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* 화면 전체 높이만큼 요소를 채우도록 설정 */
+  text-align: center; /* 내용을 가로로 가운데 정렬 */
 }
 
 .tool-CURSOR {
