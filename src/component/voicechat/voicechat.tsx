@@ -5,8 +5,8 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
+// import Toolbar from '@mui/material/Toolbar';
+// import Typography from '@mui/material/Typography';
 import { io } from 'socket.io-client';
 import { useLocation, useNavigate } from 'react-router-dom';
 

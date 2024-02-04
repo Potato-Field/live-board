@@ -187,20 +187,20 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
     textArea.focus();
   };
 
-  const makeTextTravel = () => {
-    let accumulatedValues = "";
+  // const makeTextTravel = () => {
+  //   let accumulatedValues = "";
 
-    const dfs = (targetId:string) => {
-      const nowTarget = yTargets.get(targetId);
-      if(!nowTarget) return;
+  //   const dfs = (targetId:string) => {
+  //     const nowTarget = yTargets.get(targetId);
+  //     if(!nowTarget) return;
 
-      accumulatedValues += nowTarget.value + " ";
-      nowTarget.childIds.forEach(childId => dfs(childId));
-    }
+  //     accumulatedValues += nowTarget.value + " ";
+  //     nowTarget.childIds.forEach(childId => dfs(childId));
+  //   }
 
-    dfs('target-0');
-    return accumulatedValues.trim();
-  }
+  //   dfs('target-0');
+  //   return accumulatedValues.trim();
+  // }
 
 
 
