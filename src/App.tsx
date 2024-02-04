@@ -4,6 +4,7 @@ import {
   , useRef
   , useEffect 
 } from 'react';
+import Konva from 'konva';
 import { Stage, Layer } from 'react-konva';
 import { ButtonCustomGroup } from './component/ButtonCustomGroup';
 
@@ -13,25 +14,24 @@ import { ColorProvider } from './component/ColorContext';
 import { Tools } from './component/Tools';
 
 //import Stamp from './component/Stamp';
+// import MindMap from './component/MindMap';
+//import EditableText from "./component/EditableText";
+import VoiceChat from './component/voicechat/voicechat';
 
 import thumbUpImg from './assets/thumbup.png';
 import thumbDownImg from './assets/thumbdown.png'
 
 import "./index.css"
 
-//import EditableText from "./component/EditableText";
-
 //-----------CRDT---------------------
 import * as Y from "yjs";
 //import { WebsocketProvider } from "y-websocket";
 import { WebrtcProvider } from "y-webrtc";
-import Konva from 'konva';
 import { uuidv4 } from 'lib0/random.js';
 import {TextInputProps} from './component/TextEditor';
 //import { FastLayer } from 'konva/lib/FastLayer';
 import { Shape } from './component/UserShape';
 //import { set } from 'lodash';
-import VoiceChat from './component/voicechat/voicechat';
 //import { number } from 'lib0';
 import MindMap from './component/MindMap';
 
@@ -41,8 +41,11 @@ let multiSelectBlocker = {
   x2:0,
   y2:0,
 
-}//블록 하는 좌표
+}
+
+/* 블록 하는 좌표 */
 let groupTr:Konva.Transformer | null = null;
+
 //Container Components
 const App: FC = () => {
 
@@ -51,8 +54,13 @@ const App: FC = () => {
   //const [currentColor, setCurrentColor] = useState<string>('#000000');
   //const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [clickedIconBtn, setClickedIconBtn] = useState<string | null>(null);
-  const [nodeTargets, setNodeTargets] = useState<Target[]>([]);
-  const [connectors, setConnectors] = useState<Connector[]>([]);
+  
+  const POSTIT_MIN_WIDTH = 250;  // init size
+  const POSTIT_MIN_HEIGHT = 300; // init size
+  const [textHeight, setTextHeight] = useState<number>(POSTIT_MIN_HEIGHT); // 포스트잇 텍스트 높이
+  const [textareaHeight, setTextareaHeight] = useState<number | undefined>(NaN); // 포스트잇 텍스트 영역 높이
+  const textHeightRef = useRef<number>();  // 포스트잇 텍스트 높이
+  const textareaHeightRef = useRef<number | undefined>();  // 포스트잇 텍스트 영역 높이
 
   /*
    * [CRDT] 
@@ -73,6 +81,7 @@ const App: FC = () => {
   const isDrag = useRef(false);
   const isHand = useRef(false);
   const toolRef = useRef(tool);
+
   // Y.js 관련 상태를 useRef로 관리
   const yDocRef = useRef(new Y.Doc());
   
@@ -110,11 +119,20 @@ const App: FC = () => {
   const setUserId = (param:string)=>{
     userId.current = param
   }
+
+
   //load() 역할을 하는 듯
   useEffect(() => {
-    //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current)
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+    /* 웹소켓 방식 */
+    //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current);
+
+    /* 본인 로컬에서 작동 */
+    // const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+
+    /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
+
+    /* 배포시 사용 */
     const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
     
       
@@ -141,6 +159,7 @@ const App: FC = () => {
       yText.forEach((konvaData:any, index:string)=>{
         const node = stageRef.current.children[0].findOne("#"+index)
         let newShape:any;
+        console.log(konvaData)
         if(node) return;
         newShape = createNewText(index, {x: konvaData.x, y: konvaData.y}, konvaData.text)
         stageRef.current.getLayers()[0].add(newShape);
@@ -311,6 +330,7 @@ const App: FC = () => {
     };
   }, []);
 
+
   useEffect(() => {
     toolRef.current = tool;
   }, [tool]);
@@ -480,6 +500,22 @@ const App: FC = () => {
     })
     return newShape
   }
+
+  function findFirstDiffIndex(oldStr:string, newStr:string) {
+    let start = 0;
+    while (start < oldStr.length && start < newStr.length && oldStr[start] === newStr[start]) {
+        start++;
+    }
+
+    let endOld = oldStr.length - 1;
+    let endNew = newStr.length - 1;
+    while (endOld >= start && endNew >= start && oldStr[endOld] === newStr[endNew]) {
+        endOld--;
+        endNew--;
+    }
+
+    return { start, endOld: endOld + 1, endNew: endNew + 1 };
+  }
   
   const createNewText = (id:string, pos:{x:number, y:number}, text:string)=>{
     const yTextData = yDocRef.current.getText(id);
@@ -516,13 +552,13 @@ const App: FC = () => {
     let textarea:HTMLTextAreaElement;
     
     yTextData.observe(() => {
-      
-      if (textarea !== document.activeElement) {
-        textarea.value = yTextData.toString();
-      }
+
       textNode.text(yTextData.toString());
     });
-
+    // if (textarea !== document.activeElement) {
+    //   textarea.value = yTextData.toString();
+    // }
+    
     textNode.on('dblclick dbltap', () => {
       textNode.hide();
       
@@ -534,12 +570,43 @@ const App: FC = () => {
       textarea = createNewTextArea(textNode, areaPosition);
       textarea.value = yTextData.toString();
 
-      textarea.addEventListener('input', () => {
-        // Y.Text 내용을 textarea의 값으로 업데이트
-        yTextData.delete(0, yTextData.length);
-        yTextData.insert(0, textarea.value);
+
+      let isComposing = false;
+
+      textarea.addEventListener('compositionstart', () => {
+          isComposing = true; // 한글 입력 시작
       });
-  
+
+      textarea.addEventListener('compositionend', () => {
+          isComposing = false; // 한글 입력 완료
+          
+          syncText(); // 입력 완료 후 동기화 함수 호출
+      });
+
+      textarea.addEventListener('input', () => {
+        if (!isComposing) {
+          // 한글 입력이 아니거나 입력이 완료된 경우에만 동기화 진행
+          syncText();
+        }
+      });
+
+      const syncText = ()=>{
+        const currentText = textarea.value;
+        // Y.Text 객체의 현재 내용
+        const yCurrentText = yTextData.toString();
+      
+        const { start, endOld, endNew } = findFirstDiffIndex(yCurrentText, currentText);
+
+        if (start !== endOld) {
+            yTextData.delete(start, endOld - start);
+        }
+
+        // 그리고 새로운 문자열을 삽입
+        const newText = currentText.substring(start, endNew);
+        if (newText.length > 0) {
+            yTextData.insert(start, newText);
+        }
+      }
       
       function removeTextarea() {
         if(!textarea.parentNode) return;
@@ -557,6 +624,7 @@ const App: FC = () => {
           text      : textNode.text(),
           draggable : true,
         }
+        console.log(konvaData)
         yObjects.set(textNode.id(), konvaData);
       }
 
@@ -622,7 +690,7 @@ const App: FC = () => {
   
   const createNewTr = ()=>{
     //if (groupTr != null) return;
-    const tr = new Konva.Transformer();
+    const tr = new Konva.Transformer({ flipEnabled: false });
     tr.on('dragstart', function() {
       isDrag.current = true;
     });
@@ -636,8 +704,8 @@ const App: FC = () => {
         }
         yMove.set(node.id(), changeInfo);
       });
-
     });
+
     tr.on('dragend', function() {
       isDrag.current = false;
       let type:any;
@@ -1194,44 +1262,46 @@ const App: FC = () => {
         x: 0,
         y: 0,
       }
+      
+      let PostItText: any = new Konva.Text({
+        name: 'PostItText',
+        ...postItOptions, // x, y
+        width: POSTIT_MIN_WIDTH,
+        height: textHeight, // POSTIT_MIN_HEIGHT
+        text: '',
+        fontSize: 20,
+        padding: 15,
+      });
+      
+      let initText = new Konva.Text({
+        name: 'initText',
+        ...postItOptions,
+        width: PostItText.width(),
+        text: 'Type anything! And also everyone in the meeting can vote on your topic by stamp👍🏽👎🏽',
+        fontSize: 20,
+        opacity: 0.4,
+        padding: 15,
+      });
 
       let PostItRect = new Konva.Rect({
+        name : "PostItRect",
         ...postItOptions,
-        width: 250, // init size
-        height: 300,  // init size
+        width: PostItText.width(),
+        height: PostItText.height(),
         fill: '#FFD966',
         shadowColor: 'black',
         shadowBlur: 15,
         shadowOffsetX: 5,
         shadowOffsetY: 5,
         shadowOpacity: 0.2,
-      });
-      
-      let PostItText: any = new Konva.Text({
-        // id : idx,
-        ...postItOptions,
-        text: '',
-        fontSize: 20,
-        width: PostItRect.width(),
-        height: PostItRect.height(),
-        padding: 15,
-      });
-
-      let initText = new Konva.Text({
-        ...postItOptions,
-        text: 'Type anything! And also everyone in the meeting can vote on your topic by stamp👍🏽👎🏽',
-        fontSize: 20,
-        opacity: 0.4,
-        width: PostItRect.width(),
-        padding: 15,
-      });
+      });  
 
       PostItGroup.add(PostItRect);
       PostItGroup.add(PostItText);
       PostItGroup.add(initText);
       layer.add(PostItGroup);
       setTool(Tools.CURSOR);
-      
+
       PostItGroup.on('dblclick dbltap', () => {
         initText.hide();
 
@@ -1260,8 +1330,8 @@ const App: FC = () => {
         textarea.style.padding = '15px';
         textarea.style.margin = '0px';
         textarea.style.overflow = 'hidden';
-        // textarea.style.background = 'gray';
-        textarea.style.background = 'none';
+        textarea.style.background = 'gray';
+        // textarea.style.background = 'none';
         textarea.style.outline = 'none';
         textarea.style.resize = 'none';
         textarea.style.lineHeight = PostItText.lineHeight();
@@ -1323,11 +1393,7 @@ const App: FC = () => {
           console.log(textarea.style.height);
           let textareaHeight = (parseInt(textarea.style.height.slice(0, -2)) as any);
           console.log(textareaHeight);
-          if (textareaHeight > PostItRect.height) {
-            PostItRect.height = textareaHeight;
-            layer.batchDraw();  // 조건 만족할 때 PostItRect 사라짐
-          }
-          
+
           const key = e.key.toLowerCase();
           if (key == 'esc' || key == 'escape') {
             PostItText.text(textarea.value);
@@ -1355,8 +1421,47 @@ const App: FC = () => {
           // PostItText.show();
         }
       });
-    }
-  };
+
+      PostItGroup.on('click', (e:any)=>{  // e.target: Text, e.currentTarget: Group       
+        if (groupTr === null) {
+          createNewTr();
+        } 
+        else {          
+          groupTr.nodes([e.target]);  // e.target: PostItText
+        }
+    
+        const text = PostItGroup.findOne('.PostItText')
+        const rect = PostItGroup.findOne('.PostItRect')
+        const init = PostItGroup.findOne('.initText')
+        
+        if (text && rect) {
+          text.on('transform', () => {
+            text.setAttrs({
+              width: Math.max(text.width() * text.scaleX(), POSTIT_MIN_WIDTH),
+              height : Math.max(text.height() * text.scaleY(), POSTIT_MIN_HEIGHT),
+              scaleX: 1,
+              scaleY: 1,
+            });
+      
+            // text의 크기가 변경될 때 rect의 크기도 업데이트
+            rect.setAttrs({
+              width: text.width(),
+              height: text.height(),
+            });
+
+            // text의 너비가 변경될 때 initText의 너비도 업데이트
+            if (init) {
+              init.setAttrs({
+                width: text.width(),
+              })
+            }
+
+            // console.log('텍', text.height());
+          });
+        }
+      })
+    } 
+  };    
 
   const createNewTextArea:any = (textNode:any, areaPosition:{x:number, y:number})=>{
     const textarea = document.createElement('textarea');
@@ -1411,7 +1516,7 @@ const App: FC = () => {
   const handleMouseWheel = (e: any) => {
     e.evt.preventDefault();
     const stage = e.target.getStage();
-;
+
     var oldScale = stage.scaleX();
     var pointer = stage.getPointerPosition();
     var scaleBy = 1.1;
@@ -1462,28 +1567,27 @@ const App: FC = () => {
     <div style={{position: "relative", width: "100%"}}>
       <VoiceChat />
       <Stage
-        width       = {window.innerWidth}
-        height      = {window.innerHeight}
-        onMouseEnter= {handleMouseEnter}
-        onMouseLeave= {handleMouseLeave}
-        onMouseDown = {handleMouseDown}
-        onTouchStart= {handleMouseDown}
-        onMouseMove = {handleMouseMove}
-        onTouchMove = {handleMouseMove}
-        onMouseUp   = {handleMouseUp}
-        onTouchEnd  = {handleMouseUp}
-        onClick     = {handleMouseClick}
-        onWheel     = {handleMouseWheel}
-        draggable   = {false}
-        ref         ={stageRef}
+        width        = {window.innerWidth}
+        height       = {window.innerHeight}
+        onMouseEnter = {handleMouseEnter}
+        onMouseLeave = {handleMouseLeave}
+        onMouseDown  = {handleMouseDown}
+        onTouchStart = {handleMouseDown}
+        onMouseMove  = {handleMouseMove}
+        onTouchMove  = {handleMouseMove}
+        onMouseUp    = {handleMouseUp}
+        onTouchEnd   = {handleMouseUp}
+        onClick      = {handleMouseClick}
+        onWheel      = {handleMouseWheel}
+        draggable    = {false}
+        ref          = {stageRef}
       >
       
         <Layer></Layer>
         
-      <>
-        <MindMap stageRef = {stageRef} currentTool={tool} yDocRef = {yDocRef}/>
-      </>
-
+        <>
+          <MindMap stageRef = {stageRef} currentTool={tool} yDocRef = {yDocRef}/>
+        </>
 
       </Stage>
       <ColorProvider>
