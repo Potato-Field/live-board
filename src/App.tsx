@@ -13,10 +13,8 @@ import { ColorProvider } from './component/ColorContext';
 
 import { Tools } from './component/Tools';
 
-//import Stamp from './component/Stamp';
-// import MindMap from './component/MindMap';
-//import EditableText from "./component/EditableText";
-import VoiceChat from './component/voicechat/voicechat';
+import NavBarRoom from './component/NavBarRoom';
+// import NavBarLobby from './component/NavBarLobby';
 
 import thumbUpImg from './assets/thumbup.png';
 import thumbDownImg from './assets/thumbdown.png'
@@ -40,7 +38,6 @@ let multiSelectBlocker = {
   y1:0,
   x2:0,
   y2:0,
-
 }
 
 /* 블록 하는 좌표 */
@@ -1403,8 +1400,8 @@ const App: FC = () => {
         textarea.style.padding = '15px';
         textarea.style.margin = '0px';
         textarea.style.overflow = 'hidden';
-        textarea.style.background = 'gray';
-        // textarea.style.background = 'none';
+        // textarea.style.background = 'gray';
+        textarea.style.background = 'none';
         textarea.style.outline = 'none';
         textarea.style.resize = 'none';
         textarea.style.lineHeight = PostItText.lineHeight();
@@ -1638,7 +1635,8 @@ const App: FC = () => {
 
   return (
     <div style={{position: "relative", width: "100%"}}>
-      <VoiceChat />
+      {/* <NavBarLobby /> */}
+      <NavBarRoom />
       <Stage
         width        = {window.innerWidth}
         height       = {window.innerHeight}
@@ -1664,7 +1662,7 @@ const App: FC = () => {
 
       </Stage>
       <ColorProvider>
-        <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} setUserId={setUserId}/>
+        <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} />
       </ColorProvider>
     </div>
   );
