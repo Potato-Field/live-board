@@ -5,36 +5,55 @@ import { Tools } from './Tools';
 
 import * as Y from "yjs";
 
-type Target = {
+export type Target = {
     id: string;
     x: number;
     y: number;
     value: string,
   };
   
-  type Connector = {
+  export type Connector = {
     id: string;
     from: string;
     to: string;
   };
   
+ 
 
 
 //const MindMap = forwardRef((ref: RefObject<Konva.Stage>) => {
-export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.RefObject<Konva.Stage>, currentTool: Tools 
+export const MindMap = (({  nodeTargets , setNodeTargets, connectors, setConnectors, stageRef, currentTool, yDocRef }: { nodeTargets :any, setNodeTargets:any, connectors:any, setConnectors:any,stageRef: React.RefObject<Konva.Stage>, currentTool: Tools 
 , yDocRef: React.MutableRefObject<Y.Doc>}) => {
-    const [nodeTargets, setNodeTargets] = useState<Target[]>([]);
-    const [connectors, setConnectors] = useState<Connector[]>([]);
+
+    // const [nodeTargets, setNodeTargets] = useState<Target[]>([]);
+    // const [connectors, setConnectors] = useState<Connector[]>([]);
     const layerRef = useRef<Konva.Layer>();
 
     useEffect(() => {
-        if(stageRef.current && !layerRef.current){
-            const layer = new Konva.Layer();
-            layerRef.current = layer;
-            stageRef.current.add(layer);
+      if(stageRef.current){
+        const layerName = 'nodeTargetLayer';
+        let layer = stageRef.current.getLayers().find(l => l.name() === layerName);
+          
+        if(!layer){
+          layer = new Konva.Layer();
+          layer.name(layerName);
+          stageRef.current.add(layer);
         }
+        layerRef.current = layer;
+      }
+  }, [stageRef]);
+  console.log("!!!!!!!!!!!!!!", stageRef.current?.getLayers());//TEST
+  console.log("????????targets length", nodeTargets);
+
+    // useEffect(() => {
+    //     if(stageRef.current && !layerRef.current){
+    //         const layer = new Konva.Layer();
+    //         layerRef.current = layer;
+    //         stageRef.current.add(layer);
+    //     }
         
-    }, [stageRef]);
+    // }, [stageRef]);
+
   //   useEffect(() => {
   //     if (stageRef.current && !layerRef.current) {
   //         let layer = stageRef.current.getLayers()[0];

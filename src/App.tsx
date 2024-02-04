@@ -33,6 +33,7 @@ import {TextInputProps} from './component/TextEditor';
 import { Shape } from './component/UserShape';
 //import { set } from 'lodash';
 //import { number } from 'lib0';
+import MindMap from './component/MindMap';
 
 let multiSelectBlocker = {
   x1:0,
@@ -126,13 +127,13 @@ const App: FC = () => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current);
 
     /* 본인 로컬에서 작동 */
-    // const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
 
     /* 배포시 사용 */
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
     
       
 
@@ -1584,9 +1585,9 @@ const App: FC = () => {
       
         <Layer></Layer>
         
-        {/* <>
+        <>
           <MindMap stageRef = {stageRef} currentTool={tool} yDocRef = {yDocRef}/>
-        </> */}
+        </>
 
       </Stage>
       <ColorProvider>
