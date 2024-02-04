@@ -1,10 +1,9 @@
-import React, {useRef, useEffect, useState} from 'react';
+import React, {useRef, useEffect} from 'react';
 import Konva from 'konva';
 import { Tools } from './Tools';
 
 
 import * as Y from "yjs";
-import { layer } from '@fortawesome/fontawesome-svg-core';
 
 type Target = {
     id: string;
@@ -71,9 +70,11 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
 
 
     const handleClick = (event:any) => {
-      console.log("!!!!targets, and connectors", yTargets, yConnectors, yTargets._map.size, yConnectors._map.size);
-      console.log(yTargets.size, yConnectors.size);
-      console.log(makeTextTravel());
+      // console.log("!!!!targets, and connectors", yTargets, yConnectors, yTargets._map.size, yConnectors._map.size);
+      // console.log(yTargets.size, yConnectors.size);
+      if(event){
+        console.log(makeTextTravel());
+      }
         if (currentTool === Tools.MINDMAP && yTargets.size === 0) {
             const stage = stageRef.current;
             const pointerPosition = stage?.getPointerPosition();
