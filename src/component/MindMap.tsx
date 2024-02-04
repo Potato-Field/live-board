@@ -11,6 +11,7 @@ type Target = {
     x: number;
     y: number;
     value: string,
+    childIds: string[],
   };
   
   type Connector = {
@@ -25,8 +26,8 @@ type Target = {
 export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.RefObject<Konva.Stage>, currentTool: Tools 
 , yDocRef: React.MutableRefObject<Y.Doc>}) => {
     console.log(yDocRef)
-    const [nodeTargets, setNodeTargets] = useState<Target[]>([]);
-    const [connectors, setConnectors] = useState<Connector[]>([]);
+    // const [nodeTargets, setNodeTargets] = useState<Target[]>([]);
+    // const [connectors, setConnectors] = useState<Connector[]>([]);
     const layerRef = useRef<Konva.Layer>();
 
     const yTargets: Y.Map<Target> = yDocRef.current.getMap('targets');
@@ -59,6 +60,7 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
                           x: pointerPosition.x,  
                           y: pointerPosition.y,  
                           value: "new-node",
+                          childIds: [],
                       };
                       yTargets.set(newNodeId, newNode);
                   }
@@ -71,6 +73,7 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
     const handleClick = (event:any) => {
       console.log("!!!!targets, and connectors", yTargets, yConnectors, yTargets._map.size, yConnectors._map.size);
       console.log(yTargets.size, yConnectors.size);
+      console.log(makeTextTravel());
         if (currentTool === Tools.MINDMAP && yTargets.size === 0) {
             const stage = stageRef.current;
             const pointerPosition = stage?.getPointerPosition();
@@ -81,11 +84,14 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
                     x: pointerPosition.x,
                     y: pointerPosition.y,
                     value: "new-node",
+                    childIds: [],
                 };
                 yTargets.set(newNodeId, newNode);
             }
         }
     };
+
+
     const addNewCircleAndConnector = (targetId:string) => {
       const baseTarget = yTargets.get(targetId);
       if (!baseTarget) return;
@@ -110,12 +116,22 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
   
       const newX = baseTarget.x + randomX;
       const newY = baseTarget.y + randomY;
+      
+      const generateRandomId = (prefix:any) => `${prefix}-${Math.random().toString(36).substring(2, 9)}`;
   
-      const newTargetId = `target-${yTargets.size}`;
-      const newTarget = { id: newTargetId, x: newX, y: newY, value: `new-node${yTargets.size}` };
+      const newTargetId = generateRandomId(`target-${yTargets.size}`);
+      const newTarget = { id: newTargetId, x: newX, y: newY, value: `new-node${yTargets.size}`, childIds: [] };
       yTargets.set(newTargetId, newTarget);
+
+      //child target id 추가하는 부분
+      const updatedTarget = {
+        ...baseTarget, 
+        childIds: [...baseTarget.childIds, newTargetId]
+      };
+      yTargets.set(targetId, updatedTarget);
+
   
-      const newConnectorId = `connector-${yConnectors.size}`;
+      const newConnectorId = generateRandomId(`connector-${yConnectors.size}`);
       const newConnector = { id: newConnectorId, from: targetId, to: newTargetId };
       yConnectors.set(newConnectorId, newConnector);
         
@@ -170,6 +186,21 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
     textArea.focus();
   };
 
+  const makeTextTravel = () => {
+    let accumulatedValues = "";
+
+    const dfs = (targetId:string) => {
+      const nowTarget = yTargets.get(targetId);
+      if(!nowTarget) return;
+
+      accumulatedValues += nowTarget.value + " ";
+      nowTarget.childIds.forEach(childId => dfs(childId));
+    }
+
+    dfs('target-0');
+    return accumulatedValues.trim();
+  }
+
 
 
   const deleteTarget = (targetId: string) => {
@@ -179,6 +210,9 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
     const textNode = layerRef.current?.findOne('#text-'+targetId);
     node?.destroy();
     textNode?.destroy();
+
+    // node?.remove();
+    // textNode?.remove();
     
     //console.log("Does target exist before deletion?", yTargets.has(targetId)); 
     yTargets.delete(targetId);
@@ -189,16 +223,12 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
         const line = layerRef.current?.findOne('#' + connectorId);
         line?.destroy();
   
-        console.log("Connector count before deletion:", yConnectors.size);
+        console.log("Connector count before deletion:", yConnectors.size);    //TeST
         yConnectors.delete(connectorId); 
-        console.log("Connector count after deletion:", yConnectors.size);
+        console.log("Connector count after deletion:", yConnectors.size);     //TEST
       }
     });
-    console.log("delete after target, connecotr", yTargets, yConnectors);
-
-
-
-    
+    console.log("delete after target, connecotr", yTargets, yConnectors);     //TesT
 
   }
 
@@ -216,14 +246,66 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
           const foundLine = layerRef.current?.findOne('#' + connectorId) as Konva.Arrow;
           if (foundLine) {
             foundLine.points([fromNode.x, fromNode.y, toNode.x, toNode.y]);
-            // Optionally, update connector positions in yConnectors if needed
-            // This depends on whether your yConnectors map stores positional data or just relationships
             layerRef.current?.add(foundLine);
           }
         }
       }
     });
 
+  }
+
+
+  const showContextMenu = (event:any, id:string) =>  {
+          let node = layerRef.current?.findOne(`#${id}`);
+          let menu = document.getElementById('contextMenu'+ node?.id());
+       
+        
+          if(!menu){
+            const menu = document.createElement('div');
+            menu.id = 'contextMenu' + node?.id();
+            document.body.appendChild(menu);
+            
+            const createButton = document.createElement('button');
+            createButton.innerHTML = 'Create';
+            createButton.id = 'create' + menu.id;
+            createButton.onclick = function (){
+              addNewCircleAndConnector(id);
+              menu.style.display = 'none';
+            }
+            
+            const deleteButton = document.createElement('button');
+            deleteButton.innerHTML = 'Delete';
+            deleteButton.id = 'delete' + menu.id;
+            deleteButton.onclick = function (){
+              deleteTarget(id);
+              menu.style.display = 'none';
+            }
+
+            const cancelButton = document.createElement('button');
+            cancelButton.innerHTML = 'Cancel';
+            //id 필요없지 않나..
+            cancelButton.onclick = function (){
+              menu.style.display = 'none';
+            }
+            
+            
+            menu.appendChild(createButton);
+            menu.appendChild(deleteButton);
+            menu.appendChild(cancelButton);
+          }
+
+          if(menu){
+            menu.style.display = 'block';
+            menu.style.position = 'absolute';
+            menu.style.left = `${event.evt.clientX}px`;
+            menu.style.top = `${event.evt.clientY}px`;
+            menu.style.backgroundColor = '#f9f9f9';
+            menu.style.boxShadow = '0px 8px 16px 0px rgba(0,0,0,0.2)';
+            menu.style.zIndex = '1000';
+            menu.style.padding = '10px';
+            
+          }
+    
   }
 
   
@@ -277,8 +359,6 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
                 y: target.y,
                 fill: '#A9A9A9',
                 radius: 20,
-                //innerRadius: 20,
-                //outerRadius: 0,
                 draggable: true,
                 stroke: 'black',
                 strokeWidth: 2,
@@ -295,56 +375,18 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
           }
           
       });
+
+     
   
       node.off('contextmenu').on('contextmenu', (event) => {
         event.evt.preventDefault();
           if (currentTool === Tools.MINDMAP) {
-
-              let menu = document.getElementById('contextMenu'+ node?.id());
-           
-            
-              if(!menu){
-                const menu = document.createElement('div');
-                menu.id = 'contextMenu' + node?.id();
-                document.body.appendChild(menu);
-                
-                const createButton = document.createElement('button');
-                createButton.innerHTML = 'Create';
-                createButton.id = 'create' + menu.id;
-                createButton.onclick = function (){
-                  addNewCircleAndConnector(id);
-                  menu.style.display = 'none';
-                }
-                
-                const deleteButton = document.createElement('button');
-                deleteButton.innerHTML = 'Delete';
-                deleteButton.id = 'delete' + menu.id;
-                deleteButton.onclick = function (){
-                  deleteTarget(id);
-                  menu.style.display = 'none';
-                }
-                
-                
-                menu.appendChild(createButton);
-                menu.appendChild(deleteButton);
-              }
-
-              if(menu){
-                menu.style.display = 'block';
-                menu.style.position = 'absolute';
-                menu.style.left = `${event.evt.clientX}px`;
-                menu.style.top = `${event.evt.clientY}px`;
-                menu.style.backgroundColor = '#f9f9f9';
-                menu.style.boxShadow = '0px 8px 16px 0px rgba(0,0,0,0.2)';
-                menu.style.zIndex = '1000';
-                menu.style.padding = '10px';
-                
-              }
+            showContextMenu(event, id);
             }
           });
           
       node.on('dragmove', () => {
-        if(currentTool === Tools.MINDMAP){
+        //if(currentTool === Tools.MINDMAP){
 
           const target = yTargets.get(id);
           if(target){
@@ -359,7 +401,7 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
           //need to update yTarget and yconnector code
           
           updateConnectors(id);
-        }
+        //}
       });
 
       const fontSize = 12; 
@@ -398,12 +440,21 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
           textNode.text(textValue);
         }
 
-        if (node) {
-          //node.zIndex(100);
-      }
-        if (textNode) {
-          //textNode.zIndex(200);
-      }
+        textNode.off('dblclick').on('dblclick', (event) => {
+          if (currentTool === Tools.MINDMAP) {
+              handleCircleClick(event, id);
+          }
+          
+        });
+
+        textNode.off('contextmenu').on('contextmenu', (event) => {
+          event.evt.preventDefault();
+          if(currentTool === Tools.MINDMAP){
+            showContextMenu(event, id);
+          }
+        });
+
+        
     });
   };
 
@@ -426,8 +477,8 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
       yTargets.observe(updateCanvas);
       console.log("!!!!upedate",yTargets, yConnectors);     //TEST
     return () => {
-            // yTargets.unobserve(updateCanvas);
-            // yConnectors.unobserve(updateCanvas);
+            yTargets.unobserve(updateCanvas);
+            yConnectors.unobserve(updateCanvas);
     };
 }, [yTargets, yConnectors, currentTool, stageRef]);
 
@@ -435,6 +486,7 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
 
     console.log("!!!!!!!target, connector",yTargets, yConnectors);  //TEST
     console.log("!!!!!!!!!!!!!!!!!!!!!!come out");//TEST
+    
 
 
 
