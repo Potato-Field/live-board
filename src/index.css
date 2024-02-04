@@ -46,3 +46,11 @@ body {
   margin-right: 10px; 
 
 }
+
+.cursor-div {
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  pointer-events: none; /* 이 div가 마우스 이벤트를 방해하지 않도록 설정 */
+}
