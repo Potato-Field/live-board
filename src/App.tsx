@@ -105,6 +105,12 @@ const App: FC = () => {
   
   //Pen 객체 전체 저장
   const yObjects = yDocRef.current.getMap('objects');
+
+  //사용자 마우스 위치 저장
+  const yMousePositions = yDocRef.current.getMap('mousePositions');
+  
+  // 선택 영역 데이터 구조 정의
+  //const ySelectedNodes = yDocRef.current.getMap('selectedNodes');
   
   const yTextRef = useRef<Y.Array<TextInputProps>>(yDocRef.current.getArray<TextInputProps>('texts'));
   
@@ -121,6 +127,47 @@ const App: FC = () => {
     userId.current = param
   }
 
+  function getRandomColor() {
+    const r = Math.floor(Math.random() * 256); // Red 값
+    const g = Math.floor(Math.random() * 256); // Green 값
+    const b = Math.floor(Math.random() * 256); // Blue 값
+
+    const color = `rgb(${r}, ${g}, ${b})`;
+    
+    return color;
+  }
+  
+  function updateMousePositionOnScreen(userId:string, mousePosition:any) {
+    let mouseIcon = document.getElementById(`mouse-${userId}`);
+    if (!mouseIcon) {
+      mouseIcon = document.createElement('div');
+      mouseIcon.id = `mouse-${userId}`;
+      // 마우스 아이콘 스타일 설정
+      mouseIcon.style.position = 'absolute';
+      mouseIcon.setAttribute("class", `tool-${Tools[mousePosition.selectTool]}`);
+      //mouseIcon.style.borderTop = "20px solid "+getRandomColor();
+
+      let mouseUser = document.createElement('p');
+      
+      mouseUser.textContent = `${userId}`;
+      mouseUser.style.minWidth = '100px';
+      mouseUser.style.marginTop = '30px';
+      mouseUser.style.marginLeft = '10px';
+      mouseUser.style.color = 'white';
+      mouseUser.style.backgroundColor = getRandomColor()
+
+      mouseIcon.appendChild(mouseUser);
+      
+      // 사용자별 마우스 아이콘을 구분하기 위한 스타일 추가
+      document.body.appendChild(mouseIcon);
+    }
+    
+    const userCurrentTool = Tools[mousePosition.selectTool];
+
+    mouseIcon.setAttribute("class", `tool-${userCurrentTool}`);
+    mouseIcon.style.left = `${mousePosition.x}px`;
+    mouseIcon.style.top = `${mousePosition.y}px`;
+  }
 
   //load() 역할을 하는 듯
   useEffect(() => {
@@ -128,13 +175,13 @@ const App: FC = () => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current);
 
     /* 본인 로컬에서 작동 */
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
 
     /* 배포시 사용 */
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
     
       
 
@@ -156,11 +203,34 @@ const App: FC = () => {
       });  
     })
 
+    //마우스 움직임 감지
+    yMousePositions.observe((event) => {
+      event.changes.keys.forEach((change, key) => {
+        if(key == userId.current) return;
+        if (change.action === 'delete') {
+          
+        } else if (change.action === 'add' || change.action === 'update') {
+          const mousePosition = yMousePositions.get(key);
+          updateMousePositionOnScreen(key, mousePosition);
+        }
+      });
+    });
+
+    //영역 전개 감지
+    // ySelectedNodes.observe((event) =>{
+    //   event.changes.keys.forEach((change, key)=>{
+    //     if(key == userId.current) return;
+    //     const node = stageRef.current.children[0].findOne(`#user-tr-${key}`);
+    //     const yArr:any= ySelectedNodes.get(key);
+        
+    //   });
+    // });
+
+
     yText.observe(() => {
       yText.forEach((konvaData:any, index:string)=>{
         const node = stageRef.current.children[0].findOne("#"+index)
         let newShape:any;
-        console.log(konvaData)
         if(node) return;
         newShape = createNewText(index, {x: konvaData.x, y: konvaData.y}, konvaData.text)
         stageRef.current.getLayers()[0].add(newShape);
@@ -313,19 +383,12 @@ const App: FC = () => {
 
     yObjects.observe(handleDataLoaded);
 
-    //yObjects.observe(initializeCanvas);
-
-    // if (!dataLoaded.current) {
-    //   //yObjects.size > 0 && 
-    //   initializeCanvas();
-    //   dataLoaded.current = true; // 데이터 로드 완료 상태로 설정
-    // }
-
     yTextRef.current.observe(() => {
       setTextInputs(yTextRef.current.toArray());
     });
 
-    return () => {
+    return () => {      
+      yMousePositions.delete(userId.current);
       provider.destroy();
       yDocRef.current.destroy();
     };
@@ -625,7 +688,7 @@ const App: FC = () => {
           text      : textNode.text(),
           draggable : true,
         }
-        console.log(konvaData)
+        
         yObjects.set(textNode.id(), konvaData);
       }
 
@@ -689,6 +752,11 @@ const App: FC = () => {
     return textNode
   }
   
+  // const createUserTr = (userId:string)=>{
+  //   const tr = new Konva.Transformer({ flipEnabled: false, id:`user-tr-${userId}`, enabledAnchors: []});
+  //   return tr;
+  // }
+
   const createNewTr = ()=>{
     //if (groupTr != null) return;
     const tr = new Konva.Transformer({ flipEnabled: false });
@@ -997,6 +1065,11 @@ const App: FC = () => {
   };
 
   const handleMouseMove = (e: any) => {
+    const mousePosition = { x: e.evt.clientX, y: e.evt.clientY, selectTool : toolRef.current };
+    if(userId.current){
+      yMousePositions.set(userId.current, mousePosition);
+    }
+
     const stage = e.target.getStage();
 
     const pos = stage.getPointerPosition();

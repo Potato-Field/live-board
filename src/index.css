@@ -46,3 +46,83 @@ body {
   margin-right: 10px; 
 
 }
+
+.tool-CURSOR {
+  width: 24px;
+  height: 24px;
+  background-image: url('./assets/cursor.svg');
+  background-size: 100% 100%;
+  pointer-events: none; /* 이 div가 마우스 이벤트를 방해하지 않도록 설정 */
+}
+
+.tool-HAND {
+  width: 24px;
+  height: 24px;
+  background-image: url('./assets/cursor.svg');
+  background-size: 100% 100%;
+  pointer-events: none; /* 이 div가 마우스 이벤트를 방해하지 않도록 설정 */
+}
+
+.tool-PEN {
+  width: 24px;
+  height: 24px;
+  background-image: url('./assets/pen.svg');
+  background-size: 100% 100%;
+  pointer-events: none; /* 이 div가 마우스 이벤트를 방해하지 않도록 설정 */
+}
+
+.tool-HIGHLIGHTER {
+  width: 24px;
+  height: 24px;
+  background-image: url('./assets/highlighter.svg');
+  background-size: 100% 100%;
+  pointer-events: none; /* 이 div가 마우스 이벤트를 방해하지 않도록 설정 */
+}
+
+.tool-ERASER {
+  width: 24px;
+  height: 24px;
+  background-image: url('./assets/eraser.svg');
+  background-size: 100% 100%;
+  pointer-events: none; /* 이 div가 마우스 이벤트를 방해하지 않도록 설정 */
+}
+
+.tool-MINDMAP {
+  width: 24px;
+  height: 24px;
+  background-image: url('./assets/mindmap.svg');
+  background-size: 100% 100%;
+  pointer-events: none; /* 이 div가 마우스 이벤트를 방해하지 않도록 설정 */
+}
+
+.tool-POSTIT {
+  width: 24px;
+  height: 24px;
+  background-image: url('./assets/postit.svg');
+  background-size: 100% 100%;
+  pointer-events: none; /* 이 div가 마우스 이벤트를 방해하지 않도록 설정 */
+}
+
+.tool-STAMP {
+  width: 24px;
+  height: 24px;
+  background-image: url('./assets/stamp.svg');
+  background-size: 100% 100%;
+  pointer-events: none; /* 이 div가 마우스 이벤트를 방해하지 않도록 설정 */
+}
+
+.tool-SHAPE {
+  width: 24px;
+  height: 24px;
+  background-image: url('./assets/shapes.svg');
+  background-size: 100% 100%;
+  pointer-events: none; /* 이 div가 마우스 이벤트를 방해하지 않도록 설정 */
+}
+
+.tool-TEXT {
+  width: 24px;
+  height: 24px;
+  background-image: url('./assets/text.svg');
+  background-size: 100% 100%;
+  pointer-events: none; /* 이 div가 마우스 이벤트를 방해하지 않도록 설정 */
+}
