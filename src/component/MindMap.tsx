@@ -205,7 +205,7 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
 
   const deleteTarget = (targetId: string) => {
    
-    console.log("delete before target, connector", yTargets, yConnectors);
+    //console.log("delete before target, connector", yTargets, yConnectors);
     const node = layerRef.current?.findOne('#' + targetId);
     const textNode = layerRef.current?.findOne('#text-'+targetId);
     node?.destroy();
@@ -223,12 +223,12 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
         const line = layerRef.current?.findOne('#' + connectorId);
         line?.destroy();
   
-        console.log("Connector count before deletion:", yConnectors.size);    //TeST
+        //console.log("Connector count before deletion:", yConnectors.size);    //TeST
         yConnectors.delete(connectorId); 
-        console.log("Connector count after deletion:", yConnectors.size);     //TEST
+        //console.log("Connector count after deletion:", yConnectors.size);     //TEST
       }
     });
-    console.log("delete after target, connecotr", yTargets, yConnectors);     //TesT
+//    console.log("delete after target, connecotr", yTargets, yConnectors);     //TesT
 
   }
 
@@ -312,8 +312,14 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
   
     
 
-  const updateCanvas = () => {
-
+  const updateCanvas = (e:any) => {
+    e.changes.keys.forEach((change:any, key:any) => {
+      //console.log(key, change.action);
+      if (change.action === 'delete') {
+        deleteTarget(key);
+      }
+    });
+    
     yConnectors.forEach((connector, id) => {
       const foundLine = layerRef.current?.findOne(`#${id}`);
       let line: Konva.Arrow | null = null;
@@ -358,7 +364,7 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
                 x: target.x,
                 y: target.y,
                 fill: '#A9A9A9',
-                radius: 20,
+                radius: 70,
                 draggable: true,
                 stroke: 'black',
                 strokeWidth: 2,
@@ -385,9 +391,9 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
             }
           });
           
-      node.on('dragmove', () => {
-        //if(currentTool === Tools.MINDMAP){
-
+      node.off('dragmove').on('dragmove', () => {
+        //if(currentTool === Tools.MINDMAP){}
+          
           const target = yTargets.get(id);
           if(target){
             const updatedTarget: Target = {
@@ -396,15 +402,14 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
               y: node?.y()??target.y,
             }
             yTargets.set(id, updatedTarget);
-            layerRef.current?.add(target);
-          }
-          //need to update yTarget and yconnector code
+            //layerRef.current?.add(target);
+       
           
           updateConnectors(id);
-        //}
+        }
       });
 
-      const fontSize = 12; 
+      const fontSize = 25; 
 
       const textValue = target.value;
       const textForMeasure = new Konva.Text({
@@ -484,8 +489,8 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
 
 
 
-    console.log("!!!!!!!target, connector",yTargets, yConnectors);  //TEST
-    console.log("!!!!!!!!!!!!!!!!!!!!!!come out");//TEST
+    // console.log("!!!!!!!target, connector",yTargets, yConnectors);  //TEST
+    // console.log("!!!!!!!!!!!!!!!!!!!!!!come out");//TEST
     
 
 
