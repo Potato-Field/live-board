@@ -231,7 +231,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
       if(!nowTarget) return;
 
       const targetDiv = document.createElement('div');
-      targetDiv.textContent = nowTarget.value;
+      targetDiv.textContent = '.' + nowTarget.value;
       targetDiv.style.fontSize = `${baseFontSize - (depth * decrement)}px`; 
       targetDiv.style.textAlign = 'left';
 
@@ -248,6 +248,18 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
   }
 
 
+  const deleteTargetDfs = (targetId: string) => {
+    const nowTarget = yTargets.get(targetId);
+    if(!nowTarget)return;
+
+    if(nowTarget.childIds){
+      nowTarget.childIds.forEach((childTargetId:string) => {
+        deleteTargetDfs(childTargetId);
+      });
+    }
+  
+    deleteTarget(targetId);
+  }
 
 
   const deleteTarget = (targetId: string) => {
@@ -317,7 +329,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
             deleteButton.innerHTML = 'Delete';
             deleteButton.id = 'delete' + menu.id;
             deleteButton.onclick = function (){
-              deleteTarget(id);
+              deleteTargetDfs(id);
               menu.style.display = 'none';
             }
 
@@ -412,10 +424,11 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
                 id: id,
                 x: target.x,
                 y: target.y,
-                fill: '#0000',
-                radius: 40,
+                fill: '#fff',
+                radius: 70,
                 draggable: true,
-                 stroke: 'black',
+                opacity: 1,
+                //stroke: 'black',
                 //strokeWidth: 2,
             });
             layerRef.current?.add(node as Konva.Circle);
@@ -423,7 +436,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
             node.position({ x: target.x, y: target.y });
         }
         node.off('dblclick').on('dblclick', (event) => {
-          if (toolRef.current === Tools.MINDMAP) {
+          if (event.evt.button === 0 && toolRef.current === Tools.MINDMAP) {
               //addNewCircleAndConnector(id);
               handleCircleClick(event, id);
           }
@@ -434,28 +447,28 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
   
       node.off('contextmenu').on('contextmenu', (event) => {
         event.evt.preventDefault();
-        // if (toolRef.current === Tools.MINDMAP) {
+         if (toolRef.current === Tools.MINDMAP) {
           // console.log(toolRef.current)
           showContextMenu(event, id);
-        // }
+         }
       });
           
       node.off('dragmove').on('dragmove', () => {
         //if(toolRef.current === Tools.MINDMAP){}
-          
-          const target = yTargets.get(id);
-          if(target){
-            const updatedTarget: Target = {
-              ...target, 
-              x: node?.x()??target.x,
-              y: node?.y()??target.y,
-            }
-            yTargets.set(id, updatedTarget);
-            //layerRef.current?.add(target);
-       
-          
-          updateConnectors(id);
-        }
+            const target = yTargets.get(id);
+            if(target){
+              const updatedTarget: Target = {
+                ...target, 
+                x: node?.x()??target.x,
+                y: node?.y()??target.y,
+              }
+              yTargets.set(id, updatedTarget);
+              //layerRef.current?.add(target);
+        
+            
+            updateConnectors(id);
+          }
+        
       });
 
       const fontSize = 25; 
@@ -486,6 +499,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
             fontSize: fontSize,
             fontFamily: 'Arial',
             fill: 'black',
+            stroke: 'black',
           });
           layerRef.current?.add(textNode as Konva.Text);
         } 
@@ -495,10 +509,9 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
         }
 
         textNode.off('dblclick').on('dblclick', (event) => {
-          if (toolRef.current === Tools.MINDMAP) {
+          if (event.evt.button === 0 && toolRef.current === Tools.MINDMAP) {
               handleCircleClick(event, id);
           }
-          
         });
 
         textNode.off('contextmenu').on('contextmenu', (event) => {
