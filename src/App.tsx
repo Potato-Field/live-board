@@ -35,6 +35,7 @@ import { Shape } from './component/UserShape';
 //import { number } from 'lib0';
 import MindMap from './component/MindMap';
 
+/* 블록 하는 좌표 */
 let multiSelectBlocker = {
   x1:0,
   y1:0,
@@ -42,7 +43,6 @@ let multiSelectBlocker = {
   y2:0,
 }
 
-/* 블록 하는 좌표 */
 let groupTr:Konva.Transformer | null = null;
 
 //Container Components
@@ -110,6 +110,9 @@ const App: FC = () => {
   
   // 선택 영역 데이터 구조 정의
   const ySelectedNodes = yDocRef.current.getMap('selectedNodes');
+
+  // 객체 Lock 저장
+  const yLockNodes = yDocRef.current.getMap('lockNodes');
   
   const yTextRef = useRef<Y.Array<TextInputProps>>(yDocRef.current.getArray<TextInputProps>('texts'));
   
@@ -218,10 +221,46 @@ const App: FC = () => {
     ySelectedNodes.observe((event) =>{
       event.changes.keys.forEach((change, key)=>{
         if(key == userId.current) return;
-        console.log(change)
-        const userAreaData:any = ySelectedNodes.get(key);
-        const userArea:any = createNewUserArea(key, userAreaData);
-        stageRef.current.getLayers()[0].add(userArea);
+        if(change.action == 'delete'){
+          const oldGroup = stageRef.current.children[0].findOne(`#area-group-${key}`)
+          if(!oldGroup) return;
+          oldGroup.remove();
+
+        } else {
+          const userAreaData:any = ySelectedNodes.get(key);
+          createNewUserArea(key, userAreaData);
+        }
+      });
+    });
+
+    //객체 lock 감지
+    yLockNodes.observe((event) =>{
+      event.changes.keys.forEach((change, key)=>{
+        if(key == userId.current) return;
+        if(change.action == 'delete'){
+          const serializeData:any = change.oldValue;
+          const userLockData:string[] = JSON.parse(serializeData);
+          if(userLockData){
+            userLockData.forEach((value) => {
+              const node = stageRef.current.children[0].findOne("#"+value)
+              if(!node) return;
+              node.removeName('locked')
+            });
+          }
+        } 
+        else if(change.action == 'update'){
+          const serializeData:any = yLockNodes.get(key);
+          console.log(change.action, serializeData)
+        }
+        else {
+          const serializeData:any = yLockNodes.get(key);
+          const userLockData:string[] = JSON.parse(serializeData);
+          userLockData.forEach((value) => {
+            const node = stageRef.current.children[0].findOne("#"+value)
+            if(!node) return;
+            node.name('locked')
+          });
+        }
       });
     });
 
@@ -399,25 +438,54 @@ const App: FC = () => {
   }, [tool]);
 
   const createNewUserArea = (paramUserId:string, pos:{x:number, y:number, width:number, height:number})=>{
-    const node = stageRef.current.children[0].findOne(`#area-${paramUserId}`)
-    if(node) {
-      node.x(pos.x)
-      node.y(pos.y)
-      node.width(pos.width)
-      node.height(pos.height)
-      return node;
-    } else {
-      const newRect = new Konva.Rect({
-        id : `area-${paramUserId}`,
-        fill: 'rgba(255,0,0,0.2)',
-        visible : true,
-        x: pos.x,
-        y: pos.y,
-        width: pos.width,
-        height: pos.height,
-      })
-      return newRect;
-    }
+    const stage = stageRef.current
+    const scale = stage.scaleX(); // 현재 스케일
+    const position = stage.position(); // 현재 위치
+    
+    const realPointerPosition = {
+      x: (pos.x - position.x) / scale,
+      y: (pos.y - position.y) / scale,
+    };
+    
+    if(pos.width == 0 && pos.height == 0) return;
+
+    const newRect = new Konva.Rect({
+      id : `area-${paramUserId}`,
+      stroke: 'rgba(255,0,0,0.5)',
+      strokeWidth : 3,
+      visible : true,
+    })
+
+    const nameTag = new Konva.Text({
+      id : `area-tag-${paramUserId}`,
+      fill: 'rgba(255,0,0,0.5)',
+      fontSize : 20,
+      fontStyle : 'bold',
+      padding : 2,
+      visible : true,
+      width: 100,
+      height: 100,
+      text : `${paramUserId}`
+    })
+
+    const groups = new Konva.Group({
+      id : `area-group-${paramUserId}`,
+    })
+
+
+    groups.add(newRect);
+    groups.add(nameTag);
+
+    newRect.x(realPointerPosition.x)
+    newRect.y(realPointerPosition.y)
+    newRect.width(pos.width)
+    newRect.height(pos.height)
+
+    nameTag.x(realPointerPosition.x)
+    nameTag.y(realPointerPosition.y) 
+
+    stageRef.current.getLayers()[0].add(groups);
+    
   }
 
   const createNewLine = (idx:string, pos:number[], color:any) =>{
@@ -1027,6 +1095,14 @@ const App: FC = () => {
         e.evt.preventDefault();
         //블록(다중 선택하는 영역) 기능
         if(groupTr != null){
+          const oldSelected = groupTr.getNodes();
+          oldSelected.forEach((node)=>{
+            if(node.hasName('locked')){
+              node.removeName("locked")
+            }
+          });
+          ySelectedNodes.delete(userId.current);
+          yLockNodes.delete(userId.current);
           groupTr.nodes([]);
         }
         selectionRectangle= new Konva.Rect({
@@ -1164,7 +1240,7 @@ const App: FC = () => {
         if (!selectionRectangle.visible()) {
           return;
         }
-
+        
         
         e.evt.preventDefault();
         // update visibility in timeout, so we can check it in click event
@@ -1173,17 +1249,33 @@ const App: FC = () => {
         var shapes = stageRef.current.find('Shape, Line, Text');
         var box = selectionRectangle.getClientRect();
         
-        const selected = shapes.filter((shape:any) =>
-        Konva.Util.haveIntersection(box, shape.getClientRect())
+        const rowSelected:Konva.Node[] = shapes.filter((shape:any) =>
+          Konva.Util.haveIntersection(box, shape.getClientRect())
         );
+
+        let selected:any[] = [];
+        let locksData:string[] = [];
         
         if(groupTr == null){
           createNewTr(); 
         }
         if(groupTr){
-          groupTr.nodes(selected);
-          const groupTrData = groupTr.getClientRect();
-          ySelectedNodes.set(userId.current, groupTrData)
+          
+          rowSelected.forEach((node)=>{
+            const nodeId:string = node.id();
+            if(!nodeId.includes("area-") && !node.hasName('locked')){
+              node.name("locked");
+              selected.push(node);
+              locksData.push(nodeId);
+            }
+          })
+
+          if(selected.length > 0){
+            groupTr.nodes(selected);
+            const groupTrData = groupTr.getClientRect();
+            ySelectedNodes.set(userId.current, groupTrData);
+            yLockNodes.set(userId.current, JSON.stringify(locksData));
+          }
         }
         
       } else {
