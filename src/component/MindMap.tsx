@@ -22,11 +22,13 @@ type Target = {
 
 
 //const MindMap = forwardRef((ref: RefObject<Konva.Stage>) => {
-export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.RefObject<Konva.Stage>, currentTool: Tools 
+export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefObject<Konva.Stage>, toolRef: any
 , yDocRef: React.MutableRefObject<Y.Doc>}) => {
-    console.log(yDocRef)
+    //console.log(yDocRef)
     // const [nodeTargets, setNodeTargets] = useState<Target[]>([]);
     // const [connectors, setConnectors] = useState<Connector[]>([]);
+    //const toolRef.current = toolRef.current;
+   //console.log(toolRef.current, Tools.MINDMAP);
     const layerRef = useRef<Konva.Layer>();
 
     const yTargets: Y.Map<Target> = yDocRef.current.getMap('targets');
@@ -48,7 +50,8 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
     useEffect(() => {
       if (stageRef.current) {
           stageRef.current.on('click', () => {
-              if (currentTool === Tools.MINDMAP && yTargets.size === 0) {
+            //console.log(toolRef.current, toolRef.current, toolRef, "Tool now");
+              if (toolRef.current === Tools.MINDMAP && yTargets.size === 0) {
                   const stage = stageRef.current;
                   const pointerPosition = stage?.getPointerPosition();
   
@@ -73,9 +76,9 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
       // console.log("!!!!targets, and connectors", yTargets, yConnectors, yTargets._map.size, yConnectors._map.size);
       // console.log(yTargets.size, yConnectors.size);
       if(event){
-        console.log(makeTextTravel());
+        //console.log(makeTextTravel());
       }
-        if (currentTool === Tools.MINDMAP && yTargets.size === 0) {
+        if (toolRef.current === Tools.MINDMAP && yTargets.size === 0) {
             const stage = stageRef.current;
             const pointerPosition = stage?.getPointerPosition();
             if (stage && pointerPosition) {
@@ -139,68 +142,111 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
     };
 
 
-    const handleCircleClick = (event: any, targetId: string) => {
-      event.evt.preventDefault();
-      const stage = stageRef.current;
-      if (!stage) return;
-
-      const targetText = layerRef.current?.findOne("#text-"+targetId);
-      targetText?.hide();
-      const targetTextPosition = targetText?.absolutePosition();
+  const handleCircleClick = (event: any, targetId: string) => {
+    event.evt.preventDefault();
+    const stage = stageRef.current;
+    if (!stage) return;
   
-      const areaPos = {
-        x: stage.container().offsetLeft + (targetTextPosition?.x??0),
-        y: stage.container().offsetTop + (targetTextPosition?.y??0),
-      };
+    const textAreaId = `textarea-${targetId}`;
+    let textArea = document.getElementById(textAreaId) as HTMLTextAreaElement;
   
-      var textArea = document.createElement('textarea');
-      document.body.appendChild(textArea);
-      const target = yTargets.get(targetId);
-      if (!target) {
-        console.error("Target not found:", targetId);
-        return;
-      }
-
-
-
-      textArea.value = target.value;
+    const setupTextArea = (textArea: HTMLTextAreaElement, targetValue: string, position: {x: number, y: number}) => {
+      textArea.value = targetValue;
+      textArea.style.fontSize = '25px';
       textArea.style.position = 'absolute';
-      textArea.style.left = areaPos.x + 'px';
-      textArea.style.top = areaPos.y + 'px';
+      textArea.style.left = position.x + 'px';
+      textArea.style.top = position.y + 'px';
       textArea.style.border = 'none';
-      textArea.style.padding = '0px';
+      textArea.style.padding = '0px'; 
       textArea.style.margin = '0px';
       textArea.style.overflow = 'hidden';
-      textArea.style.background = 'none';
+      textArea.style.background = 'none'; 
       textArea.style.outline = 'none';
       textArea.style.resize = 'none';
-      textArea.style.transformOrigin = 'left top';
+      textArea.focus();
+    };
   
-      
+    if (!textArea) {
+      textArea = document.createElement('textarea');
+      textArea.id = textAreaId;
+      document.body.appendChild(textArea);
+  
       textArea.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
-            yTargets.set(targetId, { ...target, value: textArea.value });
-            textArea.parentNode?.removeChild(textArea);
-            targetText?.show();
+          const nowTarget = yTargets.get(targetId);
+          if(nowTarget){
+            yTargets.set(targetId, { ...nowTarget, value: textArea.value });
           }
+          textArea.parentNode?.removeChild(textArea);
+          targetText?.show();
+
+        }
       });
-    textArea.focus();
+    }
+  
+    const target = yTargets.get(targetId);
+    if (!target) {
+      console.error("Target not found:", targetId);
+      return;
+    }
+  
+    const targetText = layerRef.current?.findOne("#text-"+targetId);
+    targetText?.hide();
+    const targetTextPosition = targetText?.absolutePosition();
+    const areaPos = {
+      x: stage.container().offsetLeft + (targetTextPosition?.x ?? 0),
+      y: stage.container().offsetTop + (targetTextPosition?.y ?? 0),
+    };
+  
+    setupTextArea(textArea, target.value, areaPos);
+    
   };
+  
+
+
 
   const makeTextTravel = () => {
-    let accumulatedValues = "";
+    let container = document.getElementById('textTravelContainer');
+    if(!container){
+      container = document.createElement('div');
+      container.id = 'textTravelContainer';
+      container.style.position = 'absolute'; 
+      container.style.left = '50px'; 
+      container.style.top = '50px';
+      document.body.appendChild(container);
+    }
+    else{
+      container.innerHTML = '';
+    }
 
-    const dfs = (targetId:string) => {
+
+  
+    const baseFontSize = 40; 
+    const decrement = 6; 
+    const baseFontWeight = 700;
+    const fontDecrement = 100;
+
+    const dfs = (targetId:string, depth:number, parentDiv:any) => {
       const nowTarget = yTargets.get(targetId);
       if(!nowTarget) return;
 
-      accumulatedValues += nowTarget.value + " ";
-      nowTarget.childIds.forEach(childId => dfs(childId));
+      const targetDiv = document.createElement('div');
+      targetDiv.textContent = nowTarget.value;
+      targetDiv.style.fontSize = `${baseFontSize - (depth * decrement)}px`; 
+      targetDiv.style.textAlign = 'left';
+
+      const calcWeight = Math.max(baseFontWeight - (depth * fontDecrement), 1);
+      targetDiv.style.fontWeight = calcWeight.toString();
+
+
+      parentDiv.appendChild(targetDiv);
+      nowTarget.childIds.forEach(childId => dfs(childId, depth+1, targetDiv));
     }
 
-    dfs('target-0');
-    return accumulatedValues.trim();
+    dfs('target-0', 0, container);
+    return container;
   }
+
 
 
 
@@ -212,24 +258,16 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
     node?.destroy();
     textNode?.destroy();
 
-    // node?.remove();
-    // textNode?.remove();
     
-    //console.log("Does target exist before deletion?", yTargets.has(targetId)); 
     yTargets.delete(targetId);
-    //console.log("Does target exist after deletion?", yTargets.has(targetId));
 
     yConnectors.forEach((connector, connectorId) => {
       if (connector.from === targetId || connector.to === targetId) {
         const line = layerRef.current?.findOne('#' + connectorId);
         line?.destroy();
-  
-        //console.log("Connector count before deletion:", yConnectors.size);    //TeST
         yConnectors.delete(connectorId); 
-        //console.log("Connector count after deletion:", yConnectors.size);     //TEST
       }
     });
-//    console.log("delete after target, connecotr", yTargets, yConnectors);     //TesT
 
   }
 
@@ -257,6 +295,7 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
 
 
   const showContextMenu = (event:any, id:string) =>  {
+          //console.log("show context menu", event);
           let node = layerRef.current?.findOne(`#${id}`);
           let menu = document.getElementById('contextMenu'+ node?.id());
        
@@ -282,16 +321,25 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
               menu.style.display = 'none';
             }
 
+            const sortButton = document.createElement('button');
+            sortButton.innerHTML = 'Sort';
+            sortButton.onclick = function () {
+              makeTextTravel();
+              menu.style.display = 'none';
+            }
+
             const cancelButton = document.createElement('button');
             cancelButton.innerHTML = 'Cancel';
             //id 필요없지 않나..
             cancelButton.onclick = function (){
               menu.style.display = 'none';
             }
+
             
             
             menu.appendChild(createButton);
             menu.appendChild(deleteButton);
+            menu.appendChild(sortButton);
             menu.appendChild(cancelButton);
           }
 
@@ -364,19 +412,18 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
                 id: id,
                 x: target.x,
                 y: target.y,
-                fill: '#A9A9A9',
-                radius: 70,
+                fill: '#0000',
+                radius: 40,
                 draggable: true,
-                stroke: 'black',
-                strokeWidth: 2,
+                 stroke: 'black',
+                //strokeWidth: 2,
             });
             layerRef.current?.add(node as Konva.Circle);
-            
         } else {
             node.position({ x: target.x, y: target.y });
         }
         node.off('dblclick').on('dblclick', (event) => {
-          if (currentTool === Tools.MINDMAP) {
+          if (toolRef.current === Tools.MINDMAP) {
               //addNewCircleAndConnector(id);
               handleCircleClick(event, id);
           }
@@ -387,13 +434,14 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
   
       node.off('contextmenu').on('contextmenu', (event) => {
         event.evt.preventDefault();
-          if (currentTool === Tools.MINDMAP) {
-            showContextMenu(event, id);
-            }
-          });
+        // if (toolRef.current === Tools.MINDMAP) {
+          // console.log(toolRef.current)
+          showContextMenu(event, id);
+        // }
+      });
           
       node.off('dragmove').on('dragmove', () => {
-        //if(currentTool === Tools.MINDMAP){}
+        //if(toolRef.current === Tools.MINDMAP){}
           
           const target = yTargets.get(id);
           if(target){
@@ -447,7 +495,7 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
         }
 
         textNode.off('dblclick').on('dblclick', (event) => {
-          if (currentTool === Tools.MINDMAP) {
+          if (toolRef.current === Tools.MINDMAP) {
               handleCircleClick(event, id);
           }
           
@@ -455,7 +503,7 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
 
         textNode.off('contextmenu').on('contextmenu', (event) => {
           event.evt.preventDefault();
-          if(currentTool === Tools.MINDMAP){
+          if(toolRef.current === Tools.MINDMAP){
             showContextMenu(event, id);
           }
         });
@@ -481,12 +529,12 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
   useEffect(() => {
       yConnectors.observe(updateCanvas);
       yTargets.observe(updateCanvas);
-      console.log("!!!!upedate",yTargets, yConnectors);     //TEST
+      //console.log("!!!!upedate",yTargets, yConnectors);     //TEST
     return () => {
             yTargets.unobserve(updateCanvas);
             yConnectors.unobserve(updateCanvas);
     };
-}, [yTargets, yConnectors, currentTool, stageRef]);
+}, [yTargets, yConnectors, toolRef.current, stageRef]);
 
 
 
