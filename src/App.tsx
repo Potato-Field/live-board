@@ -110,7 +110,7 @@ const App: FC = () => {
   const yMousePositions = yDocRef.current.getMap('mousePositions');
   
   // 선택 영역 데이터 구조 정의
-  //const ySelectedNodes = yDocRef.current.getMap('selectedNodes');
+  const ySelectedNodes = yDocRef.current.getMap('selectedNodes');
   
   const yTextRef = useRef<Y.Array<TextInputProps>>(yDocRef.current.getArray<TextInputProps>('texts'));
   
@@ -178,9 +178,9 @@ const App: FC = () => {
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     /* 병철 로컬에서 작동 */
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
     /* 배포시 사용 */
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
     
       
 
@@ -216,14 +216,14 @@ const App: FC = () => {
     });
 
     //영역 전개 감지
-    // ySelectedNodes.observe((event) =>{
-    //   event.changes.keys.forEach((change, key)=>{
-    //     if(key == userId.current) return;
-    //     const node = stageRef.current.children[0].findOne(`#user-tr-${key}`);
-    //     const yArr:any= ySelectedNodes.get(key);
-        
-    //   });
-    // });
+    ySelectedNodes.observe((event) =>{
+      event.changes.keys.forEach((change, key)=>{
+        if(key == userId.current) return;
+        const userAreaData:any = ySelectedNodes.get(key);
+        const userArea:any = createNewUserArea(key, userAreaData);
+        stageRef.current.getLayers()[0].add(userArea);
+      });
+    });
 
 
     yText.observe(() => {
@@ -397,7 +397,28 @@ const App: FC = () => {
   useEffect(() => {
     toolRef.current = tool;
   }, [tool]);
-  
+
+  const createNewUserArea = (paramUserId:string, pos:{x:number, y:number, width:number, height:number})=>{
+    const node = stageRef.current.children[0].findOne(`#area-${paramUserId}`)
+    if(node) {
+      node.x(pos.x)
+      node.y(pos.y)
+      node.width(pos.width)
+      node.height(pos.height)
+      return node;
+    } else {
+      const newRect = new Konva.Rect({
+        id : `area-${paramUserId}`,
+        fill: 'rgba(255,0,0,0.2)',
+        visible : true,
+        x: pos.x,
+        y: pos.y,
+        width: pos.width,
+        height: pos.height,
+      })
+      return newRect;
+    }
+  }
 
   const createNewLine = (idx:string, pos:number[], color:any) =>{
     const newLine = new Konva.Line({
@@ -1161,6 +1182,8 @@ const App: FC = () => {
         }
         if(groupTr){
           groupTr.nodes(selected);
+          const groupTrData = groupTr.getClientRect();
+          ySelectedNodes.set(userId.current, groupTrData)
         }
         
       } else {
