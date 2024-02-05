@@ -181,6 +181,7 @@ const App: FC = () => {
 
     /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
+
     /* 배포시 사용 */
     const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
     
@@ -1776,9 +1777,12 @@ const App: FC = () => {
       
         <Layer></Layer>
         
-        <>
+        {/* <>
           <MindMap stageRef = {stageRef} currentTool={tool} yDocRef = {yDocRef}/>
-        </>
+        </> */
+        <>
+          <MindMap stageRef = {stageRef} toolRef={toolRef} yDocRef = {yDocRef}/>
+        </>}
 
       </Stage>
       <ColorProvider>
