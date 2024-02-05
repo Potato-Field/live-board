@@ -219,6 +219,7 @@ const App: FC = () => {
     ySelectedNodes.observe((event) =>{
       event.changes.keys.forEach((change, key)=>{
         if(key == userId.current) return;
+        console.log(change)
         const userAreaData:any = ySelectedNodes.get(key);
         const userArea:any = createNewUserArea(key, userAreaData);
         stageRef.current.getLayers()[0].add(userArea);
