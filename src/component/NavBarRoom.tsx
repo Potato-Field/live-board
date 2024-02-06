@@ -11,7 +11,6 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import { Button } from '@mui/material';
 
 import { VoteDrawer } from './VoteDrawer';
 import VoiceAgora from './voicechat/voiceAgora';
