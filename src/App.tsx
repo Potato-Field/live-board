@@ -138,43 +138,7 @@ const App: FC = () => {
     
     return color;
   }
-  // Assuming Tools and getRandomColor are defined somewhere in your code
-
-  // function updateMousePositionOnScreen(userId: string, mousePosition:any) {
-  //   let mouseIcon = document.getElementById(`mouse-${userId}`);
-  //   if (!mouseIcon) {
-  //     mouseIcon = document.createElement('div');
-  //     mouseIcon.id = `mouse-${userId}`;
-  //     mouseIcon.style.position = 'absolute';
-  //     mouseIcon.setAttribute("class", `tool-${Tools[mousePosition.selectTool]}`);
-  //     //mouseIcon.style.borderTop = "20px solid "+getRandomColor();
-
-  //     let mouseUser = document.createElement('p');
-      
-  //     mouseUser.textContent = `${userId}`;
-  //     mouseUser.style.minWidth = '100px';
-  //     mouseUser.style.marginTop = '30px';
-  //     mouseUser.style.marginLeft = '10px';
-  //     mouseUser.style.color = 'white';
-  //     mouseUser.style.backgroundColor = getRandomColor()
-
-  //     document.body.appendChild(mouseIcon);
-  //   }
-
-  //   window.addEventListener('mousemove', (event) => {
-  //     const mousePosition = {
-  //       x: event.clientX,
-  //       y: event.clientY,
-  //       selectTool: 'default' // replace 'default' with the actual tool selection logic
-  //     };
-
-  //     const userCurrentTool = Tools[mousePosition.selectTool];
-
-  //     mouseIcon?.setAttribute("class", `tool-${userCurrentTool}`);
-  //     mouseIcon.style.left = `${mousePosition.x}px`;
-  //     mouseIcon.style.top = `${mousePosition.y}px`;
-  //   });
-  // }
+  
 
 
   function updateMousePositionOnScreen(userId:string, mousePosition:any) {

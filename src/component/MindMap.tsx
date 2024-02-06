@@ -264,11 +264,13 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
     summaryNodes.forEach((summaryNode) => {
       const fontSize = baseFontSize - (summaryNode.priority * decrement);
       const fontWeight = Math.max(baseFontWeight - (summaryNode.priority * fontDecrement), 1);
+      const blanks = '        '.repeat(summaryNode.priority);
 
       const text = new Konva.Text({
           x: 10,
           y: yPosition,
-          text: '.' + summaryNode.value,
+          text: blanks + '.' + summaryNode.value,
+          // text:'.' + summaryNode.value,
           fontSize: fontSize,
           // fontStyle: fontWeight.toString() as Konva.FontStyle,
           fontStyle: fontWeight.toString(),
