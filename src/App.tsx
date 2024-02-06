@@ -13,10 +13,10 @@ import { ColorProvider } from './component/ColorContext';
 
 import { Tools } from './component/Tools';
 
-//import Stamp from './component/Stamp';
-// import MindMap from './component/MindMap';
-//import EditableText from "./component/EditableText";
-import VoiceChat from './component/voicechat/voicechat';
+// import NavBarLobby from './component/NavBarLobby';
+
+// import VoiceChat from './component/voicechat/voicechat';
+import NavBarRoom from './component/NavBarRoom';
 
 import thumbUpImg from './assets/thumbup.png';
 import thumbDownImg from './assets/thumbdown.png'
@@ -35,15 +35,14 @@ import { Shape } from './component/UserShape';
 //import { number } from 'lib0';
 import MindMap from './component/MindMap';
 
+/* 블록 하는 좌표 */
 let multiSelectBlocker = {
   x1:0,
   y1:0,
   x2:0,
   y2:0,
-
 }
 
-/* 블록 하는 좌표 */
 let groupTr:Konva.Transformer | null = null;
 
 //Container Components
@@ -110,7 +109,10 @@ const App: FC = () => {
   const yMousePositions = yDocRef.current.getMap('mousePositions');
   
   // 선택 영역 데이터 구조 정의
-  //const ySelectedNodes = yDocRef.current.getMap('selectedNodes');
+  const ySelectedNodes = yDocRef.current.getMap('selectedNodes');
+
+  // 객체 Lock 저장
+  const yLockNodes = yDocRef.current.getMap('lockNodes');
   
   const yTextRef = useRef<Y.Array<TextInputProps>>(yDocRef.current.getArray<TextInputProps>('texts'));
   
@@ -137,6 +139,8 @@ const App: FC = () => {
     return color;
   }
   
+
+
   function updateMousePositionOnScreen(userId:string, mousePosition:any) {
     let mouseIcon = document.getElementById(`mouse-${userId}`);
     if (!mouseIcon) {
@@ -217,14 +221,51 @@ const App: FC = () => {
     });
 
     //영역 전개 감지
-    // ySelectedNodes.observe((event) =>{
-    //   event.changes.keys.forEach((change, key)=>{
-    //     if(key == userId.current) return;
-    //     const node = stageRef.current.children[0].findOne(`#user-tr-${key}`);
-    //     const yArr:any= ySelectedNodes.get(key);
-        
-    //   });
-    // });
+    ySelectedNodes.observe((event) =>{
+      event.changes.keys.forEach((change, key)=>{
+        if(key == userId.current) return;
+        if(change.action == 'delete'){
+          const oldGroup = stageRef.current.children[0].findOne(`#area-group-${key}`)
+          if(!oldGroup) return;
+          oldGroup.remove();
+
+        } else {
+          const userAreaData:any = ySelectedNodes.get(key);
+          createNewUserArea(key, userAreaData);
+        }
+      });
+    });
+
+    //객체 lock 감지
+    yLockNodes.observe((event) =>{
+      event.changes.keys.forEach((change, key)=>{
+        if(key == userId.current) return;
+        if(change.action == 'delete'){
+          const serializeData:any = change.oldValue;
+          const userLockData:string[] = JSON.parse(serializeData);
+          if(userLockData){
+            userLockData.forEach((value) => {
+              const node = stageRef.current.children[0].findOne("#"+value)
+              if(!node) return;
+              node.removeName('locked')
+            });
+          }
+        } 
+        else if(change.action == 'update'){
+          const serializeData:any = yLockNodes.get(key);
+          console.log(change.action, serializeData)
+        }
+        else {
+          const serializeData:any = yLockNodes.get(key);
+          const userLockData:string[] = JSON.parse(serializeData);
+          userLockData.forEach((value) => {
+            const node = stageRef.current.children[0].findOne("#"+value)
+            if(!node) return;
+            node.name('locked')
+          });
+        }
+      });
+    });
 
 
     yText.observe(() => {
@@ -398,7 +439,57 @@ const App: FC = () => {
   useEffect(() => {
     toolRef.current = tool;
   }, [tool]);
-  
+
+  const createNewUserArea = (paramUserId:string, pos:{x:number, y:number, width:number, height:number})=>{
+    const stage = stageRef.current
+    const scale = stage.scaleX(); // 현재 스케일
+    const position = stage.position(); // 현재 위치
+    
+    const realPointerPosition = {
+      x: (pos.x - position.x) / scale,
+      y: (pos.y - position.y) / scale,
+    };
+    
+    if(pos.width == 0 && pos.height == 0) return;
+
+    const newRect = new Konva.Rect({
+      id : `area-${paramUserId}`,
+      stroke: 'rgba(255,0,0,0.5)',
+      strokeWidth : 3,
+      visible : true,
+    })
+
+    const nameTag = new Konva.Text({
+      id : `area-tag-${paramUserId}`,
+      fill: 'rgba(255,0,0,0.5)',
+      fontSize : 20,
+      fontStyle : 'bold',
+      padding : 2,
+      visible : true,
+      width: 100,
+      height: 100,
+      text : `${paramUserId}`
+    })
+
+    const groups = new Konva.Group({
+      id : `area-group-${paramUserId}`,
+    })
+
+
+    groups.add(newRect);
+    groups.add(nameTag);
+
+    newRect.x(realPointerPosition.x)
+    newRect.y(realPointerPosition.y)
+    newRect.width(pos.width)
+    newRect.height(pos.height)
+
+    nameTag.x(realPointerPosition.x)
+    nameTag.y(realPointerPosition.y) 
+
+    stageRef.current.getLayers()[0].add(groups);
+    
+  }
 
   const createNewLine = (idx:string, pos:number[], color:any) =>{
     const newLine = new Konva.Line({
@@ -594,6 +685,8 @@ const App: FC = () => {
       width: 200,
     });
 
+    
+    
     textNode.on("mousedown", (e:any)=>{
       
       if(toolRef.current !== Tools.CURSOR){
@@ -602,7 +695,7 @@ const App: FC = () => {
       } else {
         textNode.draggable(true)
       }
-
+      
       const selected = e.target
       if(groupTr == null){
         createNewTr();
@@ -611,74 +704,74 @@ const App: FC = () => {
         groupTr.nodes([selected]);
       }
     });
-
+    
     var textPosition = textNode.absolutePosition();
     let textarea:HTMLTextAreaElement;
     
     yTextData.observe(() => {
-
+      
       textNode.text(yTextData.toString());
     });
     // if (textarea !== document.activeElement) {
-    //   textarea.value = yTextData.toString();
-    // }
-    
-    textNode.on('dblclick dbltap', () => {
-      textNode.hide();
+      //   textarea.value = yTextData.toString();
+      // }
       
-      var areaPosition = {
-        x: stageRef.current.container().offsetLeft + textPosition.x,
-        y: stageRef.current.container().offsetTop + textPosition.y,
-      };
-      
-      textarea = createNewTextArea(textNode, areaPosition);
-      textarea.value = yTextData.toString();
-
-
-      let isComposing = false;
-
-      textarea.addEventListener('compositionstart', () => {
+      textNode.on('dblclick dbltap', () => {
+        textNode.hide();
+        
+        var areaPosition = {
+          x: stageRef.current.container().offsetLeft + textPosition.x,
+          y: stageRef.current.container().offsetTop + textPosition.y,
+        };
+        
+        textarea = createNewTextArea(textNode, areaPosition);
+        textarea.value = yTextData.toString();
+        
+        
+        let isComposing = false;
+        
+        textarea.addEventListener('compositionstart', () => {
           isComposing = true; // 한글 입력 시작
-      });
-
-      textarea.addEventListener('compositionend', () => {
+        });
+        
+        textarea.addEventListener('compositionend', () => {
           isComposing = false; // 한글 입력 완료
           
           syncText(); // 입력 완료 후 동기화 함수 호출
-      });
-
-      textarea.addEventListener('input', () => {
-        if (!isComposing) {
-          // 한글 입력이 아니거나 입력이 완료된 경우에만 동기화 진행
-          syncText();
-        }
-      });
-
-      const syncText = ()=>{
-        const currentText = textarea.value;
-        // Y.Text 객체의 현재 내용
-        const yCurrentText = yTextData.toString();
-      
-        const { start, endOld, endNew } = findFirstDiffIndex(yCurrentText, currentText);
-
-        if (start !== endOld) {
+        });
+        
+        textarea.addEventListener('input', () => {
+          if (!isComposing) {
+            // 한글 입력이 아니거나 입력이 완료된 경우에만 동기화 진행
+            syncText();
+          }
+        });
+        
+        const syncText = ()=>{
+          const currentText = textarea.value;
+          // Y.Text 객체의 현재 내용
+          const yCurrentText = yTextData.toString();
+          
+          const { start, endOld, endNew } = findFirstDiffIndex(yCurrentText, currentText);
+          
+          if (start !== endOld) {
             yTextData.delete(start, endOld - start);
-        }
-
-        // 그리고 새로운 문자열을 삽입
-        const newText = currentText.substring(start, endNew);
-        if (newText.length > 0) {
+          }
+          
+          // 그리고 새로운 문자열을 삽입
+          const newText = currentText.substring(start, endNew);
+          if (newText.length > 0) {
             yTextData.insert(start, newText);
+          }
         }
-      }
-      
-      function removeTextarea() {
-        if(!textarea.parentNode) return;
-        textarea.parentNode.removeChild(textarea);
-        window.removeEventListener('click', handleOutsideClick);
-        textNode.show();
-
-        const konvaData = {
+        
+        function removeTextarea() {
+          if(!textarea.parentNode) return;
+          textarea.parentNode.removeChild(textarea);
+          window.removeEventListener('click', handleOutsideClick);
+          textNode.show();
+          
+          const konvaData = {
           type      : "Text", 
           id        : textNode.id(),
           x         : textNode.x(),
@@ -691,7 +784,7 @@ const App: FC = () => {
         
         yObjects.set(textNode.id(), konvaData);
       }
-
+      
       function setTextareaWidth(newWidth:any) {
         if (!newWidth) {
           // set width for placeholder
@@ -700,37 +793,38 @@ const App: FC = () => {
         // some extra fixes on different browsers
         var isSafari = /^((?!chrome|android).)*safari/i.test(
           navigator.userAgent
-        );
-        var isFirefox =
+          );
+          var isFirefox =
           navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-        if (isSafari || isFirefox) {
-          newWidth = Math.ceil(newWidth);
-        }
-
-        var isEdge =
+          if (isSafari || isFirefox) {
+            newWidth = Math.ceil(newWidth);
+          }
+          
+          var isEdge =
           document.DOCUMENT_NODE || /Edge/.test(navigator.userAgent);
-        if (isEdge) {
-          newWidth += 1;
+          if (isEdge) {
+            newWidth += 1;
+          }
+          textarea.style.width = newWidth + 'px';
         }
-        textarea.style.width = newWidth + 'px';
-      }
-
-      textarea.addEventListener('keydown', function (e:any) {
-        // hide on enter
-        // but don't hide on shift + enter
-        if (e.key === 'Enter' && !e.shiftKey) {
-          textNode.text(textarea.value);
-          removeTextarea();
-        }
-        // on esc do not set value back to node
-        if (e.key === 'esc') {
-          removeTextarea();
-        }
-      });
-
-      textarea.addEventListener('keydown', function () {
-        let scale = textNode.getAbsoluteScale().x;
-        setTextareaWidth(textNode.width() * scale);
+        
+        textarea.addEventListener('keydown', function (e:any) {
+          // hide on enter
+          // but don't hide on shift + enter
+          if (e.key === 'Enter' && !e.shiftKey) {
+            textNode.text(textarea.value);
+            removeTextarea();
+          }
+          // on esc do not set value back to node
+          if (e.key === 'esc') {
+            removeTextarea();
+          }
+        });
+        
+        
+        textarea.addEventListener('keydown', function () {
+          let scale = textNode.getAbsoluteScale().x;
+          setTextareaWidth(textNode.width() * scale);
         textarea.style.height = 'auto';
         textarea.style.height =
         textarea.scrollHeight + textNode.fontSize() + 'px';
@@ -1007,6 +1101,14 @@ const App: FC = () => {
         e.evt.preventDefault();
         //블록(다중 선택하는 영역) 기능
         if(groupTr != null){
+          const oldSelected = groupTr.getNodes();
+          oldSelected.forEach((node)=>{
+            if(node.hasName('locked')){
+              node.removeName("locked")
+            }
+          });
+          ySelectedNodes.delete(userId.current);
+          yLockNodes.delete(userId.current);
           groupTr.nodes([]);
         }
         selectionRectangle= new Konva.Rect({
@@ -1144,7 +1246,7 @@ const App: FC = () => {
         if (!selectionRectangle.visible()) {
           return;
         }
-
+        
         
         e.evt.preventDefault();
         // update visibility in timeout, so we can check it in click event
@@ -1153,15 +1255,33 @@ const App: FC = () => {
         var shapes = stageRef.current.find('Shape, Line, Text');
         var box = selectionRectangle.getClientRect();
         
-        const selected = shapes.filter((shape:any) =>
-        Konva.Util.haveIntersection(box, shape.getClientRect())
+        const rowSelected:Konva.Node[] = shapes.filter((shape:any) =>
+          Konva.Util.haveIntersection(box, shape.getClientRect())
         );
+
+        let selected:any[] = [];
+        let locksData:string[] = [];
         
         if(groupTr == null){
           createNewTr(); 
         }
         if(groupTr){
-          groupTr.nodes(selected);
+          
+          rowSelected.forEach((node)=>{
+            const nodeId:string = node.id();
+            if(!nodeId.includes("area-") && !node.hasName('locked')){
+              node.name("locked");
+              selected.push(node);
+              locksData.push(nodeId);
+            }
+          })
+
+          if(selected.length > 0){
+            groupTr.nodes(selected);
+            const groupTrData = groupTr.getClientRect();
+            ySelectedNodes.set(userId.current, groupTrData);
+            yLockNodes.set(userId.current, JSON.stringify(locksData));
+          }
         }
         
       } else {
@@ -1404,8 +1524,8 @@ const App: FC = () => {
         textarea.style.padding = '15px';
         textarea.style.margin = '0px';
         textarea.style.overflow = 'hidden';
-        textarea.style.background = 'gray';
-        // textarea.style.background = 'none';
+        // textarea.style.background = 'gray';
+        textarea.style.background = 'none';
         textarea.style.outline = 'none';
         textarea.style.resize = 'none';
         textarea.style.lineHeight = PostItText.lineHeight();
@@ -1639,7 +1759,10 @@ const App: FC = () => {
 
   return (
     <div style={{position: "relative", width: "100%"}}>
-      <VoiceChat />
+      {/* <NavBarLobby /> */}
+
+      {/* <VoiceChat /> */}
+      <NavBarRoom />
       <Stage
         width        = {window.innerWidth}
         height       = {window.innerHeight}
@@ -1659,13 +1782,16 @@ const App: FC = () => {
       
         <Layer></Layer>
         
-        <>
+        {/* <>
           <MindMap stageRef = {stageRef} currentTool={tool} yDocRef = {yDocRef}/>
-        </>
+        </> */
+        <>
+          <MindMap stageRef = {stageRef} toolRef={toolRef} yDocRef = {yDocRef}/>
+        </>}
 
       </Stage>
       <ColorProvider>
-        <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} setUserId={setUserId}/>
+        <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} setUserId={setUserId} />
       </ColorProvider>
     </div>
   );

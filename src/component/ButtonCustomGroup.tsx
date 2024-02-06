@@ -18,7 +18,8 @@ import UndoRoundedIcon from '@mui/icons-material/UndoRounded';
 import RedoRoundedIcon from '@mui/icons-material/RedoRounded';
 import { faPen, faHighlighter } from '@fortawesome/free-solid-svg-icons'
 import CircleIcon from '@mui/icons-material/Circle';
-import { useRef } from 'react'
+
+import { useRef } from 'react';
 
 interface ButtonCustomGroupProps {
     handleIconBtnClick: (id: string) => void;
@@ -27,7 +28,6 @@ interface ButtonCustomGroupProps {
 
 export const ButtonCustomGroup = ({handleIconBtnClick, setUserId}: ButtonCustomGroupProps) =>{
     const userIdBox:any = useRef(null);
-
     const { currentColor, setCurrentColor } = useColor();
 
     // 색상 변경
@@ -40,6 +40,7 @@ export const ButtonCustomGroup = ({handleIconBtnClick, setUserId}: ButtonCustomG
             setUserId(userIdBox.current.value)
         }
     };
+
     return(
         <div className = "ToolBtnGroup" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", backgroundColor: "white", maxWidth: "100%"}}>
             <ButtonGroup variant="contained" aria-label="outlined primary button group">

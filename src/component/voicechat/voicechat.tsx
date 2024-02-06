@@ -5,226 +5,223 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import { io } from 'socket.io-client';
+import { Socket, io } from 'socket.io-client';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-// interface AudioTracks {
-//     localAudioTrack: ILocalAudioTrack | null;
-//     remoteAudioTracks: { [uid: string]: IRemoteAudioTrack }; // 타입 수정
-// }
 
+const Server = process.env.NODE_ENV === 'production'
+    ? 'https://www.jungleweb.duckdns.org:1111/'
+    : 'http://localhost:1111/';
 
-interface VolumeIndicator {
-    nickname: string; // 'uid' 대신 'nickname' 사용
-    level: number;
-}
-const socket = io("http://localhost:1111");
+let socket: Socket | undefined;
+
 
 const VoiceChat: React.FC = () => {
-    
-    const [members, setMembers] = useState<Array<string>>([]); // nickname만 저장
-    const [userVolumes, setUserVolumes] = useState<{ [nickname: string]: number }>({});
-    const rtcClientRef = useRef<any>(null);
-    const location = useLocation();
-    const { nickname, loggedIn } = location.state || { nickname: '', loggedIn: false };
 
-    const [micMuted, setMicMuted] = useState<boolean>(true);
+    const location = useLocation();
+
+
+    const [room, setRoom] = useState<string>("defaultRoom");
+
+
     const myAudio = useRef<HTMLAudioElement>(null);
-    const peerConnections = useRef<Map<string, RTCPeerConnection>>(new Map());
+    const peerAudio = useRef<any>(null);
+    // location.state || { nickname: ''};
+    const [users, setUsers] = useState<Array<string>>([]);
+    const [myMuted, setMyMuted] = useState<boolean>(false);
+    const [myStream, setMyStream] = useState<MediaStream | null>();
     const navigate = useNavigate();
 
 
     useEffect(() => {
-        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-            if (myAudio.current) {
-                myAudio.current.srcObject = stream;
-            }
-            stream.getAudioTracks()[0].enabled = !micMuted;
+        socket = io(Server);
+        const { nickname } = location.state || { nickname: '' };
+
+
+        console.log(nickname);
+        if (nickname && room) {
+            // 'join' 이벤트를 서버로 emit
+
+            socket.emit('join', { nickname: nickname, room: room }),
+                (error: any) => {
+                    if (error) {
+                        alert(error);
+                        navigate('/');
+                    }
+                };
+        }
+        console.log("join메세지를 보냄");
+
+    }, [location.state, navigate]);
+
+
+    //room data 전송
+    useEffect(() => {
+        // 'roomData' 이벤트를 수신하여 방 정보와 사용자 목록 업데이트
+        socket?.on('roomData', ({ room, users }) => {
+            setRoom(room);
+            setUsers(users);
+            console.log(users);
+            console.log("roomdata 메세지받음");
         });
 
-        
-        socket.on("user-connected", handleUserConnected);
-        socket.on("offer", handleReceiveOffer);
-        socket.on("answer", handleReceiveAnswer);
-        socket.on("ice-candidate", handleNewICECandidateMsg);
-        if (nickname) {
-            socket.emit("join-room", { nickname });
-        }
+        console.log(users);
+    }, []);
 
-        if (loggedIn && nickname) {
-            setMembers(prevMembers => {
-                // 동일한 nickname이 이미 members 배열에 없는 경우에만 추가
-                if (!prevMembers.includes(nickname)) {
-                    return [...prevMembers, nickname];
+    // media setup
+    useEffect(() => {
+        let stream: MediaStream | null = null;
+        let peerConnection: RTCPeerConnection = new RTCPeerConnection();
+
+        peerConnection = new RTCPeerConnection({
+            iceServers: [
+                {
+                    urls: [
+                        "stun:stun.l.google.com:19302",
+                    ],
+                },
+            ],
+        });
+        const startMedia = async () => {
+            const getMedia = async () => {
+                const contraints = {
+                    audio: {
+                        echoCancellation: true, // 에코 취소 활성화
+                        noiseSuppression: true, // 배경 소음 억제 활성화
+                        autoGainControl: true // 자동 이득 제어 활성화
+                    },
+                    video: false
+                };
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia(contraints);
+                    if (myAudio.current) {
+                        myAudio.current.srcObject = stream;
+                    }
+                    setMyStream(stream);
+                } catch (error) {
+                    console.error(error);
                 }
-                return prevMembers;
-            });
-            setUserVolumes(prevVolumes => ({ ...prevVolumes, [nickname]: 0 }));
-        }
-
-        socket.on("members-updated", (updatedMembers) => {
-            setMembers(updatedMembers); // 서버로부터 받은 멤버 리스트로 상태 업데이트
-        });
-
-        // RTC 클라이언트 초기화 및 볼륨 인디케이터 설정
-        initVolumeIndicator();
-        
-
-        return () => {
-            socket.off("user-connected");
-            socket.off("offer");
-            socket.off("answer");
-            socket.off("ice-candidate");
-            socket.off("members-updated");
-            socket.close();
-
+            };
+            const makeConnection = () => {
+                if (stream) {
+                    stream
+                        .getTracks()
+                        .forEach((track) => peerConnection.addTrack(track, stream as MediaStream));
+                }
+            };
+            await getMedia();
+            makeConnection();
         };
-    }, [nickname]); 
 
+        startMedia();
 
-    const initVolumeIndicator = () => {
-        if (!rtcClientRef.current) {
-            console.warn("RTC Client is not initialized");
-            return;
-        }
-    
-        rtcClientRef.current.enableAudioVolumeIndicator();
-        rtcClientRef.current.on("volume-indicator", (volumes: VolumeIndicator[]) => {
-            const newVolumes = { ...userVolumes };
-            volumes.forEach((volume: VolumeIndicator) => {
-                newVolumes[volume.nickname] = volume.level; // 'uid' 대신 'nickname'을 키로 사용
-            });
-            setUserVolumes(newVolumes);
-        });
-    };
-
-    const handleUserConnected = (data: { from: string, nickname: string }) => {
-        createPeerConnection(data.from, socket.id === data.from);
-    };
-
-    const createPeerConnection = (socketId: string, initiator: boolean) => {
-        console.log(nickname, loggedIn);
-
-        const peerConnection = new RTCPeerConnection({
-            iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
-        });
-        peerConnections.current.set(socketId, peerConnection);
-
-        if (initiator) {
-            peerConnection.onnegotiationneeded = () => handleNegotiationNeededEvent(socketId);
-        }
-
-        peerConnection.onicecandidate = (event) => {
-            if (event.candidate) {
-                socket.emit("ice-candidate", {
-                    to: socketId,
-                    candidate: event.candidate,
-                });
+        peerConnection.ontrack = ({ streams }) => {
+            if (peerAudio.current) {
+                peerAudio.current.srcObject = streams[0];
             }
         };
 
-        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-            stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+
+        socket?.on('rtc_start', async (room) => {
+            console.log('RTC Connection Start!');
+
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            socket?.emit('offer', { offer, room });
+            console.log('send the offer');
         });
-    };
 
-    const handleNegotiationNeededEvent = (socketId: string) => {
-        const peerConnection = peerConnections.current.get(socketId);
-        peerConnection?.createOffer().then(offer => {
-            return peerConnection.setLocalDescription(offer);
-        }).then(() => {
-            socket.emit("offer", {
-                to: socketId,
-                offer: peerConnection?.localDescription
+        socket?.on('offer', async ({ offer, room }) => {
+
+            await peerConnection.setRemoteDescription(offer);
+            console.log('receive offer');
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            socket?.emit('answer', { answer, room });
+            console.log('send answer!');
+        });
+
+        socket?.on('answer', async ({ answer, room }) => {
+            peerConnection.addEventListener('icecandidate', ({ candidate }) => {
+                console.log('candidate finish');
+                socket?.emit('candidate', { candidate, room });
             });
-        }).catch(console.log);
-    };
+            console.log('receive answer');
+            await peerConnection.setRemoteDescription(answer);
+        });
 
-    const handleReceiveOffer = (data: { from: string, offer: RTCSessionDescriptionInit }) => {
-        createPeerConnection(data.from, false);
-        const peerConnection = peerConnections.current.get(data.from);
-        peerConnection?.setRemoteDescription(new RTCSessionDescription(data.offer)).then(() => {
-            return peerConnection.createAnswer();
-        }).then(answer => {
-            return peerConnection.setLocalDescription(answer);
-        }).then(() => {
-            socket.emit("answer", {
-                to: data.from,
-                answer: peerConnection?.localDescription
-            });
-        }).catch(console.log);
-    };
+        socket?.on('candidate', async (candidate) => {
+            console.log('receive candidate !');
+            if (candidate) {
+                await peerConnection.addIceCandidate(candidate);
+                console.log('🚀 add ice candidate peer connection finish 🚀 ');
+            }
+        });
+    }, []);
 
-    const handleReceiveAnswer = (data: { from: string, answer: RTCSessionDescriptionInit }) => {
-        const peerConnection = peerConnections.current.get(data.from);
-        peerConnection?.setRemoteDescription(new RTCSessionDescription(data.answer)).catch(console.log);
-    };
-
-    const handleNewICECandidateMsg = (data: { from: string, candidate: RTCIceCandidateInit }) => {
-        const peerConnection = peerConnections.current.get(data.from);
-        peerConnection?.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(console.log);
-    };
-
-    const toggleMic = () => {
-        setMicMuted(prevMicMuted => !prevMicMuted);
-        if (myAudio.current) {
-            const stream = myAudio.current.srcObject as MediaStream;
-            stream.getAudioTracks()[0].enabled = micMuted;
+    function handleMyMuted() {
+        if (myStream) {
+            myStream
+                .getAudioTracks()
+                .forEach((track) => (track.enabled = !track.enabled));
         }
-    };
+        setMyMuted((prev) => !prev);
+    }
 
-    const leaveRoom = () => {
-        peerConnections.current.forEach(conn => {
-            conn.close();
-        });
-        peerConnections.current.clear();
-        socket.emit("leave-room"); // 서버에 방을 떠남을 알림
 
-    
-        // 로그인 상태를 업데이트하는 로직이 필요합니다.
-        // 여기서는 navigate를 사용하여 /login 페이지로 리다이렉트합니다.
+
+    function leaveRoom() {
+
+        socket?.emit('leave-room', async (nickname: any) => {
+            console.log(`${nickname} : leave the room`);
+
+        })
+
         navigate("/");
     };
 
     return (
         <div>
-            {loggedIn && (
-                <>
-                    <span id="members">
-                        {members.map((nickname) => (
-                            <Box
-                                key={nickname} // nickname을 key로 사용
-                                className={`speaker user-rtc-${nickname}`}
-                                sx={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    borderRadius: '50%',
-                                    p: '2px',
-                                    bgcolor: userVolumes[nickname] >= 40 ? '#00ff00' : '#fff',
-                                    border: '2px solid',
-                                    borderColor: 'transparent',
-                                    width: 56,
-                                    height: 56,
-                                }}
-                            >
-                                <Avatar sx={{ bgcolor: '#ffc107', width: 56, height: 56 }}>
-                                    {nickname[0].toUpperCase()} {/* 첫 글자를 대문자로 표시 */}
-                                </Avatar>
-                            </Box>
-                        ))}
-                    </span>
-                    <audio ref={myAudio} autoPlay playsInline />
-                    <Button onClick={toggleMic}>
-                        {micMuted ? <MicOffIcon /> : <MicIcon />}
-                    </Button>
-                    <Button onClick={leaveRoom}>
-                        <LogoutIcon />
-                    </Button>
-                </>
-            )}
+            <>
+                <span id="members">
+                    {users.map((nickname) => (
+                        <Box
+                            key={nickname} // nickname을 key로 사용
+                            className={`speaker user-rtc-${nickname}`}
+                            sx={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: '50%',
+                                p: '2px',
+                                // bgcolor: userVolumes[nickname] >= 40 ? '#00ff00' : '#fff',
+                                border: '2px solid',
+                                borderColor: 'transparent',
+                                width: 56,
+                                height: 56,
+                            }}
+                        >
+                            <Avatar sx={{ bgcolor: '#ffc107', width: 56, height: 56 }}>
+                                {/* {nickname[0].toUpperCase()} */}
+                            </Avatar>
+                        </Box>
+                    ))}
+                </span>
+                <audio ref={myAudio} autoPlay playsInline />
+                <Button onClick={handleMyMuted}>
+                    {myMuted ? <MicOffIcon /> : <MicIcon />}
+                </Button>
+                <Button onClick={() => {
+                    socket?.emit('rtc_start', room);
+                }}
+                >
+                    Start
+                </Button>
+                <Button onClick={leaveRoom}>
+                    <LogoutIcon />
+                </Button>
+            </>
+
         </div>
     );
 };

@@ -17,6 +17,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.5.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@mui/icons-material": "^5.15.6",
+    "@mui/joy": "^5.0.0-beta.25",
     "@mui/material": "^5.15.5",
     "@mui/styled-engine-sc": "^6.0.0-alpha.12",
     "@types/express": "^4.17.21",
@@ -33,9 +34,13 @@
     "react-dom": "^18.2.0",
     "react-konva": "^18.2.10",
     "react-konva-utils": "^1.0.5",
+<<<<<<< HEAD
     "react-router-dom": "^6.22.0",
     "socket.io": "^4.7.4",
     "socket.io-client": "^4.7.4",
+=======
+    "react-textarea-autosize": "^8.5.3",
+>>>>>>> 7f2474639d85f05cffe133456cd25f0a2311d79e
     "styled-components": "^6.1.8",
     "ws": "^8.16.0",
     "y-protocols": "^1.0.6",

@@ -4,6 +4,8 @@ import { Tools } from './Tools';
 
 
 import * as Y from "yjs";
+// import { layer } from '@fortawesome/fontawesome-svg-core';
+// import { now } from 'lodash';
 
 type Target = {
     id: string;
@@ -18,15 +20,23 @@ type Target = {
     from: string;
     to: string;
   };
+
+  type SummaryNode = {
+    id: string;
+    value: string;
+    priority: number;
+  }
   
 
 
 //const MindMap = forwardRef((ref: RefObject<Konva.Stage>) => {
-export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.RefObject<Konva.Stage>, currentTool: Tools 
+export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefObject<Konva.Stage>, toolRef: any
 , yDocRef: React.MutableRefObject<Y.Doc>}) => {
-    console.log(yDocRef)
+    //console.log(yDocRef)
     // const [nodeTargets, setNodeTargets] = useState<Target[]>([]);
     // const [connectors, setConnectors] = useState<Connector[]>([]);
+    //const toolRef.current = toolRef.current;
+   //console.log(toolRef.current, Tools.MINDMAP);
     const layerRef = useRef<Konva.Layer>();
 
     const yTargets: Y.Map<Target> = yDocRef.current.getMap('targets');
@@ -48,7 +58,8 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
     useEffect(() => {
       if (stageRef.current) {
           stageRef.current.on('click', () => {
-              if (currentTool === Tools.MINDMAP && yTargets.size === 0) {
+            //console.log(toolRef.current, toolRef.current, toolRef, "Tool now");
+              if (toolRef.current === Tools.MINDMAP && yTargets.size === 0) {
                   const stage = stageRef.current;
                   const pointerPosition = stage?.getPointerPosition();
   
@@ -73,9 +84,9 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
       // console.log("!!!!targets, and connectors", yTargets, yConnectors, yTargets._map.size, yConnectors._map.size);
       // console.log(yTargets.size, yConnectors.size);
       if(event){
-        console.log(makeTextTravel());
+        //console.log(makeTextTravel());
       }
-        if (currentTool === Tools.MINDMAP && yTargets.size === 0) {
+        if (toolRef.current === Tools.MINDMAP && yTargets.size === 0) {
             const stage = stageRef.current;
             const pointerPosition = stage?.getPointerPosition();
             if (stage && pointerPosition) {
@@ -139,97 +150,172 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
     };
 
 
+
+
+    //double click 시 textarea 생성 
     const handleCircleClick = (event: any, targetId: string) => {
       event.evt.preventDefault();
       const stage = stageRef.current;
       if (!stage) return;
-
-      const targetText = layerRef.current?.findOne("#text-"+targetId);
-      targetText?.hide();
-      const targetTextPosition = targetText?.absolutePosition();
-  
-      const areaPos = {
-        x: stage.container().offsetLeft + (targetTextPosition?.x??0),
-        y: stage.container().offsetTop + (targetTextPosition?.y??0),
+    
+      const textAreaId = `textarea-${targetId}`;
+      let textArea = document.getElementById(textAreaId) as HTMLTextAreaElement;
+    
+      const setupTextArea = (textArea: HTMLTextAreaElement, targetValue: string, position: {x: number, y: number}) => {
+     
+          textArea.value = targetValue;
+          textArea.style.fontSize = '25px';
+          textArea.style.position = 'absolute';
+          textArea.style.left = position.x + 'px';
+          textArea.style.top = position.y + 'px';
+          textArea.style.border = 'none';
+          textArea.style.padding = '0px'; 
+          textArea.style.margin = '0px';
+          textArea.style.overflow = 'hidden';
+          textArea.style.background = 'none'; 
+          textArea.style.outline = 'none';
+          textArea.style.resize = 'none';
+          textArea.focus();
+    
+        // 드래그 했을 경우 textarea 위치 변경
+        const updateTextAreaPosition = () => {
+          const target = stage.findOne(`#${targetId}`);
+          if (target) {
+            const targetPosition = target.absolutePosition();
+            textArea.style.left = stage.container().offsetLeft + targetPosition.x + 'px';
+            textArea.style.top = stage.container().offsetTop + targetPosition.y + 'px';
+          }
+        };
+    
+        updateTextAreaPosition()
+        stage.on('dragmove', updateTextAreaPosition);
       };
+
+      if (!textArea) {
+        textArea = document.createElement('textarea');
+        textArea.id = textAreaId;
+        document.body.appendChild(textArea);
+    
+        textArea.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            const nowTarget = yTargets.get(targetId);
+            if(nowTarget){
+              yTargets.set(targetId, { ...nowTarget, value: textArea.value });
+            }
+            textArea.parentNode?.removeChild(textArea);
+            targetText?.show();
   
-      var textArea = document.createElement('textarea');
-      document.body.appendChild(textArea);
+          }
+        });
+      }
+    
       const target = yTargets.get(targetId);
       if (!target) {
         console.error("Target not found:", targetId);
         return;
       }
+    
+      const targetText = layerRef.current?.findOne("#text-"+targetId);
+      targetText?.hide();
+      const targetTextPosition = targetText?.absolutePosition();
+      const areaPos = {
+        x: stage.container().offsetLeft + (targetTextPosition?.x ?? 0),
+        y: stage.container().offsetTop + (targetTextPosition?.y ?? 0),
+      };
+
+      setupTextArea(textArea, target.value, areaPos);
+    
+    };
+    
 
 
-
-      textArea.value = target.value;
-      textArea.style.position = 'absolute';
-      textArea.style.left = areaPos.x + 'px';
-      textArea.style.top = areaPos.y + 'px';
-      textArea.style.border = 'none';
-      textArea.style.padding = '0px';
-      textArea.style.margin = '0px';
-      textArea.style.overflow = 'hidden';
-      textArea.style.background = 'none';
-      textArea.style.outline = 'none';
-      textArea.style.resize = 'none';
-      textArea.style.transformOrigin = 'left top';
-  
-      
-      textArea.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            yTargets.set(targetId, { ...target, value: textArea.value });
-            textArea.parentNode?.removeChild(textArea);
-            targetText?.show();
-          }
-      });
-    textArea.focus();
-  };
 
   const makeTextTravel = () => {
-    let accumulatedValues = "";
+    let summaryGroup = layerRef.current?.findOne('#summaryGroup') as Konva.Group;
+    if(summaryGroup){
+      summaryGroup.destroy();
+    }
+    
+    summaryGroup = new Konva.Group({
+        id: 'summaryGroup',
+        x: 50,
+        y: 50,
+        stroke: 'black',
+        strokeWidth: 2,
+        draggable: true,
+    });
 
-    const dfs = (targetId:string) => {
+    const summaryNodes = new Map<string, SummaryNode>([]);
+    const dfs = (targetId:string, depth:number) => {
       const nowTarget = yTargets.get(targetId);
       if(!nowTarget) return;
-
-      accumulatedValues += nowTarget.value + " ";
-      nowTarget.childIds.forEach(childId => dfs(childId));
+      summaryNodes.set(targetId, {id: targetId, value: nowTarget.value, priority: depth});
+      nowTarget?.childIds.forEach(childId => dfs(childId, depth+1));
     }
 
-    dfs('target-0');
-    return accumulatedValues.trim();
+    dfs('target-0', 0);
+
+    const baseFontSize = 40;
+    const decrement = 6;
+    const baseFontWeight = 700;
+    const fontDecrement = 100;
+    let yPosition = 10;
+
+    summaryNodes.forEach((summaryNode) => {
+      const fontSize = baseFontSize - (summaryNode.priority * decrement);
+      const fontWeight = Math.max(baseFontWeight - (summaryNode.priority * fontDecrement), 1);
+      const blanks = '        '.repeat(summaryNode.priority);
+
+      const text = new Konva.Text({
+          x: 10,
+          y: yPosition,
+          text: blanks + '.' + summaryNode.value,
+          // text:'.' + summaryNode.value,
+          fontSize: fontSize,
+          // fontStyle: fontWeight.toString() as Konva.FontStyle,
+          fontStyle: fontWeight.toString(),
+          fontFamily: 'Arial',
+          fill: 'black',
+      });
+      summaryGroup?.add(text);
+      yPosition += text.height() + 10;
+    });
+
+    layerRef.current?.add(summaryGroup);
   }
 
 
+  const deleteTargetDfs = (targetId: string) => {
+    const nowTarget = yTargets.get(targetId);
+    if(!nowTarget)return;
+
+    if(nowTarget.childIds){
+      nowTarget.childIds.forEach((childTargetId:string) => {
+        deleteTargetDfs(childTargetId);
+      });
+    }
+  
+    deleteTarget(targetId);
+  }
+
 
   const deleteTarget = (targetId: string) => {
-   
     //console.log("delete before target, connector", yTargets, yConnectors);
     const node = layerRef.current?.findOne('#' + targetId);
     const textNode = layerRef.current?.findOne('#text-'+targetId);
     node?.destroy();
     textNode?.destroy();
 
-    // node?.remove();
-    // textNode?.remove();
     
-    //console.log("Does target exist before deletion?", yTargets.has(targetId)); 
     yTargets.delete(targetId);
-    //console.log("Does target exist after deletion?", yTargets.has(targetId));
 
     yConnectors.forEach((connector, connectorId) => {
       if (connector.from === targetId || connector.to === targetId) {
         const line = layerRef.current?.findOne('#' + connectorId);
         line?.destroy();
-  
-        //console.log("Connector count before deletion:", yConnectors.size);    //TeST
         yConnectors.delete(connectorId); 
-        //console.log("Connector count after deletion:", yConnectors.size);     //TEST
       }
     });
-//    console.log("delete after target, connecotr", yTargets, yConnectors);     //TesT
 
   }
 
@@ -256,7 +342,9 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
   }
 
 
+  //우클릭 메뉴 구현
   const showContextMenu = (event:any, id:string) =>  {
+          //console.log("show context menu", event);
           let node = layerRef.current?.findOne(`#${id}`);
           let menu = document.getElementById('contextMenu'+ node?.id());
        
@@ -278,7 +366,22 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
             deleteButton.innerHTML = 'Delete';
             deleteButton.id = 'delete' + menu.id;
             deleteButton.onclick = function (){
-              deleteTarget(id);
+              deleteTargetDfs(id);
+              let summaryGroup = layerRef.current?.findOne('#summaryGroup');
+              if(summaryGroup){
+                summaryGroup.destroy();
+              }
+              // let container = document.getElementById('textTravelContainer');
+              // if(container){
+              //   document.body.removeChild(container);
+              // }
+              menu.style.display = 'none';
+            }
+
+            const sortButton = document.createElement('button');
+            sortButton.innerHTML = 'Summary';
+            sortButton.onclick = function () {
+              makeTextTravel();
               menu.style.display = 'none';
             }
 
@@ -288,10 +391,12 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
             cancelButton.onclick = function (){
               menu.style.display = 'none';
             }
+
             
             
             menu.appendChild(createButton);
             menu.appendChild(deleteButton);
+            menu.appendChild(sortButton);
             menu.appendChild(cancelButton);
           }
 
@@ -313,6 +418,7 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
   
     
 
+  //ytargets, yconnectors observe 시 작동하는 함수 
   const updateCanvas = (e:any) => {
     e.changes.keys.forEach((change:any, key:any) => {
       //console.log(key, change.action);
@@ -364,19 +470,19 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
                 id: id,
                 x: target.x,
                 y: target.y,
-                fill: '#A9A9A9',
+                fill:'#f9f9f9',
                 radius: 70,
                 draggable: true,
-                stroke: 'black',
-                strokeWidth: 2,
+                opacity: 1,
+                //stroke: 'black',
+                //strokeWidth: 2,
             });
             layerRef.current?.add(node as Konva.Circle);
-            
         } else {
             node.position({ x: target.x, y: target.y });
         }
         node.off('dblclick').on('dblclick', (event) => {
-          if (currentTool === Tools.MINDMAP) {
+          if (event.evt.button === 0 && toolRef.current === Tools.MINDMAP) {
               //addNewCircleAndConnector(id);
               handleCircleClick(event, id);
           }
@@ -385,31 +491,37 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
 
      
   
+      //우클릭 메뉴 이벤트
       node.off('contextmenu').on('contextmenu', (event) => {
         event.evt.preventDefault();
-          if (currentTool === Tools.MINDMAP) {
-            showContextMenu(event, id);
-            }
-          });
-          
-      node.off('dragmove').on('dragmove', () => {
-        //if(currentTool === Tools.MINDMAP){}
-          
-          const target = yTargets.get(id);
-          if(target){
-            const updatedTarget: Target = {
-              ...target, 
-              x: node?.x()??target.x,
-              y: node?.y()??target.y,
-            }
-            yTargets.set(id, updatedTarget);
-            //layerRef.current?.add(target);
-       
-          
-          updateConnectors(id);
-        }
+         if (toolRef.current === Tools.MINDMAP) {
+          // console.log(toolRef.current)
+          showContextMenu(event, id);
+         }
       });
 
+          
+      // //드래그 구현 update targets, connectors 
+      node.off('dragmove').on('dragmove', () => {
+        //if(toolRef.current === Tools.MINDMAP){}
+            const target = yTargets.get(id);
+            if(target){
+              const updatedTarget: Target = {
+                ...target, 
+                x: node?.x()??target.x,
+                y: node?.y()??target.y,
+              }
+              yTargets.set(id, updatedTarget);
+              //layerRef.current?.add(target);
+        
+            
+            updateConnectors(id);
+          }
+        
+      });
+
+
+      //target text 구현 
       const fontSize = 25; 
 
       const textValue = target.value;
@@ -438,6 +550,9 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
             fontSize: fontSize,
             fontFamily: 'Arial',
             fill: 'black',
+            stroke: 'black',
+            zincIndex: 1,
+            draggable: true,
           });
           layerRef.current?.add(textNode as Konva.Text);
         } 
@@ -446,25 +561,48 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
           textNode.text(textValue);
         }
 
+        //텍스트 더블클릭 이벤트
         textNode.off('dblclick').on('dblclick', (event) => {
-          if (currentTool === Tools.MINDMAP) {
+          if (event.evt.button === 0 && toolRef.current === Tools.MINDMAP) {
               handleCircleClick(event, id);
           }
-          
         });
 
+
+        //텍스트 우클릭 이벤트
         textNode.off('contextmenu').on('contextmenu', (event) => {
           event.evt.preventDefault();
-          if(currentTool === Tools.MINDMAP){
+          if(toolRef.current === Tools.MINDMAP){
             showContextMenu(event, id);
           }
         });
+
+        textNode.off('dragmove').on('dragmove', () => {
+          const textX = textNode.x();
+          const textY = textNode.y();
+          textNode.position({ x: textX, y: textY });
+          const target = yTargets.get(id);
+          if(target){
+            const updatedTarget: Target = {
+              ...target, 
+              // x: textNode?.x() + offsetX??textX + offsetX,
+              // y: textNode?.y() + offsetY??textY + offsetY,
+              x: offsetX + (textNode?.x()??textX),
+              y: offsetY + (textNode?.y()??textY),
+            }
+            yTargets.set(id, updatedTarget);
+            updateConnectors(id);
+          }
+        });
+
+        
 
         
     });
   };
 
 
+  //기본 click useEffect
   useEffect(() => {
     if (stageRef.current) {
       stageRef.current.on('click', handleClick);
@@ -481,12 +619,12 @@ export const MindMap = (({ stageRef, currentTool, yDocRef }: { stageRef: React.R
   useEffect(() => {
       yConnectors.observe(updateCanvas);
       yTargets.observe(updateCanvas);
-      console.log("!!!!upedate",yTargets, yConnectors);     //TEST
+      //console.log("!!!!upedate",yTargets, yConnectors);     //TEST
     return () => {
             yTargets.unobserve(updateCanvas);
             yConnectors.unobserve(updateCanvas);
     };
-}, [yTargets, yConnectors, currentTool, stageRef]);
+}, [yTargets, yConnectors, toolRef.current, stageRef]);
 
 
 
