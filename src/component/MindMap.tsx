@@ -223,7 +223,10 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
 
 
   const makeTextTravel = () => {
+    
+    
     let container = document.getElementById('textTravelContainer');
+    console.log(document, container);
     if(!container){
       container = document.createElement('div');
       container.id = 'textTravelContainer';
@@ -323,6 +326,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
   }
 
 
+  //우클릭 메뉴 구현
   const showContextMenu = (event:any, id:string) =>  {
           //console.log("show context menu", event);
           let node = layerRef.current?.findOne(`#${id}`);
@@ -347,6 +351,10 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
             deleteButton.id = 'delete' + menu.id;
             deleteButton.onclick = function (){
               deleteTargetDfs(id);
+              let container = document.getElementById('textTravelContainer');
+              if(container){
+                document.body.removeChild(container);
+              }
               menu.style.display = 'none';
             }
 
@@ -442,7 +450,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
                 id: id,
                 x: target.x,
                 y: target.y,
-                fill: '#fff',
+                fill:'#f9f9f9',
                 radius: 70,
                 draggable: true,
                 opacity: 1,
@@ -471,8 +479,9 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
           showContextMenu(event, id);
          }
       });
+
           
-      //드래그 구현 update targets, connectors 
+      // //드래그 구현 update targets, connectors 
       node.off('dragmove').on('dragmove', () => {
         //if(toolRef.current === Tools.MINDMAP){}
             const target = yTargets.get(id);
@@ -522,6 +531,8 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
             fontFamily: 'Arial',
             fill: 'black',
             stroke: 'black',
+            zincIndex: 1,
+            draggable: true,
           });
           layerRef.current?.add(textNode as Konva.Text);
         } 
@@ -545,6 +556,26 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
             showContextMenu(event, id);
           }
         });
+
+        textNode.off('dragmove').on('dragmove', () => {
+          const textX = textNode.x();
+          const textY = textNode.y();
+          textNode.position({ x: textX, y: textY });
+          const target = yTargets.get(id);
+          if(target){
+            const updatedTarget: Target = {
+              ...target, 
+              // x: textNode?.x() + offsetX??textX + offsetX,
+              // y: textNode?.y() + offsetY??textY + offsetY,
+              x: offsetX + (textNode?.x()??textX),
+              y: offsetY + (textNode?.y()??textY),
+            }
+            yTargets.set(id, updatedTarget);
+            updateConnectors(id);
+          }
+        });
+
+        
 
         
     });
