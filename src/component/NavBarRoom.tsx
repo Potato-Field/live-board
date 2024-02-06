@@ -46,21 +46,27 @@ export default function NavBar() {
       open={isMobileMenuOpen}
       onClose={handleMobileMenuClose}
     >
-      {/* 참가자 목록 */}
-      <MenuItem>
+      {/* TODO: 참가자 목록 - 아바타 or 닉네임 넣기 -> 컴포넌트 사용 */}
+      {/* TODO: MenuItem style css로 분리 */}
+      <MenuItem id='nicknameMe' style={{display:'flex', justifyContent:'center'}} >
         참가자 1
+        <p style={{opacity: '0.7', margin: '0', marginLeft: 'px'}}>(you)</p>
       </MenuItem>
-      <MenuItem>
+      <MenuItem className='nicknameMem' style={{display:'flex', justifyContent:'center'}} >
         참가자 2
       </MenuItem>
-      {/* 초대 - menuitem 클릭하면 방번호 popover 뜨도록 */}
-      <MenuItem >
+      <MenuItem className='nicknameMem' style={{display:'flex', justifyContent:'center'}} >
+        참가자 3
+      </MenuItem>
+      {/* 초대 TODO: 클릭시 방번호 popover 뜨도록 */}
+      <MenuItem style={{display:'flex', justifyContent:'center'}} >
         <IconButton
           size="large"
           aria-label="Invite new user"
           aria-controls="primary-search-account-menu"
           aria-haspopup="true"
           color="inherit"
+          style={{padding: 0}}
         >
           <AddCircleIcon />
         </IconButton>
@@ -77,7 +83,7 @@ export default function NavBar() {
             edge="start"
             color="inherit"
             aria-label="Exit room"
-            // 클릭시 '나가시겠습니까?' 알림 뜨도록
+            // TODO: 클릭시 '나가시겠습니까?' Dialog 뜨도록
             >
             <ArrowBackIosIcon fontSize='large' />
           </IconButton>
@@ -91,13 +97,22 @@ export default function NavBar() {
           {/* 중간 빈 공간 */}
           <Box sx={{ flexGrow: 1 }} />
 
-          <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+          <Box sx={{ display: { md: 'flex' } }}>
             <Button
               size="large"
               color="inherit"
+              // TODO: onClick: 음소거
             >
-              아바타 공간
+              음소거 버튼
             </Button>
+          </Box>
+
+          {/* TODO: 이 공간에 멤버 아바타 추가되도록 */}
+          <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+            Member avatar area
+          </Box>
+
+           <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
 
             <IconButton
               size="large"
@@ -107,11 +122,11 @@ export default function NavBar() {
               color="inherit"
             >
               <PersonAddIcon fontSize='large' />
-              {/* 클릭시 방번호 popover 뜨도록 */}
+              {/* TODO: 클릭시 방번호 popover 뜨도록 */}
             </IconButton>
           </Box>
 
-          {/* 화면 작아졌을 때 바로 위의 Box 사라지고 이 Box가 나타남 */}
+          {/* 화면 작아졌을 때 음소거버튼/아바타공간/초대버튼 사라지고 이 Box가 나타남 */}
           <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
             <IconButton
               size="large"
