@@ -24,7 +24,7 @@ body {
   display: flex;
   place-items: center;
   overflow: hidden;
-  justify-content: center;
+  /* justify-content: center; */
 }
 
 #container {
