@@ -20,6 +20,7 @@ import NavBarRoom from './component/NavBarRoom';
 
 import thumbUpImg from './assets/thumbup.png';
 import thumbDownImg from './assets/thumbdown.png'
+import { v4 as uniqueId } from 'uuid';  // 포스트잇 uuid
 
 import "./index.css"
 
@@ -45,8 +46,17 @@ let multiSelectBlocker = {
 
 let groupTr:Konva.Transformer | null = null;
 
+/* 전체 포스트잇 저장 배열 */
+interface PostitObject {
+  id: string;
+  text: string;
+  // x, y 좌표 필요시 추가
+}
+
 //Container Components
 const App: FC = () => {
+
+  const [postitArray, setPostitArray] = useState<PostitObject[]>([]);
 
   const { tool, setTool } = useTool();
   //const [tool, setTool] = useState<string>('pen');
@@ -844,7 +854,7 @@ const App: FC = () => {
 
     return textNode
   }
-  
+
   // const createUserTr = (userId:string)=>{
   //   const tr = new Konva.Transformer({ flipEnabled: false, id:`user-tr-${userId}`, enabledAnchors: []});
   //   return tr;
@@ -1460,6 +1470,7 @@ const App: FC = () => {
         x: realPointerPosition.x,
         y: realPointerPosition.y,
         draggable: true,
+        id: uniqueId(), // 각각의 포스트잇마다 uuid 잘 찍힘 
       });
 
       const postItOptions = {
@@ -1505,6 +1516,14 @@ const App: FC = () => {
       PostItGroup.add(initText);
       layer.add(PostItGroup);
       setTool(Tools.CURSOR);
+
+      let newPostIt: PostitObject = {
+        id: PostItGroup.attrs.id,
+        text: ''
+      }
+
+      setPostitArray(prevArray => [...prevArray, newPostIt]);
+    
 
       PostItGroup.on('dblclick dbltap', () => {
         initText.hide();
@@ -1604,12 +1623,16 @@ const App: FC = () => {
             PostItText.show();
             textarea.remove();
             stage.off('mouseup', handleOutsideClick);
+            // console.log('입력끝', PostItGroup.attrs.id)
+            // console.log('그룹', PostItGroup)
+            // console.log('텍스트', PostItGroup.findOne('.PostItText')?.attrs.text)
           }
         });
 
         function handleOutsideClick(e: any) {
           if (textarea.value === '') {
             initText.show();
+            // console.log('빈 상태', PostItGroup.attrs.id)
           }
 
           if (e.target !== textarea) {
@@ -1617,6 +1640,8 @@ const App: FC = () => {
             PostItText.show();
             textarea.remove();
             stage.off('mouseup', handleOutsideClick);
+            // console.log('바깥클릭', PostItGroup.attrs.id)
+            // console.log(PostItGroup)
           }
         }
         
@@ -1666,6 +1691,11 @@ const App: FC = () => {
       })
     } 
   };    
+
+  /* postitArray 로깅 */
+  useEffect(() => {
+    console.log('postitArray', postitArray);
+  }, [postitArray]);
 
   const createNewTextArea:any = (textNode:any, areaPosition:{x:number, y:number})=>{
     const textarea = document.createElement('textarea');
