@@ -31,14 +31,14 @@ body {
   max-width: 1300px;
   margin: 0 auto;
   display: flex; 
-  justify-content: center; 
+  justify-content: flex-end; 
   flex-direction: row; 
 }
 
 #room-header-controls {
   display: flex;
   justify-content: flex-end; 
-  align-items: flex-end; 
+  align-items: center; 
   width: 90%; 
 }
 

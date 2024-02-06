@@ -24,6 +24,7 @@
     "@types/socket.io": "^3.0.2",
     "@types/styled-components": "^5.1.34",
     "agora-rtc-sdk-ng": "^4.20.0",
+    "agora-rtm-sdk": "^2.1.7",
     "express": "^4.18.2",
     "http": "^0.0.1-security",
     "konva": "^9.3.1",
@@ -34,13 +35,9 @@
     "react-dom": "^18.2.0",
     "react-konva": "^18.2.10",
     "react-konva-utils": "^1.0.5",
-<<<<<<< HEAD
     "react-router-dom": "^6.22.0",
     "socket.io": "^4.7.4",
     "socket.io-client": "^4.7.4",
-=======
-    "react-textarea-autosize": "^8.5.3",
->>>>>>> 7f2474639d85f05cffe133456cd25f0a2311d79e
     "styled-components": "^6.1.8",
     "ws": "^8.16.0",
     "y-protocols": "^1.0.6",
