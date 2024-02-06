@@ -255,8 +255,8 @@ const App: FC = () => {
           }
         } 
         else if(change.action == 'update'){
-          const serializeData:any = yLockNodes.get(key);
-          console.log(change.action, serializeData)
+          //const serializeData:any = yLockNodes.get(key);
+          //console.log(change.action, serializeData)
         }
         else {
           const serializeData:any = yLockNodes.get(key);
@@ -444,13 +444,12 @@ const App: FC = () => {
   }, [tool]);
 
   const createNewUserArea = (paramUserId:string, pos:{x:number, y:number, width:number, height:number})=>{
-    const stage = stageRef.current
-    const scale = stage.scaleX(); // 현재 스케일
-    const position = stage.position(); // 현재 위치
     
-    const realPointerPosition = {
-      x: (pos.x - position.x) / scale,
-      y: (pos.y - position.y) / scale,
+    const adjustedPosition = {
+      x: pos.x * stageRef.current.scaleX(),
+      y: pos.y * stageRef.current.scaleY(),
+      width: pos.width * stageRef.current.scaleX(),
+      height: pos.height * stageRef.current.scaleY(),
     };
     
     if(pos.width == 0 && pos.height == 0) return;
@@ -482,13 +481,13 @@ const App: FC = () => {
     groups.add(newRect);
     groups.add(nameTag);
 
-    newRect.x(realPointerPosition.x)
-    newRect.y(realPointerPosition.y)
-    newRect.width(pos.width)
-    newRect.height(pos.height)
+    newRect.x(adjustedPosition.x)
+    newRect.y(adjustedPosition.y)
+    newRect.width(adjustedPosition.width)
+    newRect.height(adjustedPosition.height)
 
-    nameTag.x(realPointerPosition.x)
-    nameTag.y(realPointerPosition.y) 
+    nameTag.x(adjustedPosition.x)
+    nameTag.y(adjustedPosition.y) 
 
     stageRef.current.getLayers()[0].add(groups);
     
@@ -1101,7 +1100,7 @@ const App: FC = () => {
     } else if (tool === Tools.CURSOR){
       if(e.target === stage){
 
-        e.evt.preventDefault();
+        //e.evt.preventDefault();
         //블록(다중 선택하는 영역) 기능
         if(groupTr != null){
           const oldSelected = groupTr.getNodes();
@@ -1224,7 +1223,8 @@ const App: FC = () => {
   };
 
   const handleMouseUp = (e:any) => {
-    const leaveEvtFlag:boolean = e.evt.type === 'mouseleave'? true:false
+    const leaveEvtFlag:boolean = e.evt.type === 'mouseleave'? true:false  
+
     if(tool === Tools.PEN){
       isDrawing.current = false;
       const idx = "obj_Id_"+(id).toString()
@@ -1251,7 +1251,7 @@ const App: FC = () => {
         }
         
         
-        e.evt.preventDefault();
+        //e.evt.preventDefault();
         // update visibility in timeout, so we can check it in click event
         selectionRectangle.visible(false);
         selectionRectangle.destroy();
@@ -1268,6 +1268,7 @@ const App: FC = () => {
         if(groupTr == null){
           createNewTr(); 
         }
+
         if(groupTr){
           
           rowSelected.forEach((node)=>{
@@ -1281,8 +1282,17 @@ const App: FC = () => {
 
           if(selected.length > 0){
             groupTr.nodes(selected);
-            const groupTrData = groupTr.getClientRect();
-            ySelectedNodes.set(userId.current, groupTrData);
+            const selectionRect = groupTr.getClientRect();
+
+            // 선택 영역 정보를 절대 좌표계로 변환하여 저장
+            const absoluteSelectionInfo = {
+              x: selectionRect.x / stageRef.current.scaleX(),
+              y: selectionRect.y / stageRef.current.scaleY(),
+              width: selectionRect.width / stageRef.current.scaleX(),
+              height: selectionRect.height / stageRef.current.scaleY(),
+            };
+
+            ySelectedNodes.set(userId.current, absoluteSelectionInfo);
             yLockNodes.set(userId.current, JSON.stringify(locksData));
           }
         }
@@ -1713,7 +1723,7 @@ const App: FC = () => {
   }
 
   const handleMouseWheel = (e: any) => {
-    e.evt.preventDefault();
+    //e.evt.preventDefault();
     const stage = e.target.getStage();
 
     var oldScale = stage.scaleX();
