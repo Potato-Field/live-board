@@ -139,6 +139,8 @@ const App: FC = () => {
     return color;
   }
   
+
+
   function updateMousePositionOnScreen(userId:string, mousePosition:any) {
     let mouseIcon = document.getElementById(`mouse-${userId}`);
     if (!mouseIcon) {
@@ -682,6 +684,8 @@ const App: FC = () => {
       width: 200,
     });
 
+    
+    
     textNode.on("mousedown", (e:any)=>{
       
       if(toolRef.current !== Tools.CURSOR){
@@ -690,7 +694,7 @@ const App: FC = () => {
       } else {
         textNode.draggable(true)
       }
-
+      
       const selected = e.target
       if(groupTr == null){
         createNewTr();
@@ -699,74 +703,74 @@ const App: FC = () => {
         groupTr.nodes([selected]);
       }
     });
-
+    
     var textPosition = textNode.absolutePosition();
     let textarea:HTMLTextAreaElement;
     
     yTextData.observe(() => {
-
+      
       textNode.text(yTextData.toString());
     });
     // if (textarea !== document.activeElement) {
-    //   textarea.value = yTextData.toString();
-    // }
-    
-    textNode.on('dblclick dbltap', () => {
-      textNode.hide();
+      //   textarea.value = yTextData.toString();
+      // }
       
-      var areaPosition = {
-        x: stageRef.current.container().offsetLeft + textPosition.x,
-        y: stageRef.current.container().offsetTop + textPosition.y,
-      };
-      
-      textarea = createNewTextArea(textNode, areaPosition);
-      textarea.value = yTextData.toString();
-
-
-      let isComposing = false;
-
-      textarea.addEventListener('compositionstart', () => {
+      textNode.on('dblclick dbltap', () => {
+        textNode.hide();
+        
+        var areaPosition = {
+          x: stageRef.current.container().offsetLeft + textPosition.x,
+          y: stageRef.current.container().offsetTop + textPosition.y,
+        };
+        
+        textarea = createNewTextArea(textNode, areaPosition);
+        textarea.value = yTextData.toString();
+        
+        
+        let isComposing = false;
+        
+        textarea.addEventListener('compositionstart', () => {
           isComposing = true; // 한글 입력 시작
-      });
-
-      textarea.addEventListener('compositionend', () => {
+        });
+        
+        textarea.addEventListener('compositionend', () => {
           isComposing = false; // 한글 입력 완료
           
           syncText(); // 입력 완료 후 동기화 함수 호출
-      });
-
-      textarea.addEventListener('input', () => {
-        if (!isComposing) {
-          // 한글 입력이 아니거나 입력이 완료된 경우에만 동기화 진행
-          syncText();
-        }
-      });
-
-      const syncText = ()=>{
-        const currentText = textarea.value;
-        // Y.Text 객체의 현재 내용
-        const yCurrentText = yTextData.toString();
-      
-        const { start, endOld, endNew } = findFirstDiffIndex(yCurrentText, currentText);
-
-        if (start !== endOld) {
+        });
+        
+        textarea.addEventListener('input', () => {
+          if (!isComposing) {
+            // 한글 입력이 아니거나 입력이 완료된 경우에만 동기화 진행
+            syncText();
+          }
+        });
+        
+        const syncText = ()=>{
+          const currentText = textarea.value;
+          // Y.Text 객체의 현재 내용
+          const yCurrentText = yTextData.toString();
+          
+          const { start, endOld, endNew } = findFirstDiffIndex(yCurrentText, currentText);
+          
+          if (start !== endOld) {
             yTextData.delete(start, endOld - start);
-        }
-
-        // 그리고 새로운 문자열을 삽입
-        const newText = currentText.substring(start, endNew);
-        if (newText.length > 0) {
+          }
+          
+          // 그리고 새로운 문자열을 삽입
+          const newText = currentText.substring(start, endNew);
+          if (newText.length > 0) {
             yTextData.insert(start, newText);
+          }
         }
-      }
-      
-      function removeTextarea() {
-        if(!textarea.parentNode) return;
-        textarea.parentNode.removeChild(textarea);
-        window.removeEventListener('click', handleOutsideClick);
-        textNode.show();
-
-        const konvaData = {
+        
+        function removeTextarea() {
+          if(!textarea.parentNode) return;
+          textarea.parentNode.removeChild(textarea);
+          window.removeEventListener('click', handleOutsideClick);
+          textNode.show();
+          
+          const konvaData = {
           type      : "Text", 
           id        : textNode.id(),
           x         : textNode.x(),
@@ -779,7 +783,7 @@ const App: FC = () => {
         
         yObjects.set(textNode.id(), konvaData);
       }
-
+      
       function setTextareaWidth(newWidth:any) {
         if (!newWidth) {
           // set width for placeholder
@@ -788,37 +792,38 @@ const App: FC = () => {
         // some extra fixes on different browsers
         var isSafari = /^((?!chrome|android).)*safari/i.test(
           navigator.userAgent
-        );
-        var isFirefox =
+          );
+          var isFirefox =
           navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-        if (isSafari || isFirefox) {
-          newWidth = Math.ceil(newWidth);
-        }
-
-        var isEdge =
+          if (isSafari || isFirefox) {
+            newWidth = Math.ceil(newWidth);
+          }
+          
+          var isEdge =
           document.DOCUMENT_NODE || /Edge/.test(navigator.userAgent);
-        if (isEdge) {
-          newWidth += 1;
+          if (isEdge) {
+            newWidth += 1;
+          }
+          textarea.style.width = newWidth + 'px';
         }
-        textarea.style.width = newWidth + 'px';
-      }
-
-      textarea.addEventListener('keydown', function (e:any) {
-        // hide on enter
-        // but don't hide on shift + enter
-        if (e.key === 'Enter' && !e.shiftKey) {
-          textNode.text(textarea.value);
-          removeTextarea();
-        }
-        // on esc do not set value back to node
-        if (e.key === 'esc') {
-          removeTextarea();
-        }
-      });
-
-      textarea.addEventListener('keydown', function () {
-        let scale = textNode.getAbsoluteScale().x;
-        setTextareaWidth(textNode.width() * scale);
+        
+        textarea.addEventListener('keydown', function (e:any) {
+          // hide on enter
+          // but don't hide on shift + enter
+          if (e.key === 'Enter' && !e.shiftKey) {
+            textNode.text(textarea.value);
+            removeTextarea();
+          }
+          // on esc do not set value back to node
+          if (e.key === 'esc') {
+            removeTextarea();
+          }
+        });
+        
+        
+        textarea.addEventListener('keydown', function () {
+          let scale = textNode.getAbsoluteScale().x;
+          setTextareaWidth(textNode.width() * scale);
         textarea.style.height = 'auto';
         textarea.style.height =
         textarea.scrollHeight + textNode.fontSize() + 'px';
