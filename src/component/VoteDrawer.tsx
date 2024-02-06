@@ -6,18 +6,49 @@ import Box from '@mui/joy/Box';
 import Drawer from '@mui/joy/Drawer';
 import Divider from '@mui/joy/Divider';
 import HowToVoteIcon from '@mui/icons-material/HowToVote';
-import { Button, ButtonGroup, Card, CardContent, Typography, CardActions, Grid } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
+import { Card, CardContent, Typography, CardActions, Grid, IconButton } from '@mui/material';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ThumbUpAltRoundedIcon from '@mui/icons-material/ThumbUpAltRounded';
 import ThumbDownRoundedIcon from '@mui/icons-material/ThumbDownRounded';
 
 interface PostItData {
-  id: string
+  id: string,
   text: string,
+  thumbUp : number,
+  thumbDown : number,
 };
 
-export function toggleDrawer(setOpen: React.Dispatch<React.SetStateAction<boolean>>, inOpen: boolean, stageRef:React.RefObject<Konva.Stage>, setPostIt:React.Dispatch<React.SetStateAction<PostItData[]>>) {
+export function toggleDrawer(setOpen: React.Dispatch<React.SetStateAction<boolean>>, inOpen: boolean, stageRef: React.RefObject<Konva.Stage>, setPostIt: React.Dispatch<React.SetStateAction<PostItData[]>>) {
+  const getThumbs = (id: string) => {
+    if(!stageRef.current) return;
+
+    let thumbsUpCnt = 0;
+    let thumbsDownCnt = 0;
+
+    const postIt: any = stageRef.current.getLayers()[0].findOne('#'+id);
+    var shapes = stageRef.current.find('Image');
+    var box = postIt.getClientRect();
+
+    const rowSelected: Konva.Node[] = shapes.filter((shape:any) =>
+      Konva.Util.haveIntersection(box, shape.getClientRect())
+    );
+
+    rowSelected.forEach((node)=>{
+      if(node.name() === 'thumbUp'){
+        thumbsUpCnt++;
+      } else {
+        thumbsDownCnt++;
+      }
+    })
+
+    const returnData = {
+      thumbUp : thumbsUpCnt,
+      thumbDown : thumbsDownCnt
+    }
+
+    return returnData
+  }
+
   return (event: React.MouseEvent | React.TouchEvent) => {
     if (event.type !== 'click' && event.type !== 'touch') {
       return;
@@ -32,7 +63,17 @@ export function toggleDrawer(setOpen: React.Dispatch<React.SetStateAction<boolea
     for (let i=0; i<allPostIt.length; i++) {
       const id: string = allPostIt[i].attrs.id;
       const text: string = allPostIt[i].findOne('.postItText').attrs.text;
-      postItData.push({ id, text });
+      const thumbUpData = getThumbs(id);
+      
+      let thumbUpCnt = 0
+      let thumbDownCnt = 0
+
+      if(thumbUpData){
+        thumbUpCnt = thumbUpData.thumbUp;
+        thumbDownCnt = thumbUpData.thumbDown;
+      }
+      
+      postItData.push({ id, text, thumbUp:thumbUpCnt, thumbDown:thumbDownCnt});
     }
 
     setPostIt(postItData)
@@ -45,12 +86,9 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
   
   return (
     <>
-      <HowToVoteIcon fontSize='large' />
-      <ButtonGroup aria-label="medium secondary button group" variant='contained' style={{marginLeft:'1rem'}}>
-        <Button style={{backgroundColor: 'white', color: 'black', fontWeight: 'bold'}}>투표 시작</Button>,
-        <Button style={{backgroundColor: 'white', color: 'black', fontWeight: 'bold'}}>투표 종료</Button>,
-        <Button onClick={toggleDrawer(setOpen, true, stageRef, setPostItData)} style={{backgroundColor: 'white', color: 'black', fontWeight: 'bold'}}>투표 결과</Button>,
-      </ButtonGroup>
+      <IconButton size="large" aria-label="Postit vote" color="inherit" onClick={toggleDrawer(setOpen, true, stageRef, setPostItData)}>
+        <HowToVoteIcon fontSize='large' />
+      </IconButton>
 
       <Drawer open={open} onClose={toggleDrawer(setOpen, false, stageRef, setPostItData)} size='sm'>
         <h2>Vote results with postit</h2>
@@ -75,16 +113,14 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
                   <Grid item xs={4}>
                     <div className="upNum" style={{ display: 'flex', alignItems: 'center', justifyContent:'center' }}>
                       <ThumbUpAltRoundedIcon fontSize='small' />
-                      {/* 좋아요 수 */}
-                      <Typography variant='body2' ml={1}>3</Typography>
+                      <Typography variant='body2' ml={1}>{postItData.thumbUp}</Typography>
                     </div>
                   </Grid>
 
                     <Grid item xs={4}>
                       <div className="downNum" style={{ display: 'flex', alignItems: 'center', justifyContent:'center' }}>
                         <ThumbDownRoundedIcon fontSize='small' />
-                        {/* 싫어요 수 */}
-                        <Typography variant='body2' ml={1}>5</Typography>
+                        <Typography variant='body2' ml={1}>{postItData.thumbDown}</Typography>
                       </div>
                     </Grid>
 
