@@ -20,7 +20,7 @@ import NavBarRoom from './component/NavBarRoom';
 
 import thumbUpImg from './assets/thumbup.png';
 import thumbDownImg from './assets/thumbdown.png'
-import { v4 as uniqueId } from 'uuid';  // 포스트잇 uuid
+//import { v4 as uniqueId } from 'uuid';  // 포스트잇 uuid
 
 import "./index.css"
 
@@ -1464,7 +1464,7 @@ const App: FC = () => {
         x: realPointerPosition.x,
         y: realPointerPosition.y,
         draggable: true,
-        id: uniqueId(), // 각각의 포스트잇마다 uuid 잘 찍힘 
+        id: "obj_Id_"+uuidv4(), // 각각의 포스트잇마다 uuid 잘 찍힘 
       });
 
       const postItOptions = {
