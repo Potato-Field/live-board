@@ -20,11 +20,11 @@ body {
   min-width: 100vw;
   min-height: 100vh;
   margin: 0;
-  padding: 20;
+  /* padding: 20;
   display: flex;
-  place-items: center;
+  place-items: center; */
   overflow: hidden;
-  /* justify-content: center; */
+  
 }
 
 #container {

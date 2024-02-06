@@ -20,6 +20,7 @@ import NavBarRoom from './component/NavBarRoom';
 
 import thumbUpImg from './assets/thumbup.png';
 import thumbDownImg from './assets/thumbdown.png'
+//import { v4 as uniqueId } from 'uuid';  // 포스트잇 uuid
 
 import "./index.css"
 
@@ -44,6 +45,8 @@ let multiSelectBlocker = {
 }
 
 let groupTr:Konva.Transformer | null = null;
+
+/* 전체 포스트잇 저장 배열 */
 
 //Container Components
 const App: FC = () => {
@@ -179,7 +182,7 @@ const App: FC = () => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current);
 
     /* 본인 로컬에서 작동 */
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+    // const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
@@ -256,8 +259,8 @@ const App: FC = () => {
           }
         } 
         else if(change.action == 'update'){
-          const serializeData:any = yLockNodes.get(key);
-          console.log(change.action, serializeData)
+          //const serializeData:any = yLockNodes.get(key);
+          //console.log(change.action, serializeData)
         }
         else {
           const serializeData:any = yLockNodes.get(key);
@@ -445,13 +448,12 @@ const App: FC = () => {
   }, [tool]);
 
   const createNewUserArea = (paramUserId:string, pos:{x:number, y:number, width:number, height:number})=>{
-    const stage = stageRef.current
-    const scale = stage.scaleX(); // 현재 스케일
-    const position = stage.position(); // 현재 위치
     
-    const realPointerPosition = {
-      x: (pos.x - position.x) / scale,
-      y: (pos.y - position.y) / scale,
+    const adjustedPosition = {
+      x: pos.x * stageRef.current.scaleX(),
+      y: pos.y * stageRef.current.scaleY(),
+      width: pos.width * stageRef.current.scaleX(),
+      height: pos.height * stageRef.current.scaleY(),
     };
     
     if(pos.width == 0 && pos.height == 0) return;
@@ -483,13 +485,13 @@ const App: FC = () => {
     groups.add(newRect);
     groups.add(nameTag);
 
-    newRect.x(realPointerPosition.x)
-    newRect.y(realPointerPosition.y)
-    newRect.width(pos.width)
-    newRect.height(pos.height)
+    newRect.x(adjustedPosition.x)
+    newRect.y(adjustedPosition.y)
+    newRect.width(adjustedPosition.width)
+    newRect.height(adjustedPosition.height)
 
-    nameTag.x(realPointerPosition.x)
-    nameTag.y(realPointerPosition.y) 
+    nameTag.x(adjustedPosition.x)
+    nameTag.y(adjustedPosition.y) 
 
     stageRef.current.getLayers()[0].add(groups);
     
@@ -849,7 +851,7 @@ const App: FC = () => {
 
     return textNode
   }
-  
+
   // const createUserTr = (userId:string)=>{
   //   const tr = new Konva.Transformer({ flipEnabled: false, id:`user-tr-${userId}`, enabledAnchors: []});
   //   return tr;
@@ -1102,7 +1104,7 @@ const App: FC = () => {
     } else if (tool === Tools.CURSOR){
       if(e.target === stage){
 
-        e.evt.preventDefault();
+        //e.evt.preventDefault();
         //블록(다중 선택하는 영역) 기능
         if(groupTr != null){
           const oldSelected = groupTr.getNodes();
@@ -1251,7 +1253,8 @@ const App: FC = () => {
   };
 
   const handleMouseUp = (e:any) => {
-    const leaveEvtFlag:boolean = e.evt.type === 'mouseleave'? true:false
+    const leaveEvtFlag:boolean = e.evt.type === 'mouseleave'? true:false  
+
     if(tool === Tools.PEN){
       isDrawing.current = false;
       const idx = "obj_Id_"+(id).toString()
@@ -1278,7 +1281,7 @@ const App: FC = () => {
         }
         
         
-        e.evt.preventDefault();
+        //e.evt.preventDefault();
         // update visibility in timeout, so we can check it in click event
         selectionRectangle.visible(false);
         selectionRectangle.destroy();
@@ -1295,6 +1298,7 @@ const App: FC = () => {
         if(groupTr == null){
           createNewTr(); 
         }
+
         if(groupTr){
           
           rowSelected.forEach((node)=>{
@@ -1308,8 +1312,17 @@ const App: FC = () => {
 
           if(selected.length > 0){
             groupTr.nodes(selected);
-            const groupTrData = groupTr.getClientRect();
-            ySelectedNodes.set(userId.current, groupTrData);
+            const selectionRect = groupTr.getClientRect();
+
+            // 선택 영역 정보를 절대 좌표계로 변환하여 저장
+            const absoluteSelectionInfo = {
+              x: selectionRect.x / stageRef.current.scaleX(),
+              y: selectionRect.y / stageRef.current.scaleY(),
+              width: selectionRect.width / stageRef.current.scaleX(),
+              height: selectionRect.height / stageRef.current.scaleY(),
+            };
+
+            ySelectedNodes.set(userId.current, absoluteSelectionInfo);
             yLockNodes.set(userId.current, JSON.stringify(locksData));
           }
         }
@@ -1477,9 +1490,11 @@ const App: FC = () => {
     }
     else if (tool === Tools.POSTIT) {
       let PostItGroup = new Konva.Group({
+        name : 'postIt',
         x: realPointerPosition.x,
         y: realPointerPosition.y,
         draggable: true,
+        id: "obj_Id_"+uuidv4(), // 각각의 포스트잇마다 uuid 잘 찍힘 
       });
 
       const postItOptions = {
@@ -1488,7 +1503,7 @@ const App: FC = () => {
       }
       
       let PostItText: any = new Konva.Text({
-        name: 'PostItText',
+        name: 'postItText',
         ...postItOptions, // x, y
         width: POSTIT_MIN_WIDTH,
         height: textHeight, // POSTIT_MIN_HEIGHT
@@ -1508,7 +1523,7 @@ const App: FC = () => {
       });
 
       let PostItRect = new Konva.Rect({
-        name : "PostItRect",
+        name : "postItRect",
         ...postItOptions,
         width: PostItText.width(),
         height: PostItText.height(),
@@ -1614,9 +1629,9 @@ const App: FC = () => {
           textarea.style.height = textarea.scrollHeight + PostItText.fontSize() + 'px';
          
           // todo: PostItRect height 증가
-          console.log(textarea.style.height);
-          let textareaHeight = (parseInt(textarea.style.height.slice(0, -2)) as any);
-          console.log(textareaHeight);
+          // console.log(textarea.style.height);
+          // let textareaHeight = (parseInt(textarea.style.height.slice(0, -2)) as any);
+          // console.log(textareaHeight);
 
           const key = e.key.toLowerCase();
           if (key == 'esc' || key == 'escape') {
@@ -1654,8 +1669,8 @@ const App: FC = () => {
           groupTr.nodes([e.target]);  // e.target: PostItText
         }
     
-        const text = PostItGroup.findOne('.PostItText')
-        const rect = PostItGroup.findOne('.PostItRect')
+        const text = PostItGroup.findOne('.postItText')
+        const rect = PostItGroup.findOne('.postItRect')
         const init = PostItGroup.findOne('.initText')
         
         if (text && rect) {
@@ -1738,7 +1753,7 @@ const App: FC = () => {
   }
 
   const handleMouseWheel = (e: any) => {
-    e.evt.preventDefault();
+    //e.evt.preventDefault();
     const stage = e.target.getStage();
 
     var oldScale = stage.scaleX();
@@ -1792,7 +1807,9 @@ const App: FC = () => {
       {/* <NavBarLobby /> */}
 
       {/* <VoiceChat /> */}
-      <NavBarRoom />
+      
+      <NavBarRoom stageRef = {stageRef} />
+
       <Stage
         width        = {window.innerWidth}
         height       = {window.innerHeight}
@@ -1814,10 +1831,10 @@ const App: FC = () => {
         
         {/* <>
           <MindMap stageRef = {stageRef} currentTool={tool} yDocRef = {yDocRef}/>
-        </> */
+        </> */}
         <>
           <MindMap stageRef = {stageRef} toolRef={toolRef} yDocRef = {yDocRef}/>
-        </>}
+        </>
 
       </Stage>
       <ColorProvider>
