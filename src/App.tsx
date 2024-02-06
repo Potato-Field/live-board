@@ -202,7 +202,11 @@ const App: FC = () => {
           const newLine = createNewLine(index, konvaData.points, konvaData.stroke)
           
           stageRef.current.getLayers()[0].add(newLine);
-        } 
+        } else if(konvaData.type === 'delete' && node != null){
+           node.destroy();
+           
+           
+        }
         yPens.delete(index);
       });  
     })
@@ -1133,6 +1137,7 @@ const App: FC = () => {
       } 
       
     } else if (tool === Tools.PEN) {
+      //console.log(yPens, "pens group");   //TEST
       const color = 'black' //임시 컬러
       //펜 이벤트
       isDrawing.current = true;
@@ -1217,6 +1222,31 @@ const App: FC = () => {
         point: [realPointerPosition.x, realPointerPosition.y]
       };
       yPens.set(idx, changeInfo);
+    }
+    else if(tool === Tools.ERASER){
+      const stage = e.target.getStage()
+      const pointerPosition = stage.getPointerPosition();
+      const lines = stage.getLayers()[0].getChildren((node:any) => {return node.getClassName() === 'Line'});
+      lines.forEach((line:any) => {
+          if(line.intersects(pointerPosition)){
+              const lineId = line.id();  
+              // console.log("Line ID: ", lineId); // Log the lineId
+              // console.log("yPens before deletion: ", yPens); // Log yPens before deletion
+              // console.log("yObjects before deletion: ", yObjects); // Log yObjects before deletion
+
+            
+              const changeInfo = {
+                type: "delete"
+              };
+              yPens.set(lineId.toString(), changeInfo);
+              yObjects.set(lineId.toString(), changeInfo);
+
+
+              // console.log("yPens after deletion: ", yPens); // Log yPens after deletion
+              // console.log("yObjects after deletion: ", yObjects); // Log yObjects after deletion
+          }
+      });
+      //console.log(yPens, "pens group", e);   //TEST
     }
   };
 
