@@ -1,20 +1,22 @@
 import * as React from 'react';
+import Konva from 'konva';
+
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
-// import TimerIcon from '@mui/icons-material/Timer';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import { Button } from '@mui/material';
+
 import { VoteDrawer } from './VoteDrawer';
+import VoiceAgora from './voicechat/voiceAgora';
 // import VoiceChat from "./voicechat/voicechat";
 
-export default function NavBar() {
+export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} ) => {
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
     React.useState<null | HTMLElement>(null);
 
@@ -45,7 +47,7 @@ export default function NavBar() {
       open={isMobileMenuOpen}
       onClose={handleMobileMenuClose}
     >
-      {/* TODO: 참가자 목록 - 아바타 or 닉네임 넣기 -> 컴포넌트 사용 */}
+      <VoiceAgora />
       {/* TODO: MenuItem style css로 분리 */}
       <MenuItem id='nicknameMe' style={{display:'flex', justifyContent:'center'}} >
         참가자 1
@@ -77,29 +79,14 @@ export default function NavBar() {
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar>
-          <VoteDrawer />
+          <VoteDrawer stageRef = {stageRef}/>
 
           {/* <IconButton size="large" aria-label="Stop watch" color="inherit">
             <TimerIcon fontSize='large' />
           </IconButton> */}
 
           {/* 중간 빈 공간 */}
-          <Box sx={{ flexGrow: 1 }} />
-
-          <Box sx={{ display: { md: 'flex' } }}>
-            <Button
-              size="large"
-              color="inherit"
-              // TODO: onClick: 음소거
-            >
-              음소거 버튼
-            </Button>
-          </Box>
-
-          {/* TODO: 이 공간에 멤버 아바타 추가되도록 */}
-          <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            Member avatar area
-          </Box>
+          <VoiceAgora />
 
            <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
 
@@ -138,3 +125,5 @@ export default function NavBar() {
     </Box>
   );
 }
+
+export default NavBarRoom;
