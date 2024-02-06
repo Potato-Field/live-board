@@ -14,6 +14,7 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { Button } from '@mui/material';
 
 import { VoteDrawer } from './VoteDrawer';
+import VoiceAgora from './voicechat/voiceAgora';
 // import VoiceChat from "./voicechat/voicechat";
 
 export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} ) => {
@@ -47,7 +48,7 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
       open={isMobileMenuOpen}
       onClose={handleMobileMenuClose}
     >
-      {/* TODO: 참가자 목록 - 아바타 or 닉네임 넣기 -> 컴포넌트 사용 */}
+      <VoiceAgora />
       {/* TODO: MenuItem style css로 분리 */}
       <MenuItem id='nicknameMe' style={{display:'flex', justifyContent:'center'}} >
         참가자 1
@@ -86,22 +87,7 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
           </IconButton> */}
 
           {/* 중간 빈 공간 */}
-          <Box sx={{ flexGrow: 1 }} />
-
-          <Box sx={{ display: { md: 'flex' } }}>
-            <Button
-              size="large"
-              color="inherit"
-              // TODO: onClick: 음소거
-            >
-              음소거 버튼
-            </Button>
-          </Box>
-
-          {/* TODO: 이 공간에 멤버 아바타 추가되도록 */}
-          <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            Member avatar area
-          </Box>
+          <VoiceAgora />
 
            <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
 
