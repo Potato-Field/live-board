@@ -5,8 +5,7 @@ import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import TimerIcon from '@mui/icons-material/Timer';
+// import TimerIcon from '@mui/icons-material/Timer';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
@@ -78,21 +77,11 @@ export default function NavBar() {
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="Exit room"
-            // TODO: 클릭시 '나가시겠습니까?' Dialog 뜨도록
-            >
-            <ArrowBackIosIcon fontSize='large' />
-          </IconButton>
-
           <VoteDrawer />
 
-          <IconButton size="large" aria-label="Stop watch" color="inherit">
+          {/* <IconButton size="large" aria-label="Stop watch" color="inherit">
             <TimerIcon fontSize='large' />
-          </IconButton>
+          </IconButton> */}
 
           {/* 중간 빈 공간 */}
           <Box sx={{ flexGrow: 1 }} />
