@@ -1229,26 +1229,33 @@ const App: FC = () => {
       const stage = e.target.getStage()
       const pointerPosition = stage.getPointerPosition();
       const lines = stage.getLayers()[0].getChildren((node:any) => {return node.getClassName() === 'Line'});
-      lines.forEach((line:any) => {
-          if(line.intersects(pointerPosition)){
-              const lineId = line.id();  
-              // console.log("Line ID: ", lineId); // Log the lineId
-              // console.log("yPens before deletion: ", yPens); // Log yPens before deletion
-              // console.log("yObjects before deletion: ", yObjects); // Log yObjects before deletion
+
+      const line = lines.find((line:any) => line.intersects(pointerPosition));
+      if(line){
+        const lineId = line.id();
+        const changeInfo = {
+          type: "delete"
+        };
+        yPens.set(lineId.toString(), changeInfo);
+        yObjects.set(lineId.toString(), changeInfo);
+      }
+
+
+      // lines.forEach((line:any) => {
+      //     if(line.intersects(pointerPosition)){
+      //         const lineId = line.id();  
+              
 
             
-              const changeInfo = {
-                type: "delete"
-              };
-              yPens.set(lineId.toString(), changeInfo);
-              yObjects.set(lineId.toString(), changeInfo);
+      //         const changeInfo = {
+      //           type: "delete"
+      //         };
+      //         yPens.set(lineId.toString(), changeInfo);
+      //         yObjects.set(lineId.toString(), changeInfo);
 
-
-              // console.log("yPens after deletion: ", yPens); // Log yPens after deletion
-              // console.log("yObjects after deletion: ", yObjects); // Log yObjects after deletion
-          }
-      });
-      //console.log(yPens, "pens group", e);   //TEST
+      //     }
+      // });
+      ////console.log(yPens, "pens group", e);   //TEST
     }
   };
 
