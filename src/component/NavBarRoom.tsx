@@ -1,21 +1,23 @@
 import * as React from 'react';
+import Konva from 'konva';
+
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import TimerIcon from '@mui/icons-material/Timer';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import { Button } from '@mui/material';
+
 import { VoteDrawer } from './VoteDrawer';
 import VoiceAgora from './voicechat/voiceAgora';
 // import VoiceChat from "./voicechat/voicechat";
 
-export default function NavBar() {
+export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} ) => {
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
     React.useState<null | HTMLElement>(null);
 
@@ -78,21 +80,11 @@ export default function NavBar() {
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="Exit room"
-            // TODO: 클릭시 '나가시겠습니까?' Dialog 뜨도록
-            >
-            <ArrowBackIosIcon fontSize='large' />
-          </IconButton>
+          <VoteDrawer stageRef = {stageRef}/>
 
-          <VoteDrawer />
-
-          <IconButton size="large" aria-label="Stop watch" color="inherit">
+          {/* <IconButton size="large" aria-label="Stop watch" color="inherit">
             <TimerIcon fontSize='large' />
-          </IconButton>
+          </IconButton> */}
 
           {/* 중간 빈 공간 */}
           <VoiceAgora />
@@ -134,3 +126,5 @@ export default function NavBar() {
     </Box>
   );
 }
+
+export default NavBarRoom;

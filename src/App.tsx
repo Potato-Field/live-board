@@ -20,6 +20,7 @@ import NavBarRoom from './component/NavBarRoom';
 
 import thumbUpImg from './assets/thumbup.png';
 import thumbDownImg from './assets/thumbdown.png'
+import { v4 as uniqueId } from 'uuid';  // 포스트잇 uuid
 
 import "./index.css"
 
@@ -44,6 +45,8 @@ let multiSelectBlocker = {
 }
 
 let groupTr:Konva.Transformer | null = null;
+
+/* 전체 포스트잇 저장 배열 */
 
 //Container Components
 const App: FC = () => {
@@ -179,7 +182,7 @@ const App: FC = () => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current);
 
     /* 본인 로컬에서 작동 */
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+    // const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
@@ -845,7 +848,7 @@ const App: FC = () => {
 
     return textNode
   }
-  
+
   // const createUserTr = (userId:string)=>{
   //   const tr = new Konva.Transformer({ flipEnabled: false, id:`user-tr-${userId}`, enabledAnchors: []});
   //   return tr;
@@ -1447,9 +1450,11 @@ const App: FC = () => {
     }
     else if (tool === Tools.POSTIT) {
       let PostItGroup = new Konva.Group({
+        name : 'postIt',
         x: realPointerPosition.x,
         y: realPointerPosition.y,
         draggable: true,
+        id: uniqueId(), // 각각의 포스트잇마다 uuid 잘 찍힘 
       });
 
       const postItOptions = {
@@ -1458,7 +1463,7 @@ const App: FC = () => {
       }
       
       let PostItText: any = new Konva.Text({
-        name: 'PostItText',
+        name: 'postItText',
         ...postItOptions, // x, y
         width: POSTIT_MIN_WIDTH,
         height: textHeight, // POSTIT_MIN_HEIGHT
@@ -1478,7 +1483,7 @@ const App: FC = () => {
       });
 
       let PostItRect = new Konva.Rect({
-        name : "PostItRect",
+        name : "postItRect",
         ...postItOptions,
         width: PostItText.width(),
         height: PostItText.height(),
@@ -1584,9 +1589,9 @@ const App: FC = () => {
           textarea.style.height = textarea.scrollHeight + PostItText.fontSize() + 'px';
          
           // todo: PostItRect height 증가
-          console.log(textarea.style.height);
-          let textareaHeight = (parseInt(textarea.style.height.slice(0, -2)) as any);
-          console.log(textareaHeight);
+          // console.log(textarea.style.height);
+          // let textareaHeight = (parseInt(textarea.style.height.slice(0, -2)) as any);
+          // console.log(textareaHeight);
 
           const key = e.key.toLowerCase();
           if (key == 'esc' || key == 'escape') {
@@ -1624,8 +1629,8 @@ const App: FC = () => {
           groupTr.nodes([e.target]);  // e.target: PostItText
         }
     
-        const text = PostItGroup.findOne('.PostItText')
-        const rect = PostItGroup.findOne('.PostItRect')
+        const text = PostItGroup.findOne('.postItText')
+        const rect = PostItGroup.findOne('.postItRect')
         const init = PostItGroup.findOne('.initText')
         
         if (text && rect) {
@@ -1762,7 +1767,9 @@ const App: FC = () => {
       {/* <NavBarLobby /> */}
 
       {/* <VoiceChat /> */}
-      <NavBarRoom />
+      
+      <NavBarRoom stageRef = {stageRef} />
+
       <Stage
         width        = {window.innerWidth}
         height       = {window.innerHeight}
@@ -1784,10 +1791,10 @@ const App: FC = () => {
         
         {/* <>
           <MindMap stageRef = {stageRef} currentTool={tool} yDocRef = {yDocRef}/>
-        </> */
+        </> */}
         <>
           <MindMap stageRef = {stageRef} toolRef={toolRef} yDocRef = {yDocRef}/>
-        </>}
+        </>
 
       </Stage>
       <ColorProvider>
