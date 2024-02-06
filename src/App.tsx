@@ -47,16 +47,9 @@ let multiSelectBlocker = {
 let groupTr:Konva.Transformer | null = null;
 
 /* 전체 포스트잇 저장 배열 */
-interface PostitObject {
-  id: string;
-  text: string;
-  // x, y 좌표 필요시 추가
-}
 
 //Container Components
 const App: FC = () => {
-
-  const [postitArray, setPostitArray] = useState<PostitObject[]>([]);
 
   const { tool, setTool } = useTool();
   //const [tool, setTool] = useState<string>('pen');
@@ -187,7 +180,7 @@ const App: FC = () => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current);
 
     /* 본인 로컬에서 작동 */
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+    // const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
@@ -1452,6 +1445,7 @@ const App: FC = () => {
     }
     else if (tool === Tools.POSTIT) {
       let PostItGroup = new Konva.Group({
+        name : 'postIt',
         x: realPointerPosition.x,
         y: realPointerPosition.y,
         draggable: true,
@@ -1464,7 +1458,7 @@ const App: FC = () => {
       }
       
       let PostItText: any = new Konva.Text({
-        name: 'PostItText',
+        name: 'postItText',
         ...postItOptions, // x, y
         width: POSTIT_MIN_WIDTH,
         height: textHeight, // POSTIT_MIN_HEIGHT
@@ -1484,7 +1478,7 @@ const App: FC = () => {
       });
 
       let PostItRect = new Konva.Rect({
-        name : "PostItRect",
+        name : "postItRect",
         ...postItOptions,
         width: PostItText.width(),
         height: PostItText.height(),
@@ -1501,14 +1495,6 @@ const App: FC = () => {
       PostItGroup.add(initText);
       layer.add(PostItGroup);
       setTool(Tools.CURSOR);
-
-      let newPostIt: PostitObject = {
-        id: PostItGroup.attrs.id,
-        text: ''
-      }
-
-      setPostitArray(prevArray => [...prevArray, newPostIt]);
-    
 
       PostItGroup.on('dblclick dbltap', () => {
         initText.hide();
@@ -1598,9 +1584,9 @@ const App: FC = () => {
           textarea.style.height = textarea.scrollHeight + PostItText.fontSize() + 'px';
          
           // todo: PostItRect height 증가
-          console.log(textarea.style.height);
-          let textareaHeight = (parseInt(textarea.style.height.slice(0, -2)) as any);
-          console.log(textareaHeight);
+          // console.log(textarea.style.height);
+          // let textareaHeight = (parseInt(textarea.style.height.slice(0, -2)) as any);
+          // console.log(textareaHeight);
 
           const key = e.key.toLowerCase();
           if (key == 'esc' || key == 'escape') {
@@ -1608,16 +1594,12 @@ const App: FC = () => {
             PostItText.show();
             textarea.remove();
             stage.off('mouseup', handleOutsideClick);
-            // console.log('입력끝', PostItGroup.attrs.id)
-            // console.log('그룹', PostItGroup)
-            // console.log('텍스트', PostItGroup.findOne('.PostItText')?.attrs.text)
           }
         });
 
         function handleOutsideClick(e: any) {
           if (textarea.value === '') {
             initText.show();
-            // console.log('빈 상태', PostItGroup.attrs.id)
           }
 
           if (e.target !== textarea) {
@@ -1625,8 +1607,6 @@ const App: FC = () => {
             PostItText.show();
             textarea.remove();
             stage.off('mouseup', handleOutsideClick);
-            // console.log('바깥클릭', PostItGroup.attrs.id)
-            // console.log(PostItGroup)
           }
         }
         
@@ -1644,8 +1624,8 @@ const App: FC = () => {
           groupTr.nodes([e.target]);  // e.target: PostItText
         }
     
-        const text = PostItGroup.findOne('.PostItText')
-        const rect = PostItGroup.findOne('.PostItRect')
+        const text = PostItGroup.findOne('.postItText')
+        const rect = PostItGroup.findOne('.postItRect')
         const init = PostItGroup.findOne('.initText')
         
         if (text && rect) {
@@ -1676,11 +1656,6 @@ const App: FC = () => {
       })
     } 
   };    
-
-  /* postitArray 로깅 */
-  useEffect(() => {
-    console.log('postitArray', postitArray);
-  }, [postitArray]);
 
   const createNewTextArea:any = (textNode:any, areaPosition:{x:number, y:number})=>{
     const textarea = document.createElement('textarea');
@@ -1787,7 +1762,9 @@ const App: FC = () => {
       {/* <NavBarLobby /> */}
 
       {/* <VoiceChat /> */}
-      <NavBarRoom />
+      
+      <NavBarRoom stageRef = {stageRef} />
+
       <Stage
         width        = {window.innerWidth}
         height       = {window.innerHeight}
@@ -1809,10 +1786,10 @@ const App: FC = () => {
         
         {/* <>
           <MindMap stageRef = {stageRef} currentTool={tool} yDocRef = {yDocRef}/>
-        </> */
+        </> */}
         <>
           <MindMap stageRef = {stageRef} toolRef={toolRef} yDocRef = {yDocRef}/>
-        </>}
+        </>
 
       </Stage>
       <ColorProvider>
