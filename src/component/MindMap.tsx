@@ -142,66 +142,83 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
     };
 
 
-  const handleCircleClick = (event: any, targetId: string) => {
-    event.evt.preventDefault();
-    const stage = stageRef.current;
-    if (!stage) return;
-  
-    const textAreaId = `textarea-${targetId}`;
-    let textArea = document.getElementById(textAreaId) as HTMLTextAreaElement;
-  
-    const setupTextArea = (textArea: HTMLTextAreaElement, targetValue: string, position: {x: number, y: number}) => {
-      textArea.value = targetValue;
-      textArea.style.fontSize = '25px';
-      textArea.style.position = 'absolute';
-      textArea.style.left = position.x + 'px';
-      textArea.style.top = position.y + 'px';
-      textArea.style.border = 'none';
-      textArea.style.padding = '0px'; 
-      textArea.style.margin = '0px';
-      textArea.style.overflow = 'hidden';
-      textArea.style.background = 'none'; 
-      textArea.style.outline = 'none';
-      textArea.style.resize = 'none';
-      textArea.focus();
-    };
-  
-    if (!textArea) {
-      textArea = document.createElement('textarea');
-      textArea.id = textAreaId;
-      document.body.appendChild(textArea);
-  
-      textArea.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          const nowTarget = yTargets.get(targetId);
-          if(nowTarget){
-            yTargets.set(targetId, { ...nowTarget, value: textArea.value });
-          }
-          textArea.parentNode?.removeChild(textArea);
-          targetText?.show();
 
-        }
-      });
-    }
-  
-    const target = yTargets.get(targetId);
-    if (!target) {
-      console.error("Target not found:", targetId);
-      return;
-    }
-  
-    const targetText = layerRef.current?.findOne("#text-"+targetId);
-    targetText?.hide();
-    const targetTextPosition = targetText?.absolutePosition();
-    const areaPos = {
-      x: stage.container().offsetLeft + (targetTextPosition?.x ?? 0),
-      y: stage.container().offsetTop + (targetTextPosition?.y ?? 0),
-    };
-  
-    setupTextArea(textArea, target.value, areaPos);
+
+    //double click 시 textarea 생성 
+    const handleCircleClick = (event: any, targetId: string) => {
+      event.evt.preventDefault();
+      const stage = stageRef.current;
+      if (!stage) return;
     
-  };
+      const textAreaId = `textarea-${targetId}`;
+      let textArea = document.getElementById(textAreaId) as HTMLTextAreaElement;
+    
+      const setupTextArea = (textArea: HTMLTextAreaElement, targetValue: string, position: {x: number, y: number}) => {
+     
+          textArea.value = targetValue;
+          textArea.style.fontSize = '25px';
+          textArea.style.position = 'absolute';
+          textArea.style.left = position.x + 'px';
+          textArea.style.top = position.y + 'px';
+          textArea.style.border = 'none';
+          textArea.style.padding = '0px'; 
+          textArea.style.margin = '0px';
+          textArea.style.overflow = 'hidden';
+          textArea.style.background = 'none'; 
+          textArea.style.outline = 'none';
+          textArea.style.resize = 'none';
+          textArea.focus();
+    
+        // 드래그 했을 경우 textarea 위치 변경
+        const updateTextAreaPosition = () => {
+          const target = stage.findOne(`#${targetId}`);
+          if (target) {
+            const targetPosition = target.absolutePosition();
+            textArea.style.left = stage.container().offsetLeft + targetPosition.x + 'px';
+            textArea.style.top = stage.container().offsetTop + targetPosition.y + 'px';
+          }
+        };
+    
+        updateTextAreaPosition()
+        stage.on('dragmove', updateTextAreaPosition);
+      };
+
+      if (!textArea) {
+        textArea = document.createElement('textarea');
+        textArea.id = textAreaId;
+        document.body.appendChild(textArea);
+    
+        textArea.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            const nowTarget = yTargets.get(targetId);
+            if(nowTarget){
+              yTargets.set(targetId, { ...nowTarget, value: textArea.value });
+            }
+            textArea.parentNode?.removeChild(textArea);
+            targetText?.show();
   
+          }
+        });
+      }
+    
+      const target = yTargets.get(targetId);
+      if (!target) {
+        console.error("Target not found:", targetId);
+        return;
+      }
+    
+      const targetText = layerRef.current?.findOne("#text-"+targetId);
+      targetText?.hide();
+      const targetTextPosition = targetText?.absolutePosition();
+      const areaPos = {
+        x: stage.container().offsetLeft + (targetTextPosition?.x ?? 0),
+        y: stage.container().offsetTop + (targetTextPosition?.y ?? 0),
+      };
+
+      setupTextArea(textArea, target.value, areaPos);
+    
+    };
+    
 
 
 
@@ -373,6 +390,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
   
     
 
+  //ytargets, yconnectors observe 시 작동하는 함수 
   const updateCanvas = (e:any) => {
     e.changes.keys.forEach((change:any, key:any) => {
       //console.log(key, change.action);
@@ -445,6 +463,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
 
      
   
+      //우클릭 메뉴 이벤트
       node.off('contextmenu').on('contextmenu', (event) => {
         event.evt.preventDefault();
          if (toolRef.current === Tools.MINDMAP) {
@@ -453,6 +472,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
          }
       });
           
+      //드래그 구현 update targets, connectors 
       node.off('dragmove').on('dragmove', () => {
         //if(toolRef.current === Tools.MINDMAP){}
             const target = yTargets.get(id);
@@ -471,6 +491,8 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
         
       });
 
+
+      //target text 구현 
       const fontSize = 25; 
 
       const textValue = target.value;
@@ -508,12 +530,15 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
           textNode.text(textValue);
         }
 
+        //텍스트 더블클릭 이벤트
         textNode.off('dblclick').on('dblclick', (event) => {
           if (event.evt.button === 0 && toolRef.current === Tools.MINDMAP) {
               handleCircleClick(event, id);
           }
         });
 
+
+        //텍스트 우클릭 이벤트
         textNode.off('contextmenu').on('contextmenu', (event) => {
           event.evt.preventDefault();
           if(toolRef.current === Tools.MINDMAP){
@@ -526,6 +551,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
   };
 
 
+  //기본 click useEffect
   useEffect(() => {
     if (stageRef.current) {
       stageRef.current.on('click', handleClick);
