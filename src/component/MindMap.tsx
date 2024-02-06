@@ -226,7 +226,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
     
     
     let container = document.getElementById('textTravelContainer');
-    console.log(document, container);
+    //console.log(document, container);
     if(!container){
       container = document.createElement('div');
       container.id = 'textTravelContainer';
