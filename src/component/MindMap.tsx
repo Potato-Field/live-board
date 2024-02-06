@@ -4,6 +4,8 @@ import { Tools } from './Tools';
 
 
 import * as Y from "yjs";
+// import { layer } from '@fortawesome/fontawesome-svg-core';
+// import { now } from 'lodash';
 
 type Target = {
     id: string;
@@ -18,6 +20,12 @@ type Target = {
     from: string;
     to: string;
   };
+
+  type SummaryNode = {
+    id: string;
+    value: string;
+    priority: number;
+  }
   
 
 
@@ -223,48 +231,55 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
 
 
   const makeTextTravel = () => {
-    
-    
-    let container = document.getElementById('textTravelContainer');
-    //console.log(document, container);
-    if(!container){
-      container = document.createElement('div');
-      container.id = 'textTravelContainer';
-      container.style.position = 'absolute'; 
-      container.style.left = '50px'; 
-      container.style.top = '50px';
-      document.body.appendChild(container);
+    let summaryGroup = layerRef.current?.findOne('#summaryGroup') as Konva.Group;
+    if(summaryGroup){
+      summaryGroup.destroy();
     }
-    else{
-      container.innerHTML = '';
-    }
+    
+    summaryGroup = new Konva.Group({
+        id: 'summaryGroup',
+        x: 50,
+        y: 50,
+        stroke: 'black',
+        strokeWidth: 2,
+        draggable: true,
+    });
 
-
-  
-    const baseFontSize = 40; 
-    const decrement = 6; 
-    const baseFontWeight = 700;
-    const fontDecrement = 100;
-
-    const dfs = (targetId:string, depth:number, parentDiv:any) => {
+    const summaryNodes = new Map<string, SummaryNode>([]);
+    const dfs = (targetId:string, depth:number) => {
       const nowTarget = yTargets.get(targetId);
       if(!nowTarget) return;
-
-      const targetDiv = document.createElement('div');
-      targetDiv.textContent = '.' + nowTarget.value;
-      targetDiv.style.fontSize = `${baseFontSize - (depth * decrement)}px`; 
-      targetDiv.style.textAlign = 'left';
-
-      const calcWeight = Math.max(baseFontWeight - (depth * fontDecrement), 1);
-      targetDiv.style.fontWeight = calcWeight.toString();
-
-
-      parentDiv.appendChild(targetDiv);
-      nowTarget.childIds.forEach(childId => dfs(childId, depth+1, targetDiv));
+      summaryNodes.set(targetId, {id: targetId, value: nowTarget.value, priority: depth});
+      nowTarget?.childIds.forEach(childId => dfs(childId, depth+1));
     }
 
-    dfs('target-0', 0, container);
-    return container;
+    dfs('target-0', 0);
+
+    const baseFontSize = 40;
+    const decrement = 6;
+    const baseFontWeight = 700;
+    const fontDecrement = 100;
+    let yPosition = 10;
+
+    summaryNodes.forEach((summaryNode) => {
+      const fontSize = baseFontSize - (summaryNode.priority * decrement);
+      const fontWeight = Math.max(baseFontWeight - (summaryNode.priority * fontDecrement), 1);
+
+      const text = new Konva.Text({
+          x: 10,
+          y: yPosition,
+          text: '.' + summaryNode.value,
+          fontSize: fontSize,
+          // fontStyle: fontWeight.toString() as Konva.FontStyle,
+          fontStyle: fontWeight.toString(),
+          fontFamily: 'Arial',
+          fill: 'black',
+      });
+      summaryGroup?.add(text);
+      yPosition += text.height() + 10;
+    });
+
+    layerRef.current?.add(summaryGroup);
   }
 
 
@@ -283,7 +298,6 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
 
 
   const deleteTarget = (targetId: string) => {
-   
     //console.log("delete before target, connector", yTargets, yConnectors);
     const node = layerRef.current?.findOne('#' + targetId);
     const textNode = layerRef.current?.findOne('#text-'+targetId);
@@ -351,15 +365,19 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
             deleteButton.id = 'delete' + menu.id;
             deleteButton.onclick = function (){
               deleteTargetDfs(id);
-              let container = document.getElementById('textTravelContainer');
-              if(container){
-                document.body.removeChild(container);
+              let summaryGroup = layerRef.current?.findOne('#summaryGroup');
+              if(summaryGroup){
+                summaryGroup.destroy();
               }
+              // let container = document.getElementById('textTravelContainer');
+              // if(container){
+              //   document.body.removeChild(container);
+              // }
               menu.style.display = 'none';
             }
 
             const sortButton = document.createElement('button');
-            sortButton.innerHTML = 'Sort';
+            sortButton.innerHTML = 'Summary';
             sortButton.onclick = function () {
               makeTextTravel();
               menu.style.display = 'none';
