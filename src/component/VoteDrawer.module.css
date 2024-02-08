@@ -1,0 +1,11 @@
+.cardText{
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.notice{
+    margin: 0;
+    padding: 1rem;
+    color: rgba(0, 0, 0, 0.7);
+}
