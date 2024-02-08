@@ -28,8 +28,8 @@ export function toggleDrawer(setOpen: React.Dispatch<React.SetStateAction<boolea
     let thumbsDownCnt = 0;
 
     const postIt: any = stageRef.current.getLayers()[0].findOne('#'+id);
-    var shapes = stageRef.current.find('Image');
-    var box = postIt.getClientRect();
+    let shapes = stageRef.current.find('Image');
+    let box = postIt.getClientRect();
 
     const rowSelected: Konva.Node[] = shapes.filter((shape:any) =>
       Konva.Util.haveIntersection(box, shape.getClientRect())
@@ -47,7 +47,7 @@ export function toggleDrawer(setOpen: React.Dispatch<React.SetStateAction<boolea
       thumbUp : thumbsUpCnt,
       thumbDown : thumbsDownCnt
     }
-
+    
     return returnData
   }
 
@@ -69,7 +69,7 @@ export function toggleDrawer(setOpen: React.Dispatch<React.SetStateAction<boolea
       
       let thumbUpCnt = 0
       let thumbDownCnt = 0
-
+      
       if(thumbUpData){
         thumbUpCnt = thumbUpData.thumbUp;
         thumbDownCnt = thumbUpData.thumbDown;
@@ -77,7 +77,7 @@ export function toggleDrawer(setOpen: React.Dispatch<React.SetStateAction<boolea
       
       postItData.push({ id, text, thumbUp:thumbUpCnt, thumbDown:thumbDownCnt});
     }
-
+    
     setPostIt(postItData)
   };
 }
@@ -85,7 +85,39 @@ export function toggleDrawer(setOpen: React.Dispatch<React.SetStateAction<boolea
 export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
   const [open, setOpen] = useState(false);
   const [postItData, setPostItData] = useState<PostItData[]>([]);
-  
+
+  const viewPostIt = (id: string, stageRef: React.RefObject<Konva.Stage>) => {
+    if (!stageRef.current) return;
+
+    const postIt: any = stageRef.current.getLayers()[0].findOne("#"+id);
+    
+    if (!postIt) return;
+
+    const scaleX = stageRef.current.scaleX();
+    const scaleY = stageRef.current.scaleY();
+
+    const postItWidth = postIt.find('.postItText')[0].attrs.width * scaleX;
+    const postItHeight = postIt.find('.postItText')[0].attrs.height * scaleY;
+    const postItX = postIt.attrs.x / scaleX;
+    const postItY = postIt.attrs.y / scaleY;
+
+    /* 포스트잇 중앙 좌표 */
+    const centerX = postItX + postItWidth / 2 / scaleX;
+    const centerY = postItY + postItHeight / 2 / scaleY;
+    
+    const stageWidth = stageRef.current.width();
+    const stageHeight = stageRef.current.height();
+    const stageCenterX = stageWidth / 2;
+    const stageCenterY = stageHeight / 2; // TODO: 네비바 높이 빼야함 (네비바 배치 수정 먼저 하기)
+
+    const deltaX = stageCenterX - centerX;
+    const deltaY = stageCenterY - centerY;
+
+    /* 포스트잇 중심으로 Stage 이동 */
+    stageRef.current.x(stageRef.current.x() + deltaX / scaleX);
+    stageRef.current.y(stageRef.current.y() + deltaY / scaleY);
+  }
+
   return (
     <>
       <IconButton size="large" aria-label="Postit vote" color="inherit" onClick={toggleDrawer(setOpen, true, stageRef, setPostItData)}>
@@ -102,7 +134,7 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
             <Card variant="outlined" sx={{width: '90%'}} style={{margin: 'auto', backgroundColor: '#FFD966', marginTop: '1rem'}}>
               <CardContent style={{padding: '1.5rem'}}>
                 <Typography variant="body1" component="div" className={styles.cardText}>
-                  {postItData.text}<br></br>{postItData.id}
+                  {postItData.text}
                 </Typography>
               </CardContent>
 
@@ -128,8 +160,14 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
                     {/* 클릭시 포스트잇 위치로 이동 */}
                     <Grid item xs={4}>
                       <IconButton 
-                      onClick={toggleDrawer(setOpen, false, stageRef, setPostItData)}
-                      onTouchStart={toggleDrawer(setOpen, false, stageRef, setPostItData)}
+                        onClick={() => {
+                          viewPostIt(postItData.id, stageRef);
+                          toggleDrawer(setOpen, false, stageRef, setPostItData); // 작동 안함
+                        }}
+                        onTouchStart={() => {
+                          viewPostIt(postItData.id, stageRef);
+                          toggleDrawer(setOpen, false, stageRef, setPostItData); // 작동 안함
+                        }}
                       >
                         <ZoomInIcon />
                       </IconButton>
