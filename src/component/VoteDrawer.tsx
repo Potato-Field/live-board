@@ -11,6 +11,8 @@ import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ThumbUpAltRoundedIcon from '@mui/icons-material/ThumbUpAltRounded';
 import ThumbDownRoundedIcon from '@mui/icons-material/ThumbDownRounded';
 
+import styles from './VoteDrawer.module.css';
+
 interface PostItData {
   id: string,
   text: string,
@@ -49,8 +51,8 @@ export function toggleDrawer(setOpen: React.Dispatch<React.SetStateAction<boolea
     return returnData
   }
 
-  return (event: React.MouseEvent | React.TouchEvent) => {
-    if (event.type !== 'click' && event.type !== 'touch') {
+  return (event: React.MouseEvent | React.TouchEvent | React.KeyboardEvent) => {
+    if (event.type !== 'click' && event.type !== 'touch' && event.type !== 'keydown') {
       return;
     }
     setOpen(inOpen);
@@ -93,17 +95,14 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
       <Drawer open={open} onClose={toggleDrawer(setOpen, false, stageRef, setPostItData)} size='sm'>
         <h2>Vote results with postit</h2>
         <Divider />
-        <Box
-          role="presentation"
-          onClick={toggleDrawer(setOpen, false, stageRef, setPostItData)}
-          onTouchStart={toggleDrawer(setOpen, false, stageRef, setPostItData)}
-        >
+        <Box role="presentation" onKeyDown={toggleDrawer(setOpen, false, stageRef, setPostItData)}>
 
-          {postItData.map((postItData) => (
-            <Card variant="outlined" sx={{width: '90%'}} style={{margin: 'auto', backgroundColor: '#FFD966', marginTop: '20px'}}>
-              <CardContent>
-                <Typography variant="body1" component="div">
-                  {postItData.text}
+          {postItData.length !== 0 ? postItData.map((postItData) => (
+            
+            <Card variant="outlined" sx={{width: '90%'}} style={{margin: 'auto', backgroundColor: '#FFD966', marginTop: '1rem'}}>
+              <CardContent style={{padding: '1.5rem'}}>
+                <Typography variant="body1" component="div" className={styles.cardText}>
+                  {postItData.text}<br></br>{postItData.id}
                 </Typography>
               </CardContent>
 
@@ -128,14 +127,20 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
 
                     {/* 클릭시 포스트잇 위치로 이동 */}
                     <Grid item xs={4}>
-                      <IconButton>
+                      <IconButton 
+                      onClick={toggleDrawer(setOpen, false, stageRef, setPostItData)}
+                      onTouchStart={toggleDrawer(setOpen, false, stageRef, setPostItData)}
+                      >
                         <ZoomInIcon />
                       </IconButton>
                     </Grid>
                 </Grid>
               </CardActions>
             </Card>
-          ))}
+          )) : (
+            <p className={styles.notice}>포스트잇을 생성하고<br/>스탬프(👍👎)로 투표해보세요!<br/><br/>이 공간에서 모든 포스트잇의 투표 결과를 확인할 수 있습니다.</p>
+          )
+          }
         </Box>
       </Drawer>
     </>
