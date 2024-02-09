@@ -1774,10 +1774,7 @@ const App:FC = () => {
 
   return (
     <div style={{position: "relative", width: "100%"}}>
-      {/* <NavBarLobby /> */}
 
-      {/* <VoiceChat /> */}
-      
       <NavBarRoom stageRef = {stageRef} />
 
       <Stage
@@ -1798,10 +1795,6 @@ const App:FC = () => {
       >
       
         <Layer></Layer>
-        
-        {/* <>
-          <MindMap stageRef = {stageRef} currentTool={tool} yDocRef = {yDocRef}/>
-        </> */}
         <>
           <MindMap stageRef = {stageRef} toolRef={toolRef} yDocRef = {yDocRef}/>
         </>
