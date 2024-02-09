@@ -10,7 +10,7 @@ import { Stage, Layer } from 'react-konva';
 import { ButtonCustomGroup } from './component/ButtonCustomGroup';
 
 import { useTool } from './component/ToolContext';
-import { ColorProvider } from './component/ColorContext';
+import { useColor } from './component/ColorContext';
 
 import { Tools } from './component/Tools';
 
@@ -45,6 +45,7 @@ let groupTr:Konva.Transformer | null = null;
 const App:FC = () => {
 
   const { tool, setTool } = useTool();
+  const { currentColor } = useColor();
   const [clickedIconBtn, setClickedIconBtn] = useState<string | null>(null);
   
   const POSTIT_MIN_WIDTH = 250;  // init size
@@ -69,7 +70,9 @@ const App:FC = () => {
   const isTrans = useRef(false);
   const isDrag = useRef(false);
   const isHand = useRef(false);
+
   const toolRef = useRef(tool);
+  const currentColorRef = useRef<any>();
 
   // Y.js 관련 상태를 useRef로 관리
   const yDocRef = useRef(new Y.Doc());
@@ -337,7 +340,8 @@ const App:FC = () => {
         if(node) return;
         if(konvaData == null) return;
         if(konvaData.type == Shape.Line){
-          const newLine =  createNewLine(index, konvaData.points, konvaData.stroke)
+          console.log(konvaData.penStyle)
+          const newLine =  createNewLine(index, konvaData.points, konvaData.stroke, konvaData.penStyle)
           newLine.visible(false)
           stageRef.current.getLayers()[0].add(newLine);
           newLine.move({x:konvaData.x, y:konvaData.y});
@@ -427,7 +431,8 @@ const App:FC = () => {
 
   useEffect(() => {
     toolRef.current = tool;
-  }, [tool]);
+    currentColorRef.current = currentColor;
+  }, [tool, currentColor]);
 
   const createNewUserArea = (paramUserId:string, pos:{x:number, y:number, width:number, height:number})=>{
     
@@ -481,28 +486,30 @@ const App:FC = () => {
 
   const createNewLine = (idx:string, pos:number[], color:any, penStyle:Tools = Tools.PEN) =>{
     let newLine:Konva.Line;
-
+    
     if(penStyle == Tools.PEN){
       newLine = new Konva.Line({
-        id : idx,
-        points: pos,
-        stroke: color,
-        strokeWidth: 5,
-        lineCap: 'round',
-        lineJoin: 'round',
-        draggable   : true
+        id          : idx,
+        points      : pos,
+        stroke      : color,
+        strokeWidth : 5,
+        lineCap     : 'round',
+        lineJoin    : 'round',
+        draggable   : true,
+        name        : Tools[Tools.PEN]
       });
     } else {
       newLine = new Konva.Line({
-        id : idx,
-        points: pos,
-        stroke: color,
+        id          : idx,
+        points      : pos,
+        stroke      : color,
         strokeWidth : 15,
         lineCap     : "butt",
         lineJoin    : "round",
         draggable   : true,
         tension     : 0.5,
         opacity     : 0.4,
+        name        : Tools[Tools.HIGHLIGHTER],
       });
     }
 
@@ -677,7 +684,7 @@ const App:FC = () => {
     return { start, endOld: endOld + 1, endNew: endNew + 1 };
   }
   
-  const createNewText = (id:string, pos:{x:number, y:number}, text:string)=>{
+  const createNewText = (id:string, pos:{x:number, y:number}, text:string , color:string = 'Black')=>{
     const yTextData = yDocRef.current.getText(id);
 
     const textNode:any = new Konva.Text({
@@ -686,6 +693,7 @@ const App:FC = () => {
       x: pos.x,
       y: pos.y,
       fontSize: 20,
+      fill : color,
       draggable: true,
       width: 200,
     });
@@ -889,6 +897,9 @@ const App:FC = () => {
             scaleX      : node.scaleX(),
             scaleY      : node.scaleY(),
             rotation    : node.rotation(),
+            tension     : node.tension(),
+            opacity     : node.opacity(),
+            penStyle    : node.hasName(Tools[Tools.PEN]) ? Tools.PEN : Tools.HIGHLIGHTER,
             draggable   : true,
           }
         } else if(type === Shape.RegularPolygon){
@@ -994,6 +1005,9 @@ const App:FC = () => {
             scaleX      : node.scaleX(),
             scaleY      : node.scaleY(),
             rotation    : node.rotation(),
+            tension     : node.tension(),
+            opacity     : node.opacity(),
+            penStyle    : node.hasName(Tools[Tools.PEN]) ? Tools.PEN : Tools.HIGHLIGHTER,
             draggable   : true,
           }
         } else if(type === Shape.RegularPolygon){
@@ -1134,19 +1148,19 @@ const App:FC = () => {
       
     } else if (tool === Tools.PEN || tool === Tools.HIGHLIGHTER) {
       //console.log(yPens, "pens group");   //TEST
-      const color = 'black' //임시 컬러
+
       //펜 이벤트
       isDrawing.current = true;
 
-      newLine = createNewLine(idx, [realPointerPosition.x, realPointerPosition.y], color, tool)
+      newLine = createNewLine(idx, [realPointerPosition.x, realPointerPosition.y], currentColorRef.current, toolRef.current)
 
       layer.add(newLine);
 
       const changeInfo = {
         type: "insert",
         point: [realPointerPosition.x, realPointerPosition.y],
-        stroke : color,
-        penStyle: tool
+        stroke : newLine.stroke(),
+        penStyle: toolRef.current
       };
       yPens.set(idx, changeInfo);
 
@@ -1240,6 +1254,7 @@ const App:FC = () => {
         lineJoin    : newLine.lineJoin(),
         opacity     : newLine.opacity(),
         tenson      : newLine.tension(),
+        penStyle    : tool,
         draggable   : true
       }
       yObjects.set(idx, konvaData)
@@ -1334,7 +1349,7 @@ const App:FC = () => {
     const position = stage.position(); // 현재 위치
     const idx = "obj_Id_"+(id).toString()
     
-    const defaultColor = 'black';
+    const defaultColor = currentColorRef.current;
 
     const realPointerPosition = {
       x: (pos.x - position.x) / scale,
@@ -1415,7 +1430,7 @@ const App:FC = () => {
         }
       }
       else if (clickedIconBtn === 'tri') {
-        newShape = createNewTri(idx, shapeOptions, 'black')
+        newShape = createNewTri(idx, shapeOptions, defaultColor)
         konvaData = {
           id        : newShape.id(),
           type      : Shape.RegularPolygon,
@@ -1440,12 +1455,13 @@ const App:FC = () => {
     } 
     else if (tool === Tools.TEXT) {
       
-      var textNode:any = createNewText(idx, realPointerPosition, "");
+      var textNode:Konva.Text = createNewText(idx, realPointerPosition, "", defaultColor);
       const konvaData = {
         id       : textNode.id(),
         text     : textNode.text(),
         x        : textNode.x(),
         y        : textNode.y(),
+        fill     : textNode.fill(),
         fontSize: textNode.fontSize(),
         draggable: true,
         width: textNode.width(),
@@ -1766,12 +1782,6 @@ const App:FC = () => {
   const handleMouseLeave = (e:any)=>{
     
     handleMouseUp(e);
-
-    // if(groupTr != null){
-    //   groupTr.destroy();
-    //   groupTr = null;
-    // }
-
   }
 
   return (
@@ -1802,9 +1812,7 @@ const App:FC = () => {
         </>
 
       </Stage>
-      <ColorProvider>
-        <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick}/>
-      </ColorProvider>
+      <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick}/>
     </div>
   );
 }
