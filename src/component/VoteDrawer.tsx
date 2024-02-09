@@ -21,6 +21,7 @@ interface PostItData {
 };
 
 export function toggleDrawer(setOpen: React.Dispatch<React.SetStateAction<boolean>>, inOpen: boolean, stageRef: React.RefObject<Konva.Stage>, setPostIt: React.Dispatch<React.SetStateAction<PostItData[]>>) {
+  
   const getThumbs = (id: string) => {
     if(!stageRef.current) return;
 
@@ -50,13 +51,12 @@ export function toggleDrawer(setOpen: React.Dispatch<React.SetStateAction<boolea
     
     return returnData
   }
-
   return (event: React.MouseEvent | React.TouchEvent | React.KeyboardEvent) => {
+    setOpen(inOpen)
     if (event.type !== 'click' && event.type !== 'touch' && event.type !== 'keydown') {
       return;
     }
-    setOpen(inOpen);
-
+    
     const postItData: PostItData[] = [];
     if(!stageRef.current) return;
 
@@ -93,18 +93,18 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
     
     if (!postIt) return;
 
-    const scaleX = stageRef.current.scaleX();
-    const scaleY = stageRef.current.scaleY();
+    // const scaleX = stageRef.current.scaleX();
+    // const scaleY = stageRef.current.scaleY();
 
-    const postItWidth = postIt.find('.postItText')[0].attrs.width * scaleX;
-    const postItHeight = postIt.find('.postItText')[0].attrs.height * scaleY;
-    const postItX = postIt.attrs.x / scaleX;
-    const postItY = postIt.attrs.y / scaleY;
+    const postItWidth = postIt.find('.postItText')[0].attrs.width;
+    const postItHeight = postIt.find('.postItText')[0].attrs.height;
+    const postItX = postIt.attrs.x;
+    const postItY = postIt.attrs.y;
 
     /* 포스트잇 중앙 좌표 */
-    const centerX = postItX + postItWidth / 2 / scaleX;
-    const centerY = postItY + postItHeight / 2 / scaleY;
-    
+    const centerX = postItX + postItWidth / 2;
+    const centerY = postItY + postItHeight / 2;
+
     const stageWidth = stageRef.current.width();
     const stageHeight = stageRef.current.height();
     const stageCenterX = stageWidth / 2;
@@ -114,8 +114,8 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
     const deltaY = stageCenterY - centerY;
 
     /* 포스트잇 중심으로 Stage 이동 */
-    stageRef.current.x(stageRef.current.x() + deltaX / scaleX);
-    stageRef.current.y(stageRef.current.y() + deltaY / scaleY);
+    stageRef.current.x(deltaX);
+    stageRef.current.y(deltaY);
   }
 
   return (
@@ -124,10 +124,11 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
         <HowToVoteIcon fontSize='large' />
       </IconButton>
 
-      <Drawer open={open} onClose={toggleDrawer(setOpen, false, stageRef, setPostItData)} size='sm'>
+      <Drawer open={open} onClose={()=>{setOpen(false)}} size='sm'>
         <h2>Vote results with postit</h2>
         <Divider />
-        <Box role="presentation" onKeyDown={toggleDrawer(setOpen, false, stageRef, setPostItData)}>
+        <Box role="presentation"> 
+        
 
           {postItData.length !== 0 ? postItData.map((postItData) => (
             
@@ -162,11 +163,12 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
                       <IconButton 
                         onClick={() => {
                           viewPostIt(postItData.id, stageRef);
-                          toggleDrawer(setOpen, false, stageRef, setPostItData); // 작동 안함
+                          setOpen(false);
+                           // 작동 안함
                         }}
                         onTouchStart={() => {
                           viewPostIt(postItData.id, stageRef);
-                          toggleDrawer(setOpen, false, stageRef, setPostItData); // 작동 안함
+                          setOpen(false);
                         }}
                       >
                         <ZoomInIcon />
