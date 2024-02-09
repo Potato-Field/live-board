@@ -73,7 +73,7 @@ const App:FC = () => {
    * 김병철
    */
   const [, setIsLoading] = useState(true);
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
   //text 상태 저장
   // const [textInputs, setTextInputs] = useState<TextData[]>([]);
   const [, setTextInputs] = useState<TextInputProps[]>([]);
