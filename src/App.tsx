@@ -4,6 +4,7 @@ import {
   , useRef
   , useEffect 
 } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Konva from 'konva';
 import { Stage, Layer } from 'react-konva';
 import { ButtonCustomGroup } from './component/ButtonCustomGroup';
@@ -49,7 +50,7 @@ let groupTr:Konva.Transformer | null = null;
 /* 전체 포스트잇 저장 배열 */
 
 //Container Components
-const App: FC = () => {
+const App:FC = () => {
 
   const { tool, setTool } = useTool();
   //const [tool, setTool] = useState<string>('pen');
@@ -72,7 +73,7 @@ const App: FC = () => {
    * 김병철
    */
   const [, setIsLoading] = useState(true);
-
+  const navigate = useNavigate();
   //text 상태 저장
   // const [textInputs, setTextInputs] = useState<TextData[]>([]);
   const [, setTextInputs] = useState<TextInputProps[]>([]);
@@ -126,7 +127,6 @@ const App: FC = () => {
 
   let id = uuidv4(); //객체 고유 ID
   
-  //임시 UserId
   const userId = useRef("");
   const setUserId = (param:string)=>{
     userId.current = param
@@ -176,8 +176,13 @@ const App: FC = () => {
     mouseIcon.style.top = `${mousePosition.y}px`;
   }
 
+  const location = useLocation();
+  const { nickname } = location.state || {};
+
   //load() 역할을 하는 듯
   useEffect(() => {
+    setUserId(nickname)
+
     /* 웹소켓 방식 */
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current);
 
@@ -185,10 +190,10 @@ const App: FC = () => {
     // const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     /* 병철 로컬에서 작동 */
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
 
     /* 배포시 사용 */
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
     
       
 
@@ -1845,7 +1850,7 @@ const App: FC = () => {
 
       </Stage>
       <ColorProvider>
-        <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} setUserId={setUserId} />
+        <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick}/>
       </ColorProvider>
     </div>
   );
