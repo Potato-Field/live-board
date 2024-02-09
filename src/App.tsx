@@ -4,7 +4,7 @@ import {
   , useRef
   , useEffect 
 } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation} from 'react-router-dom';
 import Konva from 'konva';
 import { Stage, Layer } from 'react-konva';
 import { ButtonCustomGroup } from './component/ButtonCustomGroup';
@@ -14,27 +14,19 @@ import { ColorProvider } from './component/ColorContext';
 
 import { Tools } from './component/Tools';
 
-// import NavBarLobby from './component/NavBarLobby';
-
-// import VoiceChat from './component/voicechat/voicechat';
 import NavBarRoom from './component/NavBarRoom';
 
 import thumbUpImg from './assets/thumbup.png';
 import thumbDownImg from './assets/thumbdown.png'
-//import { v4 as uniqueId } from 'uuid';  // 포스트잇 uuid
 
 import "./index.css"
 
 //-----------CRDT---------------------
 import * as Y from "yjs";
-//import { WebsocketProvider } from "y-websocket";
 import { WebrtcProvider } from "y-webrtc";
 import { uuidv4 } from 'lib0/random.js';
 import {TextInputProps} from './component/TextEditor';
-//import { FastLayer } from 'konva/lib/FastLayer';
 import { Shape } from './component/UserShape';
-//import { set } from 'lodash';
-//import { number } from 'lib0';
 import MindMap from './component/MindMap';
 
 /* 블록 하는 좌표 */
@@ -53,18 +45,11 @@ let groupTr:Konva.Transformer | null = null;
 const App:FC = () => {
 
   const { tool, setTool } = useTool();
-  //const [tool, setTool] = useState<string>('pen');
-  //const [currentColor, setCurrentColor] = useState<string>('#000000');
-  //const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [clickedIconBtn, setClickedIconBtn] = useState<string | null>(null);
   
   const POSTIT_MIN_WIDTH = 250;  // init size
   const POSTIT_MIN_HEIGHT = 300; // init size
   const [textHeight] = useState<number>(POSTIT_MIN_HEIGHT); // 포스트잇 텍스트 높이
-  // const [textHeight, setTextHeight] = useState<number>(POSTIT_MIN_HEIGHT); // 포스트잇 텍스트 높이
-  // const [textareaHeight, setTextareaHeight] = useState<number | undefined>(NaN); // 포스트잇 텍스트 영역 높이
-  // const textHeightRef = useRef<number>();  // 포스트잇 텍스트 높이
-  // const textareaHeightRef = useRef<number | undefined>();  // 포스트잇 텍스트 영역 높이
 
   /*
    * [CRDT] 
@@ -94,11 +79,7 @@ const App:FC = () => {
   
   //Text 동작 저장
   const yText = yDocRef.current.getMap('text');
-
-  //Text contents 저장
-  //const yContents = yDocRef.current.getText('contents');
   
-
   //Shape 저장
   const yShape = yDocRef.current.getMap('shape');
   //Trans 동작 저장
@@ -152,8 +133,6 @@ const App:FC = () => {
       // 마우스 아이콘 스타일 설정
       mouseIcon.style.position = 'absolute';
       mouseIcon.setAttribute("class", `tool-${Tools[mousePosition.selectTool]}`);
-      //mouseIcon.style.borderTop = "20px solid "+getRandomColor();
-
       let mouseUser = document.createElement('p');
       
       mouseUser.textContent = `${userId}`;
@@ -264,8 +243,6 @@ const App:FC = () => {
           }
         } 
         else if(change.action == 'update'){
-          //const serializeData:any = yLockNodes.get(key);
-          //console.log(change.action, serializeData)
         }
         else {
           const serializeData:any = yLockNodes.get(key);
@@ -1244,23 +1221,6 @@ const App:FC = () => {
         yPens.set(lineId.toString(), changeInfo);
         yObjects.set(lineId.toString(), changeInfo);
       }
-
-
-      // lines.forEach((line:any) => {
-      //     if(line.intersects(pointerPosition)){
-      //         const lineId = line.id();  
-              
-
-            
-      //         const changeInfo = {
-      //           type: "delete"
-      //         };
-      //         yPens.set(lineId.toString(), changeInfo);
-      //         yObjects.set(lineId.toString(), changeInfo);
-
-      //     }
-      // });
-      ////console.log(yPens, "pens group", e);   //TEST
     }
   };
 
@@ -1292,9 +1252,7 @@ const App:FC = () => {
           return;
         }
         
-        
         //e.evt.preventDefault();
-        // update visibility in timeout, so we can check it in click event
         selectionRectangle.visible(false);
         selectionRectangle.destroy();
         var shapes = stageRef.current.find('Shape, Line, Text');
