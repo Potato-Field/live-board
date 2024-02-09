@@ -8,7 +8,7 @@ import Avatar from '@mui/material/Avatar';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import LogoutIcon from '@mui/icons-material/Logout';
-
+import { useLocation } from 'react-router-dom';
 
 interface AudioTracks {
     localAudioTrack: ILocalAudioTrack | null;
@@ -16,19 +16,26 @@ interface AudioTracks {
 }
 
 const VoiceAgora: React.FC = () => {
-    // const location = useLocation();
+    const location = useLocation();
+    const {nickname} = location.state;
     const [roomId] = useState<string>("main");
     const [micMuted, setMicMuted] = useState<boolean>(true);
-    const [members, setMembers] = useState<Array<number>>([]);
+    const [members, setMembers] = useState<Array<string>>([]);
     // const [members, setMembers] = useState<Array<number>>([]);
     const [userVolumes, setUserVolumes] = useState<{ [nickname: string]: number }>({});
-    const rtcUid = Math.floor(Math.random() * 2032);
+    const rtcUid = nickname;
+    console.log(nickname)
+    console.log(rtcUid)
     const rtcClientRef = useRef<IAgoraRTCClient | null>(null);
     const navigate = useNavigate()
     const audioTracksRef = useRef<AudioTracks>({
         localAudioTrack: null,
         remoteAudioTracks: {},
     });
+
+    // const initRtm = async (nickname) => {
+    //     const rtmClient: IAgoraRTM = 
+    // }
 
 
     const initRtc = async () => {
@@ -93,7 +100,7 @@ const VoiceAgora: React.FC = () => {
         navigate("/")
     };
 
-    const handleUserJoined = (user: { uid: number; nickname: string; }) => {
+    const handleUserJoined = (user: { uid: string; nickname: string; }) => {
         setMembers(prevMembers => {
             // 새로운 사용자가 이미 목록에 있는지 확인합니다.
             const isUserExist = prevMembers.includes(user.uid);
@@ -156,7 +163,7 @@ const VoiceAgora: React.FC = () => {
                     </span>
                 ))}
             </span>
-            <form id="joinForm" onSubmit={joinSubmit}>
+            <form>
                 <Button
                     onClick={toggleMic}
                     style={{ backgroundColor: micMuted ? 'indianred' : 'ivory' }}
