@@ -20,6 +20,7 @@ interface PostItData {
   thumbDown : number,
 };
 
+// TODO: toggleDrawer 함수 리팩토링 (기능별로 분리)
 export function toggleDrawer(setOpen: React.Dispatch<React.SetStateAction<boolean>>, inOpen: boolean, stageRef: React.RefObject<Konva.Stage>, setPostIt: React.Dispatch<React.SetStateAction<PostItData[]>>) {
   
   const getThumbs = (id: string) => {
@@ -75,13 +76,14 @@ export function toggleDrawer(setOpen: React.Dispatch<React.SetStateAction<boolea
         thumbDownCnt = thumbUpData.thumbDown;
       }
       
-      postItData.push({ id, text, thumbUp:thumbUpCnt, thumbDown:thumbDownCnt});
+      postItData.push({ id, text, thumbUp:thumbUpCnt, thumbDown:thumbDownCnt });
     }
     
     setPostIt(postItData)
   };
 }
 
+// TODO: scale 적용
 export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
   const [open, setOpen] = useState(false);
   const [postItData, setPostItData] = useState<PostItData[]>([]);
