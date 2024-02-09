@@ -186,7 +186,7 @@ const App:FC = () => {
           node.points(newPoints);
           
         } else if(konvaData.type === 'insert' && node == null){
-          const newLine = createNewLine(index, konvaData.points, konvaData.stroke)
+          const newLine = createNewLine(index, konvaData.points, konvaData.stroke, konvaData.penStyle)
           
           stageRef.current.getLayers()[0].add(newLine);
         } else if(konvaData.type === 'delete' && node != null){
@@ -479,16 +479,33 @@ const App:FC = () => {
     
   }
 
-  const createNewLine = (idx:string, pos:number[], color:any) =>{
-    const newLine = new Konva.Line({
-      id : idx,
-      points: pos,
-      stroke: color,
-      strokeWidth: 5,
-      lineCap: 'round',
-      lineJoin: 'round',
-      draggable   : true
-    });
+  const createNewLine = (idx:string, pos:number[], color:any, penStyle:Tools = Tools.PEN) =>{
+    let newLine:Konva.Line;
+
+    if(penStyle == Tools.PEN){
+      newLine = new Konva.Line({
+        id : idx,
+        points: pos,
+        stroke: color,
+        strokeWidth: 5,
+        lineCap: 'round',
+        lineJoin: 'round',
+        draggable   : true
+      });
+    } else {
+      newLine = new Konva.Line({
+        id : idx,
+        points: pos,
+        stroke: color,
+        strokeWidth : 15,
+        lineCap     : "butt",
+        lineJoin    : "round",
+        draggable   : true,
+        tension     : 0.5,
+        opacity     : 0.4,
+      });
+    }
+
     newLine.on("mousedown", (e:any)=>{
       
       if(toolRef.current !== Tools.CURSOR){
@@ -834,11 +851,6 @@ const App:FC = () => {
     return textNode
   }
 
-  // const createUserTr = (userId:string)=>{
-  //   const tr = new Konva.Transformer({ flipEnabled: false, id:`user-tr-${userId}`, enabledAnchors: []});
-  //   return tr;
-  // }
-
   const createNewTr = ()=>{
     //if (groupTr != null) return;
     const tr = new Konva.Transformer({ flipEnabled: false });
@@ -1120,38 +1132,24 @@ const App:FC = () => {
         layer.add(selectionRectangle)
       } 
       
-    } else if (tool === Tools.PEN) {
+    } else if (tool === Tools.PEN || tool === Tools.HIGHLIGHTER) {
       //console.log(yPens, "pens group");   //TEST
       const color = 'black' //임시 컬러
       //펜 이벤트
       isDrawing.current = true;
-      
-      newLine = createNewLine(idx, [realPointerPosition.x, realPointerPosition.y], color)
+
+      newLine = createNewLine(idx, [realPointerPosition.x, realPointerPosition.y], color, tool)
 
       layer.add(newLine);
 
       const changeInfo = {
         type: "insert",
         point: [realPointerPosition.x, realPointerPosition.y],
-        stroke : color
+        stroke : color,
+        penStyle: tool
       };
       yPens.set(idx, changeInfo);
 
-    } else if (tool === Tools.HIGHLIGHTER) {
-      //형광펜 이벤트
-      isDrawing.current = true;
-
-      newLine = new Konva.Line({
-        points      : [realPointerPosition.x, realPointerPosition.y],
-        stroke      : 'black',
-        strokeWidth : 15,
-        tension     : 0.5,
-        lineCap     : "butt",
-        lineJoin    : "round",
-        opacity     : 0.4,
-        draggable   : true
-      });
-      layer.add(newLine);
     }
   };
 
@@ -1203,7 +1201,8 @@ const App:FC = () => {
 
       const changeInfo = {
         type: "update",
-        point: [realPointerPosition.x, realPointerPosition.y]
+        point: [realPointerPosition.x, realPointerPosition.y],
+        penStyle : tool
       };
       yPens.set(idx, changeInfo);
     }
@@ -1227,7 +1226,7 @@ const App:FC = () => {
   const handleMouseUp = (e:any) => {
     const leaveEvtFlag:boolean = e.evt.type === 'mouseleave'? true:false  
 
-    if(tool === Tools.PEN){
+    if(tool === Tools.PEN || tool === Tools.HIGHLIGHTER){
       isDrawing.current = false;
       const idx = "obj_Id_"+(id).toString()
       if(newLine == null) return;
@@ -1238,7 +1237,10 @@ const App:FC = () => {
         stroke      : newLine.stroke(),
         strokeWidth : newLine.strokeWidth(),
         lineCap     : newLine.lineCap(),
-        lineJoin  : newLine.lineJoin(),
+        lineJoin    : newLine.lineJoin(),
+        opacity     : newLine.opacity(),
+        tenson      : newLine.tension(),
+        draggable   : true
       }
       yObjects.set(idx, konvaData)
       
@@ -1774,10 +1776,7 @@ const App:FC = () => {
 
   return (
     <div style={{position: "relative", width: "100%"}}>
-      {/* <NavBarLobby /> */}
 
-      {/* <VoiceChat /> */}
-      
       <NavBarRoom stageRef = {stageRef} />
 
       <Stage
@@ -1798,10 +1797,6 @@ const App:FC = () => {
       >
       
         <Layer></Layer>
-        
-        {/* <>
-          <MindMap stageRef = {stageRef} currentTool={tool} yDocRef = {yDocRef}/>
-        </> */}
         <>
           <MindMap stageRef = {stageRef} toolRef={toolRef} yDocRef = {yDocRef}/>
         </>
