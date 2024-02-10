@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import "./index.css"
 import { styled, useTheme } from '@mui/material/styles';
@@ -28,9 +28,6 @@ import CardMedia from '@mui/material/CardMedia';
 import Button from '@mui/material/Button';
 import potatoLogo from './image/potato.png';
 
-interface User {
-    nickname: string;
-  }
 
 const drawerWidth = 240;
 
@@ -87,13 +84,12 @@ const AppBar = styled(MuiAppBar, {
 
 const Lobby = () => {
 
-    const [username, setUsername] = useState('');
     // const [loggedIn, setLoggedIn] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
     const {nickname} = location.state;
     // 서버요청해서 user목록 불러와야함. 
-    const [users, setUsers] = useState<User[]>([]);
+    // const [users, setUsers] = useState<User[]>([]);
 
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
