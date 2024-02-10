@@ -24,8 +24,6 @@ const VoiceAgora: React.FC = () => {
     // const [members, setMembers] = useState<Array<number>>([]);
     const [userVolumes, setUserVolumes] = useState<{ [nickname: string]: number }>({});
     const rtcUid = nickname;
-    console.log(nickname)
-    console.log(rtcUid)
     const rtcClientRef = useRef<IAgoraRTCClient | null>(null);
     const navigate = useNavigate()
     const audioTracksRef = useRef<AudioTracks>({
