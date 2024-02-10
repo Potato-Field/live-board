@@ -172,10 +172,10 @@ const App:FC = () => {
     // const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     /* 병철 로컬에서 작동 */
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
 
     /* 배포시 사용 */
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
     
       
 
@@ -1413,7 +1413,7 @@ const App:FC = () => {
       isTrans.current = true;
 
     });
-    tr.on('transform', function(e:any) {
+    tr.on('transform', function() {
       tr.getNodes().forEach((node:any)=>{        
         const changeInfo = {
           idx      : node.id(),
