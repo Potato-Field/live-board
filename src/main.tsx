@@ -6,6 +6,7 @@ import './index.css'
 import { ToolProvider } from './component/ToolContext';
 import { ColorProvider } from './component/ColorContext';
 import App from './App';
+import Lobby from './lobby';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -14,6 +15,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <ColorProvider>
         <Routes>
           <Route path="/" element={<Login />} /> {/* "/" 경로에는 로그인 페이지가 나오도록 설정 */}
+          <Route path='/lobby' element={<Lobby />} />
           <Route path="/app" element={<App />} />
         </Routes>
       </ColorProvider>
