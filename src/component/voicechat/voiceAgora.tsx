@@ -95,7 +95,7 @@ const VoiceAgora: React.FC = () => {
         await rtcClientRef.current?.unpublish();
         await rtcClientRef.current?.leave();
 
-        navigate("/")
+        navigate("/lobby", { state: { nickname: nickname} })
     };
 
     const handleUserJoined = (user: { uid: string; nickname: string; }) => {

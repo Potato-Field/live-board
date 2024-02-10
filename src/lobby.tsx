@@ -108,6 +108,10 @@ const Lobby = () => {
         navigate('/app', { state: { nickname: nickname} })
     }
 
+    const handleLogOut = () => {
+        navigate('/', { state: {nickname: ''}})
+    }
+
 
 
 
@@ -165,8 +169,8 @@ const Lobby = () => {
                 <List>
                     {['Logout'].map((text) => (
                         <ListItem key={text} disablePadding>
-                            <ListItemButton>
-                                <ListItemIcon>
+                            <ListItemButton onClick={handleLogOut}>
+                                <ListItemIcon >
                                     <Logout />
                                 </ListItemIcon>
                                 <ListItemText primary={text} />
