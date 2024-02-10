@@ -4,4 +4,6 @@ export enum Shape{
   , "Circle"         = "Circle"
   , "Rect"           = "Rect"
   , "Stamp"          = "Image"
+  , "Group"          = "Group"
+  , "Text"           = "Text"
 }

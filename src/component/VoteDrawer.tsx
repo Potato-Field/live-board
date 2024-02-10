@@ -11,6 +11,8 @@ import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ThumbUpAltRoundedIcon from '@mui/icons-material/ThumbUpAltRounded';
 import ThumbDownRoundedIcon from '@mui/icons-material/ThumbDownRounded';
 
+import styles from './VoteDrawer.module.css';
+
 interface PostItData {
   id: string,
   text: string,
@@ -18,7 +20,9 @@ interface PostItData {
   thumbDown : number,
 };
 
+// TODO: toggleDrawer 함수 리팩토링 (기능별로 분리)
 export function toggleDrawer(setOpen: React.Dispatch<React.SetStateAction<boolean>>, inOpen: boolean, stageRef: React.RefObject<Konva.Stage>, setPostIt: React.Dispatch<React.SetStateAction<PostItData[]>>) {
+  
   const getThumbs = (id: string) => {
     if(!stageRef.current) return;
 
@@ -26,8 +30,8 @@ export function toggleDrawer(setOpen: React.Dispatch<React.SetStateAction<boolea
     let thumbsDownCnt = 0;
 
     const postIt: any = stageRef.current.getLayers()[0].findOne('#'+id);
-    var shapes = stageRef.current.find('Image');
-    var box = postIt.getClientRect();
+    let shapes = stageRef.current.find('Image');
+    let box = postIt.getClientRect();
 
     const rowSelected: Konva.Node[] = shapes.filter((shape:any) =>
       Konva.Util.haveIntersection(box, shape.getClientRect())
@@ -45,16 +49,15 @@ export function toggleDrawer(setOpen: React.Dispatch<React.SetStateAction<boolea
       thumbUp : thumbsUpCnt,
       thumbDown : thumbsDownCnt
     }
-
+    
     return returnData
   }
-
-  return (event: React.MouseEvent | React.TouchEvent) => {
-    if (event.type !== 'click' && event.type !== 'touch') {
+  return (event: React.MouseEvent | React.TouchEvent | React.KeyboardEvent) => {
+    setOpen(inOpen)
+    if (event.type !== 'click' && event.type !== 'touch' && event.type !== 'keydown') {
       return;
     }
-    setOpen(inOpen);
-
+    
     const postItData: PostItData[] = [];
     if(!stageRef.current) return;
 
@@ -67,42 +70,73 @@ export function toggleDrawer(setOpen: React.Dispatch<React.SetStateAction<boolea
       
       let thumbUpCnt = 0
       let thumbDownCnt = 0
-
+      
       if(thumbUpData){
         thumbUpCnt = thumbUpData.thumbUp;
         thumbDownCnt = thumbUpData.thumbDown;
       }
       
-      postItData.push({ id, text, thumbUp:thumbUpCnt, thumbDown:thumbDownCnt});
+      postItData.push({ id, text, thumbUp:thumbUpCnt, thumbDown:thumbDownCnt });
     }
-
+    
     setPostIt(postItData)
   };
 }
 
+// TODO: scale 적용
 export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
   const [open, setOpen] = useState(false);
   const [postItData, setPostItData] = useState<PostItData[]>([]);
-  
+
+  const viewPostIt = (id: string, stageRef: React.RefObject<Konva.Stage>) => {
+    if (!stageRef.current) return;
+
+    const postIt: any = stageRef.current.getLayers()[0].findOne("#"+id);
+    
+    if (!postIt) return;
+
+    // const scaleX = stageRef.current.scaleX();
+    // const scaleY = stageRef.current.scaleY();
+
+    const postItWidth = postIt.find('.postItText')[0].attrs.width;
+    const postItHeight = postIt.find('.postItText')[0].attrs.height;
+    const postItX = postIt.attrs.x;
+    const postItY = postIt.attrs.y;
+
+    /* 포스트잇 중앙 좌표 */
+    const centerX = postItX + postItWidth / 2;
+    const centerY = postItY + postItHeight / 2;
+
+    const stageWidth = stageRef.current.width();
+    const stageHeight = stageRef.current.height();
+    const stageCenterX = stageWidth / 2;
+    const stageCenterY = stageHeight / 2; // TODO: 네비바 높이 빼야함 (네비바 배치 수정 먼저 하기)
+
+    const deltaX = stageCenterX - centerX;
+    const deltaY = stageCenterY - centerY;
+
+    /* 포스트잇 중심으로 Stage 이동 */
+    stageRef.current.x(deltaX);
+    stageRef.current.y(deltaY);
+  }
+
   return (
     <>
       <IconButton size="large" aria-label="Postit vote" color="inherit" onClick={toggleDrawer(setOpen, true, stageRef, setPostItData)}>
         <HowToVoteIcon fontSize='large' />
       </IconButton>
 
-      <Drawer open={open} onClose={toggleDrawer(setOpen, false, stageRef, setPostItData)} size='sm'>
+      <Drawer open={open} onClose={()=>{setOpen(false)}} size='sm'>
         <h2>Vote results with postit</h2>
         <Divider />
-        <Box
-          role="presentation"
-          onClick={toggleDrawer(setOpen, false, stageRef, setPostItData)}
-          onTouchStart={toggleDrawer(setOpen, false, stageRef, setPostItData)}
-        >
+        <Box role="presentation"> 
+        
 
-          {postItData.map((postItData) => (
-            <Card variant="outlined" sx={{width: '90%'}} style={{margin: 'auto', backgroundColor: '#FFD966', marginTop: '20px'}}>
-              <CardContent>
-                <Typography variant="body1" component="div">
+          {postItData.length !== 0 ? postItData.map((postItData) => (
+            
+            <Card variant="outlined" sx={{width: '90%'}} style={{margin: 'auto', backgroundColor: '#FFD966', marginTop: '1rem'}}>
+              <CardContent style={{padding: '1.5rem'}}>
+                <Typography variant="body1" component="div" className={styles.cardText}>
                   {postItData.text}
                 </Typography>
               </CardContent>
@@ -128,14 +162,27 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
 
                     {/* 클릭시 포스트잇 위치로 이동 */}
                     <Grid item xs={4}>
-                      <IconButton>
+                      <IconButton 
+                        onClick={() => {
+                          viewPostIt(postItData.id, stageRef);
+                          setOpen(false);
+                           // 작동 안함
+                        }}
+                        onTouchStart={() => {
+                          viewPostIt(postItData.id, stageRef);
+                          setOpen(false);
+                        }}
+                      >
                         <ZoomInIcon />
                       </IconButton>
                     </Grid>
                 </Grid>
               </CardActions>
             </Card>
-          ))}
+          )) : (
+            <p className={styles.notice}>포스트잇을 생성하고<br/>스탬프(👍👎)로 투표해보세요!<br/><br/>이 공간에서 모든 포스트잇의 투표 결과를 확인할 수 있습니다.</p>
+          )
+          }
         </Box>
       </Drawer>
     </>

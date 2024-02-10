@@ -4,36 +4,29 @@ import {
   , useRef
   , useEffect 
 } from 'react';
+import { useLocation} from 'react-router-dom';
 import Konva from 'konva';
 import { Stage, Layer } from 'react-konva';
 import { ButtonCustomGroup } from './component/ButtonCustomGroup';
 
 import { useTool } from './component/ToolContext';
-import { ColorProvider } from './component/ColorContext';
+import { useColor } from './component/ColorContext';
 
 import { Tools } from './component/Tools';
 
-// import NavBarLobby from './component/NavBarLobby';
-
-// import VoiceChat from './component/voicechat/voicechat';
 import NavBarRoom from './component/NavBarRoom';
 
 import thumbUpImg from './assets/thumbup.png';
 import thumbDownImg from './assets/thumbdown.png'
-//import { v4 as uniqueId } from 'uuid';  // 포스트잇 uuid
 
 import "./index.css"
 
 //-----------CRDT---------------------
 import * as Y from "yjs";
-//import { WebsocketProvider } from "y-websocket";
 import { WebrtcProvider } from "y-webrtc";
 import { uuidv4 } from 'lib0/random.js';
 import {TextInputProps} from './component/TextEditor';
-//import { FastLayer } from 'konva/lib/FastLayer';
 import { Shape } from './component/UserShape';
-//import { set } from 'lodash';
-//import { number } from 'lib0';
 import MindMap from './component/MindMap';
 
 /* 블록 하는 좌표 */
@@ -49,21 +42,15 @@ let groupTr:Konva.Transformer | null = null;
 /* 전체 포스트잇 저장 배열 */
 
 //Container Components
-const App: FC = () => {
+const App:FC = () => {
 
   const { tool, setTool } = useTool();
-  //const [tool, setTool] = useState<string>('pen');
-  //const [currentColor, setCurrentColor] = useState<string>('#000000');
-  //const [image, setImage] = useState<HTMLImageElement | null>(null);
+  const { currentColor } = useColor();
   const [clickedIconBtn, setClickedIconBtn] = useState<string | null>(null);
   
   const POSTIT_MIN_WIDTH = 250;  // init size
   const POSTIT_MIN_HEIGHT = 300; // init size
   const [textHeight] = useState<number>(POSTIT_MIN_HEIGHT); // 포스트잇 텍스트 높이
-  // const [textHeight, setTextHeight] = useState<number>(POSTIT_MIN_HEIGHT); // 포스트잇 텍스트 높이
-  // const [textareaHeight, setTextareaHeight] = useState<number | undefined>(NaN); // 포스트잇 텍스트 영역 높이
-  // const textHeightRef = useRef<number>();  // 포스트잇 텍스트 높이
-  // const textareaHeightRef = useRef<number | undefined>();  // 포스트잇 텍스트 영역 높이
 
   /*
    * [CRDT] 
@@ -72,7 +59,7 @@ const App: FC = () => {
    * 김병철
    */
   const [, setIsLoading] = useState(true);
-
+  //const navigate = useNavigate();
   //text 상태 저장
   // const [textInputs, setTextInputs] = useState<TextData[]>([]);
   const [, setTextInputs] = useState<TextInputProps[]>([]);
@@ -83,7 +70,9 @@ const App: FC = () => {
   const isTrans = useRef(false);
   const isDrag = useRef(false);
   const isHand = useRef(false);
+
   const toolRef = useRef(tool);
+  const currentColorRef = useRef<any>();
 
   // Y.js 관련 상태를 useRef로 관리
   const yDocRef = useRef(new Y.Doc());
@@ -93,11 +82,7 @@ const App: FC = () => {
   
   //Text 동작 저장
   const yText = yDocRef.current.getMap('text');
-
-  //Text contents 저장
-  //const yContents = yDocRef.current.getText('contents');
   
-
   //Shape 저장
   const yShape = yDocRef.current.getMap('shape');
   //Trans 동작 저장
@@ -135,7 +120,6 @@ const App: FC = () => {
 
   let id = uuidv4(); //객체 고유 ID
   
-  //임시 UserId
   const userId = useRef("");
   const setUserId = (param:string)=>{
     userId.current = param
@@ -161,8 +145,6 @@ const App: FC = () => {
       // 마우스 아이콘 스타일 설정
       mouseIcon.style.position = 'absolute';
       mouseIcon.setAttribute("class", `tool-${Tools[mousePosition.selectTool]}`);
-      //mouseIcon.style.borderTop = "20px solid "+getRandomColor();
-
       let mouseUser = document.createElement('p');
       
       mouseUser.textContent = `${userId}`;
@@ -185,8 +167,13 @@ const App: FC = () => {
     mouseIcon.style.top = `${mousePosition.y}px`;
   }
 
+  const location = useLocation();
+  const { nickname } = location.state || {};
+
   //load() 역할을 하는 듯
   useEffect(() => {
+    setUserId(nickname)
+
     /* 웹소켓 방식 */
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current);
 
@@ -211,7 +198,7 @@ const App: FC = () => {
           node.points(newPoints);
           
         } else if(konvaData.type === 'insert' && node == null){
-          const newLine = createNewLine(index, konvaData.points, konvaData.stroke)
+          const newLine = createNewLine(index, konvaData.points, konvaData.stroke, konvaData.penStyle)
           
           stageRef.current.getLayers()[0].add(newLine);
         } else if(konvaData.type === 'delete' && node != null){
@@ -273,8 +260,6 @@ const App: FC = () => {
           }
         } 
         else if(change.action == 'update'){
-          //const serializeData:any = yLockNodes.get(key);
-          //console.log(change.action, serializeData)
         }
         else {
           const serializeData:any = yLockNodes.get(key);
@@ -282,7 +267,7 @@ const App: FC = () => {
           userLockData.forEach((value) => {
             const node = stageRef.current.children[0].findOne("#"+value)
             if(!node) return;
-            node.name('locked')
+            node.addName('locked')
           });
         }
       });
@@ -328,6 +313,8 @@ const App: FC = () => {
             
           } else if(konvaData.type === Shape.RegularPolygon){
             newShape = createNewTri(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill)
+          } else if(konvaData.type === Shape.Group){
+            newShape = createNewPostIt(index, {x: konvaData.Group.x, y: konvaData.Group.y}, konvaData.Text.text)
           }
           stageRef.current.getLayers()[0].add(newShape);
 
@@ -375,7 +362,8 @@ const App: FC = () => {
         if(node) return;
         if(konvaData == null) return;
         if(konvaData.type == Shape.Line){
-          const newLine =  createNewLine(index, konvaData.points, konvaData.stroke)
+          console.log(konvaData.penStyle)
+          const newLine =  createNewLine(index, konvaData.points, konvaData.stroke, konvaData.penStyle)
           newLine.visible(false)
           stageRef.current.getLayers()[0].add(newLine);
           newLine.move({x:konvaData.x, y:konvaData.y});
@@ -429,7 +417,17 @@ const App: FC = () => {
               newStamp.rotation(konvaData.rotation)
               newStamp.visible(true);
             }           
-          } else {
+          } 
+          else if(konvaData.type == Shape.Group) { 
+            const newShape = createNewPostIt(index, {x:konvaData.Group.x, y:konvaData.Group.y}, konvaData.Text.text);
+            newShape.visible(false)
+            stageRef.current.getLayers()[0].add(newShape);
+            newShape.scaleX(konvaData.Group.scaleX)
+            newShape.scaleY(konvaData.Group.scaleY)
+            newShape.rotation(konvaData.Group.rotation)
+            newShape.visible(true);
+          } 
+          else if(konvaData.type == Shape.Text){
             const newShape = createNewText(index, {x: konvaData.x, y: konvaData.y}, konvaData.text)
             newShape.visible(false)
             stageRef.current.getLayers()[0].add(newShape);
@@ -528,7 +526,8 @@ const App: FC = () => {
 
   useEffect(() => {
     toolRef.current = tool;
-  }, [tool]);
+    currentColorRef.current = currentColor;
+  }, [tool, currentColor]);
 
   const createNewUserArea = (paramUserId:string, pos:{x:number, y:number, width:number, height:number})=>{
     
@@ -580,16 +579,35 @@ const App: FC = () => {
     
   }
 
-  const createNewLine = (idx:string, pos:number[], color:any) =>{
-    const newLine = new Konva.Line({
-      id : idx,
-      points: pos,
-      stroke: color,
-      strokeWidth: 5,
-      lineCap: 'round',
-      lineJoin: 'round',
-      draggable   : true
-    });
+  const createNewLine = (idx:string, pos:number[], color:any, penStyle:Tools = Tools.PEN) =>{
+    let newLine:Konva.Line;
+    
+    if(penStyle == Tools.PEN){
+      newLine = new Konva.Line({
+        id          : idx,
+        points      : pos,
+        stroke      : color,
+        strokeWidth : 5,
+        lineCap     : 'round',
+        lineJoin    : 'round',
+        draggable   : true,
+        name        : Tools[Tools.PEN]
+      });
+    } else {
+      newLine = new Konva.Line({
+        id          : idx,
+        points      : pos,
+        stroke      : color,
+        strokeWidth : 15,
+        lineCap     : "butt",
+        lineJoin    : "round",
+        draggable   : true,
+        tension     : 0.5,
+        opacity     : 0.4,
+        name        : Tools[Tools.HIGHLIGHTER],
+      });
+    }
+
     newLine.on("mousedown", (e:any)=>{
       
       if(toolRef.current !== Tools.CURSOR){
@@ -760,8 +778,58 @@ const App: FC = () => {
 
     return { start, endOld: endOld + 1, endNew: endNew + 1 };
   }
+
+  const createNewTextArea:any = (textNode:any, areaPosition:{x:number, y:number})=>{
+    const textarea = document.createElement('textarea');
+    document.body.appendChild(textarea);
+
+    textarea.value = textNode.text();
+    textarea.style.position = 'absolute';
+    textarea.style.top = areaPosition.y + 'px';
+    textarea.style.left = areaPosition.x + 'px';
+    textarea.style.width = textNode.width() - textNode.padding() * 2 + 'px';
+    textarea.style.height = textNode.height() - textNode.padding() * 2 + 1 + 'px';
+    textarea.style.fontSize = textNode.fontSize() + 'px';
+    textarea.style.border = 'none';
+    textarea.style.padding = '0px';
+    textarea.style.margin = '0px';
+    textarea.style.overflow = 'hidden';
+    textarea.style.background = 'none';
+    textarea.style.outline = 'none';
+    textarea.style.resize = 'none';
+    textarea.style.lineHeight = textNode.lineHeight();
+    textarea.style.fontFamily = textNode.fontFamily();
+    textarea.style.transformOrigin = 'left top';
+    textarea.style.textAlign = textNode.align();
+    textarea.style.color = textNode.fill();
+    let rotation = textNode.rotation();
+    var transform = '';
+    if (rotation) {
+      transform += 'rotateZ(' + rotation + 'deg)';
+    }
+
+    var px = 0;
+
+    var isFirefox =
+      navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+    if (isFirefox) {
+      px += 2 + Math.round(textNode.fontSize() / 20);
+    }
+    transform += 'translateY(-' + px + 'px)';
+
+    textarea.style.transform = transform;
+
+    // reset height
+    textarea.style.height = 'auto';
+    // after browsers resized it we can set actual value
+    textarea.style.height = textarea.scrollHeight + 3 + 'px';
+
+    textarea.focus();
+
+    return textarea;
+  }
   
-  const createNewText = (id:string, pos:{x:number, y:number}, text:string)=>{
+  const createNewText = (id:string, pos:{x:number, y:number}, text:string , color:string = 'Black')=>{
     const yTextData = yDocRef.current.getText(id);
 
     const textNode:any = new Konva.Text({
@@ -770,6 +838,7 @@ const App: FC = () => {
       x: pos.x,
       y: pos.y,
       fontSize: 20,
+      fill : color,
       draggable: true,
       width: 200,
     });
@@ -863,18 +932,18 @@ const App: FC = () => {
     
         yDocRef.current.transact(() => {
           const konvaData = {
-            type: "Text",
-            id: textNode.id(),
-            x: textNode.x(),
-            y: textNode.y(),
-            width: textNode.width(),
-            fontSize: textNode.fontSize(),
-            text: textNode.text(),
-            draggable: true,
-          };
-    
-          yObjects.set(textNode.id(), konvaData);
-        }, undoManagerObj); // Ensure this change is also tracked by the undo manager
+          type      : Shape.Text, 
+          id        : textNode.id(),
+          x         : textNode.x(),
+          y         : textNode.y(),
+          width     : textNode.width(),
+          fontSize  : textNode.fontSize(),
+          text      : textNode.text(),
+          draggable : true,
+        }
+        
+        yObjects.set(textNode.id(), konvaData);
+      }, undoManagerObj);
       }
       
       function setTextareaWidth(newWidth:any) {
@@ -938,10 +1007,329 @@ const App: FC = () => {
     return textNode
   }
 
-  // const createUserTr = (userId:string)=>{
-  //   const tr = new Konva.Transformer({ flipEnabled: false, id:`user-tr-${userId}`, enabledAnchors: []});
-  //   return tr;
-  // }
+  const createNewPostIt = (id:string, pos:{x:number, y:number}, text:string = "")=>{
+    const yTextData = yDocRef.current.getText(id); //text 동기화 추가
+    const defaultString = 'Type anything! And also everyone in the meeting can vote on your topic by stamp👍🏽👎🏽';
+
+    let postItGroup = new Konva.Group({
+      name : 'postIt',
+      x: pos.x,
+      y: pos.y,
+      draggable: true,
+      id: id, // 각각의 포스트잇마다 uuid 잘 찍힘 
+    });
+
+    
+    const postItOptions = {
+      x: 0,
+      y: 0,
+    }
+    
+    let postItText: any = new Konva.Text({
+      id : id+"_pit",
+      name: 'postItText',
+      ...postItOptions, // x, y
+      width: POSTIT_MIN_WIDTH,
+      height: textHeight, // POSTIT_MIN_HEIGHT
+      text: text,
+      fontSize: 20,
+      padding: 15,
+    });
+    
+    let initText = new Konva.Text({
+      id : id+"_piit",
+      name: 'postItinitText',
+      ...postItOptions,
+      width: postItText.width(),
+      text: defaultString,
+      fontSize: 20,
+      opacity: 0.4,
+      padding: 15,
+    });
+    
+    let postItRect = new Konva.Rect({
+      id : id+"_pir",
+      name : "postItRect",
+      ...postItOptions,
+      width: postItText.width(),
+      height: postItText.height(),
+      fill: '#FFD966',
+      shadowColor: 'black',
+      shadowBlur: 15,
+      shadowOffsetX: 5,
+      shadowOffsetY: 5,
+      shadowOpacity: 0.2,
+    });  
+    
+    postItGroup.add(postItRect);
+    postItGroup.add(postItText);
+    postItGroup.add(initText);
+    if(text !== ""){
+      initText.hide();
+    }
+
+    //text 관찰자 추가
+    yTextData.observe(() => {
+      if(yTextData.toString() ==""){
+        initText.show();
+      }else{
+        initText.hide();
+      }
+      postItText.text(yTextData.toString());
+    });
+
+    postItGroup.on('dblclick dbltap', () => {
+      initText.hide();
+      postItText.hide();
+      
+      var textPosition = postItText.absolutePosition();
+      
+      var areaPosition = {
+        x: stageRef.current.container().offsetLeft + textPosition.x,
+        y: stageRef.current.container().offsetTop + textPosition.y,
+      };
+      
+      //createNewTextArea 유사한 부분---------------------------
+      var textarea = document.createElement('textarea');
+      document.body.appendChild(textarea);
+      
+
+      //textarea.value = PostItText.text();
+      textarea.style.position = 'absolute';
+      textarea.style.top = areaPosition.y + 'px';
+      textarea.style.left = areaPosition.x + 'px';
+      textarea.style.width = postItText.width() - postItText.padding() * 2 + 'px';
+      // textarea.style.height = PostItText.height() - PostItText.padding() * 2 + 'px';
+      textarea.style.fontSize = postItText.fontSize() + 'px';
+      textarea.style.border = 'none';
+      textarea.style.padding = '15px';
+      textarea.style.margin = '0px';
+      textarea.style.overflow = 'hidden';
+      // textarea.style.background = 'gray';
+      textarea.style.background = 'none';
+      textarea.style.outline = 'none';
+      textarea.style.resize = 'none';
+      textarea.style.lineHeight = postItText.lineHeight();
+      textarea.style.fontFamily = postItText.fontFamily();
+      textarea.style.transformOrigin = 'left top';
+      textarea.style.textAlign = postItText.align();
+      textarea.style.color = postItText.fill();
+
+      const rotation = postItText.rotation();
+      var transform = '';
+
+      if (rotation) {
+        transform += 'rotateZ(' + rotation + 'deg)';
+      }
+
+      var px = 0;
+      var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+      if (isFirefox) {
+        px += 2 + Math.round(postItText.fontSize() / 20);
+      }
+
+      transform += 'translateY(-' + px + 'px)';
+      textarea.style.transform = transform;
+      
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 3 + 'px';
+
+      //creatNewTextArea End-------------------------------
+
+      //Text 동기화 시작---------------------------
+      textarea.value = yTextData.toString();
+
+      let isComposing = false;
+        
+      textarea.addEventListener('compositionstart', () => {
+        isComposing = true; // 한글 입력 시작
+      });
+      
+      textarea.addEventListener('compositionend', () => {
+        isComposing = false; // 한글 입력 완료
+        
+        syncText(); // 입력 완료 후 동기화 함수 호출
+      });
+      
+      textarea.addEventListener('input', () => {
+        if (!isComposing) {
+          // 한글 입력이 아니거나 입력이 완료된 경우에만 동기화 진행
+          syncText();
+        }
+      });
+      
+      const syncText = ()=>{
+        const currentText = textarea.value;
+        // Y.Text 객체의 현재 내용
+        const yCurrentText = yTextData.toString();
+        
+        const { start, endOld, endNew } = findFirstDiffIndex(yCurrentText, currentText);
+        
+        if (start !== endOld) {
+          yTextData.delete(start, endOld - start);
+        }
+        
+        // 그리고 새로운 문자열을 삽입
+        const newText = currentText.substring(start, endNew);
+        if (newText.length > 0) {
+          yTextData.insert(start, newText);
+        }
+      }
+
+      //Text 동기화 끝---------------------------
+
+      function setTextareaWidth(newWidth: any) {
+        if (!newWidth) {
+          // set width for placeholder
+          newWidth = postItText.placeholder.length * postItText.fontSize();
+        }
+        // some extra fixes on different browsers
+        var isSafari = /^((?!chrome|android).)*safari/i.test(
+          navigator.userAgent
+        );
+        var isFirefox =
+          navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+        if (isSafari || isFirefox) {
+          newWidth = Math.ceil(newWidth);
+        }
+
+        var isEdge =
+          document.DOCUMENT_NODE || /Edge/.test(navigator.userAgent);
+        if (isEdge) {
+          newWidth += 1;
+        }
+        textarea.style.width = newWidth + 'px';
+      }
+
+      /* 입력되는 텍스트 양에 따른 rect height 증가  */
+      textarea.addEventListener('keydown', function (e: any) {
+        let scale = postItText.getAbsoluteScale().x;
+        setTextareaWidth(postItText.width() * scale - postItText.padding() * 2);
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + postItText.fontSize() + 'px';
+       
+        // todo: PostItRect height 증가
+        // console.log(textarea.style.height);
+        // let textareaHeight = (parseInt(textarea.style.height.slice(0, -2)) as any);
+        // console.log(textareaHeight);
+
+        const key = e.key.toLowerCase();
+        if (key == 'esc' || key == 'escape') {
+          postItText.text(textarea.value);
+          postItText.show();
+          textarea.remove();
+          stageRef.current.off('mouseup', handleOutsideClick);
+
+
+          const konvaData = {
+            type  : Shape.Group,
+            Group : {
+              id        : postItGroup.id(),
+              x         : postItGroup.x(),
+              y         : postItGroup.y(),
+              width     : postItGroup.width(),
+              height     : postItGroup.height(),
+              draggable : true,
+              userId    : userId,
+            },
+            Rect  : {},
+            Text  : {
+              text      : postItText.text(),
+              fontSize  : postItText.fontSize(),
+            } 
+          }
+
+          yObjects.set(postItGroup.id(), konvaData);
+        }
+      });
+
+      function handleOutsideClick(e: any) {
+        if (textarea.value === '') {
+          initText.show();
+        }
+
+        if (e.target !== textarea) {
+          postItText.text(textarea.value);
+          postItText.show();
+          textarea.remove();
+          stageRef.current.off('mouseup', handleOutsideClick);
+
+          const konvaData = {
+            type  : Shape.Group,
+            Group : {
+              id        : postItGroup.id(),
+              x         : postItGroup.x(),
+              y         : postItGroup.y(),
+              width     : postItGroup.width(),
+              height     : postItGroup.height(),
+              draggable : true,
+              userId    : userId,
+            },
+            Rect  : {},
+            Text  : {
+              text      : postItText.text(),
+              fontSize  : postItText.fontSize(),
+            } 
+          }
+          
+          yObjects.set(postItGroup.id(), konvaData);
+        }
+      }
+      
+      if(textarea){
+        stageRef.current.on('mouseup', handleOutsideClick);
+        // PostItText.show();
+      }
+    });
+
+    postItGroup.on('mousedown', (e:any)=>{  // e.target: Text, e.currentTarget: Group 
+          //그룹 Transfomer
+      
+      if(toolRef.current !== Tools.CURSOR){
+        postItGroup.draggable(false)
+        return;
+      } else {
+        postItGroup.draggable(true)
+      }
+
+      if (groupTr === null) {
+        createNewTr();
+      } 
+
+      if(groupTr && groupTr.nodes().length == 0) {          
+        groupTr.nodes([e.target]);  // e.target: PostItText
+      }
+      
+      const text = postItGroup.findOne('.postItText')
+      const rect = postItGroup.findOne('.postItRect')
+      const init = postItGroup.findOne('.postItText')
+      
+      if (text && rect) {
+        text.on('transform', () => {
+          text.setAttrs({
+            width: Math.max(text.width() * text.scaleX(), POSTIT_MIN_WIDTH),
+            height : Math.max(text.height() * text.scaleY(), POSTIT_MIN_HEIGHT),
+            scaleX: 1,
+            scaleY: 1,
+          });
+    
+          // text의 크기가 변경될 때 rect의 크기도 업데이트
+          rect.setAttrs({
+            width: text.width(),
+            height: text.height(),
+          });
+
+          // text의 너비가 변경될 때 initText의 너비도 업데이트
+          if (init) {
+            init.setAttrs({
+              width: text.width(),
+            })
+          }
+        });
+      }
+    })
+    return postItGroup
+  }
 
   const createNewTr = ()=>{
     //if (groupTr != null) return;
@@ -950,105 +1338,168 @@ const App: FC = () => {
       isDrag.current = true;
     });
     tr.on('dragmove', function() {
-      tr.getNodes().forEach((node:any)=>{        
+      tr.getNodes().forEach((node:any)=>{    
+        const changeInfo = {
+          idx : node.id(),
+          x   : node.x(),
+          y   : node.y(),
+          userId : userId.current
+        }
         yDocRef.current.transact(() => {
-          const changeInfo = {
-            idx : node.id(),
-            x   : node.x(),
-            y   : node.y(),
-            userId : userId.current
-          }
-          yMove.set(node.id(), changeInfo);
-        }, undoManagerObj); // Ensure this change is also tracked by the undo manager
-
+        yMove.set(node.id(), changeInfo);
       });
+    }, undoManagerObj);
     });
 
    
     tr.on('dragend', function() {
       isDrag.current = false;
-      yDocRef.current.transact(() => { 
-        tr.getNodes().forEach((node:any) => {
-          let type = node.getClassName();
-          let konvaData: any;
-    
-          if (type === Shape.Line) {
+      let type:any;
+      let konvaData:any;
+      tr.getNodes().forEach((node:any)=>{
+        type = node.getClassName()
+        if(node.name().includes("postIt")){
+          if(type === Shape.Group){
             konvaData = {
-              type: type,
-              id: node.id(),
-              x: node.x(),
-              y: node.y(),
-              points: node.points(),
-              stroke: node.stroke(),
-              strokeWidth: node.strokeWidth(),
-              lineCap: node.lineCap(),
-              lineJoin: node.lineJoin(),
-              scaleX: node.scaleX(),
-              scaleY: node.scaleY(),
-              rotation: node.rotation(),
-              draggable: true,
-            };
-          } else if (type === Shape.RegularPolygon) {
-            konvaData = {
-              type: type,
-              id: node.id(),
-              x: node.x(),
-              y: node.y(),
-              sides: node.sides(),
-              radius: node.radius(),
-              fill: node.fill(),
-              scaleX: node.scaleX(),
-              scaleY: node.scaleY(),
-              rotation: node.rotation(),
-              draggable: true,
-            };
-          } else if (type === Shape.Circle || type === Shape.Rect) {
-            konvaData = {
-              type: type,
-              id: node.id(),
-              x: node.x(),
-              y: node.y(),
-              width: node.width(),
-              height: node.height(),
-              fill: node.fill(),
-              scaleX: node.scaleX(),
-              scaleY: node.scaleY(),
-              rotation: node.rotation(),
-              draggable: true,
-            };
-          } else if (type === Shape.Stamp) {
-            konvaData = {
-              type: type,
-              id: node.id(),
-              x: node.x(),
-              y: node.y(),
-              width: node.width(),
-              height: node.height(),
-              image: node.getName(),
-              scaleX: node.scaleX(),
-              scaleY: node.scaleY(),
-              rotation: node.rotation(),
-              draggable: true
-            };
-          } else { // Assuming this is for Text
-            konvaData = {
-              type: "Text",
-              id: node.id(),
-              x: node.x(),
-              y: node.y(),
-              width: node.width(),
-              fontSize: node.fontSize(),
-              text: node.text(),
-              scaleX: node.scaleX(),
-              scaleY: node.scaleY(),
-              rotation: node.rotation(),
-              draggable: true,
-            };
+              type  : type,
+              Group : {},
+              Rect  : {},
+              Text  : {} 
+            }
+            const childList:Konva.Node[] = node.children;
+            if(node.getClassName() == Shape.Group){
+              konvaData.Group = {
+                draggable : true,
+                id        : node.id(),
+                x         : node.x(),
+                y         : node.y(),
+                rotation  : node.rotation(),
+                scaleX    : node.scaleX(),
+                scaleY    : node.scaleY(),
+                // offsetX   : node.id(),
+                // offsetY   : node.id(),
+                // skewX     : node.skewX(),
+                // skewY     : node.skewY(),
+              }
+            }
+            childList.forEach((childNode:any)=>{
+              if(childNode.getClassName() == Shape.Rect){
+                konvaData.Rect = {
+                  id        : childNode.id(),
+                  x         : childNode.x(),
+                  y         : childNode.y(),
+                  width     : childNode.width(),
+                  height    : childNode.height(),
+                  scaleX    : childNode.scaleX(),
+                  scaleY    : childNode.scaleY(),
+                  rotation  : childNode.rotation(),
+                  draggable : true,
+                }
+              } 
+              else if(childNode.getClassName() == Shape.Text){
+                if(childNode.hasName("postItText")){
+                  konvaData.Text = {
+                    id        : childNode.id(),
+                    x         : childNode.x(),
+                    y         : childNode.y(),
+                    width     : childNode.width(),
+                    fontSize  : childNode.fontSize(),
+                    text      : childNode.text(),
+                    scaleX    : childNode.scaleX(),
+                    scaleY    : childNode.scaleY(),
+                    rotation  : childNode.rotation(),
+                    draggable : true,
+                  }
+                }
+              } 
+            })
           }
-    
-          yObjects.set(node.id(), konvaData);
-        });
-      }, undoManagerObj); // Pass undoManagerObj to track this transaction for undo/redo
+        } else {
+          if (type === Shape.Line){
+            konvaData = {
+              type        : type,
+              id          : node.id(),
+              x           : node.x(),
+              y           : node.y(),
+              points      : node.points(),
+              stroke      : node.stroke(),
+              strokeWidth : node.strokeWidth(),
+              lineCap     : node.lineCap(),
+              lineJoin    : node.lineJoin(),
+              scaleX      : node.scaleX(),
+              scaleY      : node.scaleY(),
+              rotation    : node.rotation(),
+              tension     : node.tension(),
+              opacity     : node.opacity(),
+              penStyle    : node.hasName(Tools[Tools.PEN]) ? Tools.PEN : Tools.HIGHLIGHTER,
+              draggable   : true,
+            }
+          } else if(type === Shape.RegularPolygon){
+            konvaData = {
+              type      : type, 
+              id        : node.id(),
+              x         : node.x(),
+              y         : node.y(),
+              sides     : node.sides(),
+              radius    : node.radius(),
+              fill      : node.fill(),
+              scaleX    : node.scaleX(),
+              scaleY    : node.scaleY(),
+              rotation  : node.rotation(),
+              draggable : true,
+            }
+          } else if (type === Shape.Circle || type === Shape.Rect){
+            konvaData = {
+              type      : type, 
+              id        : node.id(),
+              x         : node.x(),
+              y         : node.y(),
+              width     : node.width(),
+              height    : node.height(),
+              fill      : node.fill(),
+              scaleX    : node.scaleX(),
+              scaleY    : node.scaleY(),
+              rotation  : node.rotation(),
+              draggable : true,
+            }
+          } else if(type === Shape.Stamp){
+            konvaData = {
+              type      : type,
+              id        : node.id(),
+              x         : node.x(),
+              y         : node.y(),
+              width     : node.width(),
+              height    : node.height(),
+              image     : node.getName(),
+              scaleX    : node.scaleX(),
+              scaleY    : node.scaleY(),
+              rotation  : node.rotation(),
+              draggable : true
+            }
+          } 
+          else if(type == Shape.Text){
+            konvaData = {
+              type      : type, 
+              id        : node.id(),
+              x         : node.x(),
+              y         : node.y(),
+              width     : node.width(),
+              fontSize  : node.fontSize(),
+              text      : node.text(),
+              scaleX    : node.scaleX(),
+              scaleY    : node.scaleY(),
+              rotation  : node.rotation(),
+              draggable : true,
+            }
+            
+          }
+        }
+        yDocRef.current.transact(() => { 
+        yObjects.set(node.id(), konvaData)
+      }, undoManagerObj);
+      });
+
+
     });
     
 
@@ -1076,82 +1527,139 @@ const App: FC = () => {
       isTrans.current = false;
       let type:Shape;
       let konvaData:any;
-      yDocRef.current.transact(() => {
-        tr.getNodes().forEach((node:any) => {
-          type = node.getClassName()
-        if (type === Shape.Line){
-          konvaData = {
-            id          : node.id(),
-            x           : node.x(),
-            y           : node.y(),
-            points      : node.points(),
-            stroke      : node.stroke(),
-            strokeWidth : node.strokeWidth(),
-            lineCap     : node.lineCap(),
-            lineJoin    : node.lineJoin(),
-            scaleX      : node.scaleX(),
-            scaleY      : node.scaleY(),
-            rotation    : node.rotation(),
-            draggable   : true,
-          }
-        } else if(type === Shape.RegularPolygon){
-          konvaData = { 
-            id        : node.id(),
-            x         : node.x(),
-            y         : node.y(),
-            sides     : node.sides(),
-            radius    : node.radius(),
-            fill      : node.fill(),
-            scaleX    : node.scaleX(),
-            scaleY    : node.scaleY(),
-            rotation  : node.rotation(),
-            draggable : true,
-          }
-        } else if (type === Shape.Circle || type === Shape.Rect){
-          konvaData = { 
-            id        : node.id(),
-            x         : node.x(),
-            y         : node.y(),
-            width     : node.width(),
-            height    : node.height(),
-            fill      : node.fill(),
-            scaleX    : node.scaleX(),
-            scaleY    : node.scaleY(),
-            rotation  : node.rotation(),
-            draggable : true,
-          } 
-        } else if(type === Shape.Stamp){
-          konvaData = {
-            type      : type,
-            id        : node.id(),
-            x         : node.x(),
-            y         : node.y(),
-            width     : node.width(),
-            height    : node.height(),
-            image     : node.getName(), 
-            scaleX    : node.scaleX(),
-            scaleY    : node.scaleY(),
-            rotation  : node.rotation(),
-            draggable : true
+      tr.getNodes().forEach((node:any)=>{
+        type = node.getClassName()
+        if(node.name().includes("postIt")){
+          if(type === Shape.Group){
+            konvaData = {type : type}
+            const childList:Konva.Node[] = node.children;
+            if(node.getClassName() == Shape.Group){
+              konvaData.Group = {
+                draggable : true,
+                id        : node.id(),
+                x         : node.x(),
+                y         : node.y(),
+                rotation  : node.rotation(),
+                scaleX    : node.scaleX(),
+                scaleY    : node.scaleY(),
+                // offsetX   : node.id(),
+                // offsetY   : node.id(),
+                // skewX     : node.skewX(),
+                // skewY     : node.skewY(),
+              }
+            }
+            childList.forEach((childNode:any)=>{
+              if(childNode.getClassName() == Shape.Rect){
+                konvaData.Rect = {
+                  id        : childNode.id(),
+                  x         : childNode.x(),
+                  y         : childNode.y(),
+                  width     : childNode.width(),
+                  height    : childNode.height(),
+                  scaleX    : childNode.scaleX(),
+                  scaleY    : childNode.scaleY(),
+                  rotation  : childNode.rotation(),
+                  draggable : true,
+                }
+              } 
+              else if(childNode.getClassName() == Shape.Text){
+                if(childNode.hasName("postItText")){
+                  konvaData.Text = {
+                    id        : childNode.id(),
+                    x         : childNode.x(),
+                    y         : childNode.y(),
+                    width     : childNode.width(),
+                    fontSize  : childNode.fontSize(),
+                    text      : childNode.text(),
+                    scaleX    : childNode.scaleX(),
+                    scaleY    : childNode.scaleY(),
+                    rotation  : childNode.rotation(),
+                    draggable : true,
+                  }
+                }
+              } 
+            })
           }
         } else {
-          konvaData = {
-            type      : "Text", 
-            id        : node.id(),
-            x         : node.x(),
-            y         : node.y(),
-            width     : node.width(),
-            fontSize  : node.fontSize(),
-            text      : node.text(),
-            scaleX    : node.scaleX(),
-            scaleY    : node.scaleY(),
-            rotation  : node.rotation(),
-            draggable : true,
+          if (type === Shape.Line){
+            konvaData = {
+              id          : node.id(),
+              x           : node.x(),
+              y           : node.y(),
+              points      : node.points(),
+              stroke      : node.stroke(),
+              strokeWidth : node.strokeWidth(),
+              lineCap     : node.lineCap(),
+              lineJoin    : node.lineJoin(),
+              scaleX      : node.scaleX(),
+              scaleY      : node.scaleY(),
+              rotation    : node.rotation(),
+              tension     : node.tension(),
+              opacity     : node.opacity(),
+              penStyle    : node.hasName(Tools[Tools.PEN]) ? Tools.PEN : Tools.HIGHLIGHTER,
+              draggable   : true,
+            }
+          } else if(type === Shape.RegularPolygon){
+            konvaData = { 
+              id        : node.id(),
+              x         : node.x(),
+              y         : node.y(),
+              sides     : node.sides(),
+              radius    : node.radius(),
+              fill      : node.fill(),
+              scaleX    : node.scaleX(),
+              scaleY    : node.scaleY(),
+              rotation  : node.rotation(),
+              draggable : true,
+            }
+          } else if (type === Shape.Circle || type === Shape.Rect){
+            konvaData = { 
+              id        : node.id(),
+              x         : node.x(),
+              y         : node.y(),
+              width     : node.width(),
+              height    : node.height(),
+              fill      : node.fill(),
+              scaleX    : node.scaleX(),
+              scaleY    : node.scaleY(),
+              rotation  : node.rotation(),
+              draggable : true,
+            } 
+          } else if(type === Shape.Stamp){
+            konvaData = {
+              type      : type,
+              id        : node.id(),
+              x         : node.x(),
+              y         : node.y(),
+              width     : node.width(),
+              height    : node.height(),
+              image     : node.getName(), 
+              scaleX    : node.scaleX(),
+              scaleY    : node.scaleY(),
+              rotation  : node.rotation(),
+              draggable : true
+            }
+          } else if(type === Shape.Text){
+            konvaData = {
+              type      : type, 
+              id        : node.id(),
+              x         : node.x(),
+              y         : node.y(),
+              width     : node.width(),
+              fontSize  : node.fontSize(),
+              text      : node.text(),
+              scaleX    : node.scaleX(),
+              scaleY    : node.scaleY(),
+              rotation  : node.rotation(),
+              draggable : true,
+            }
           }
         }
-          yObjects.set(node.id(), konvaData);
-        });
-      }, undoManagerObj);
+        yDocRef.current.transact(() => {
+        yObjects.set(node.id(), konvaData)
+      });
+    }, undoManagerObj);
+
     });
     
 
@@ -1230,20 +1738,21 @@ const App: FC = () => {
         layer.add(selectionRectangle)
       } 
       
-    } else if (tool === Tools.PEN) {
+    } else if (tool === Tools.PEN || tool === Tools.HIGHLIGHTER) {
       //console.log(yPens, "pens group");   //TEST
-      const color = 'black' //임시 컬러
+
       //펜 이벤트
       isDrawing.current = true;
-      
-      newLine = createNewLine(idx, [realPointerPosition.x, realPointerPosition.y], color)
-      
+
+      newLine = createNewLine(idx, [realPointerPosition.x, realPointerPosition.y], currentColorRef.current, toolRef.current)
+
       layer.add(newLine);
       
       const changeInfo = {
         type: "insert",
         point: [realPointerPosition.x, realPointerPosition.y],
-        stroke: color
+        stroke : newLine.stroke(),
+        penStyle: toolRef.current
       };
       yDocRef.current.transact(() => {
         yPens.set(idx, changeInfo);
@@ -1251,21 +1760,6 @@ const App: FC = () => {
       }, undoManagerObj);
       console.log("create", undoManagerObj, undoManagerObj.undoStack);
 
-    } else if (tool === Tools.HIGHLIGHTER) {
-      //형광펜 이벤트
-      isDrawing.current = true;
-
-      newLine = new Konva.Line({
-        points      : [realPointerPosition.x, realPointerPosition.y],
-        stroke      : 'black',
-        strokeWidth : 15,
-        tension     : 0.5,
-        lineCap     : "butt",
-        lineJoin    : "round",
-        opacity     : 0.4,
-        draggable   : true
-      });
-      layer.add(newLine);
     }
   };
 
@@ -1315,22 +1809,14 @@ const App: FC = () => {
       
       const idx = "obj_Id_"+(id).toString()
 
-      // const changeInfo = {
-      //   type: "update",
-      //   point: [realPointerPosition.x, realPointerPosition.y]
-      // };
-      // yPens.set(idx, changeInfo);
-
+      const changeInfo = {
+        type: "update",
+        point: [realPointerPosition.x, realPointerPosition.y],
+        penStyle : tool
+      };
       yDocRef.current.transact(() => {
-        const changeInfo = {
-          type: "update",
-          point: [realPointerPosition.x, realPointerPosition.y],
-        };
-        yPens.set(idx, changeInfo);
-      }, undoManagerObj);
-      //console.log("moving", undoManagerPens, undoManagerPens.undoStack);
-
-
+      yPens.set(idx, changeInfo);
+    }, undoManagerObj);
     }
     else if(tool === Tools.ERASER){
       const stage = e.target.getStage()
@@ -1348,47 +1834,32 @@ const App: FC = () => {
           yObjects.set(lineId.toString(), changeInfo);
         }, undoManagerObj);
       }
-
-
-      // lines.forEach((line:any) => {
-      //     if(line.intersects(pointerPosition)){
-      //         const lineId = line.id();  
-              
-
-            
-      //         const changeInfo = {
-      //           type: "delete"
-      //         };
-      //         yPens.set(lineId.toString(), changeInfo);
-      //         yObjects.set(lineId.toString(), changeInfo);
-
-      //     }
-      // });
-      ////console.log(yPens, "pens group", e);   //TEST
     }
   };
 
   const handleMouseUp = (e:any) => {
     const leaveEvtFlag:boolean = e.evt.type === 'mouseleave'? true:false  
 
-    if(tool === Tools.PEN){
+    if(tool === Tools.PEN || tool === Tools.HIGHLIGHTER){
+      isDrawing.current = false;
+      const idx = "obj_Id_"+(id).toString()
+      if(newLine == null) return;
+      const konvaData = {
+        id          : idx,
+        type        : 'Line',
+        points      : newLine.points(),
+        stroke      : newLine.stroke(),
+        strokeWidth : newLine.strokeWidth(),
+        lineCap     : newLine.lineCap(),
+        lineJoin    : newLine.lineJoin(),
+        opacity     : newLine.opacity(),
+        tenson      : newLine.tension(),
+        penStyle    : tool,
+        draggable   : true
+      }
       yDocRef.current.transact(() => {
-        isDrawing.current = false;
-        const idx = "obj_Id_"+(id).toString()
-        if(newLine == null) return;
-        const konvaData = {
-          id          : idx,
-          type        : 'Line',
-          points      : newLine.points(),
-          stroke      : newLine.stroke(),
-          strokeWidth : newLine.strokeWidth(),
-          lineCap     : newLine.lineCap(),
-          lineJoin  : newLine.lineJoin(),
-        }
-      //yObjects.set(idx, konvaData)
-        yObjects.set(idx, konvaData);
-      }, undoManagerObj); 
-    
+      yObjects.set(idx, konvaData)
+    }, undoManagerObj); 
       
       newLine = null;
       id = uuidv4();
@@ -1400,12 +1871,10 @@ const App: FC = () => {
           return;
         }
         
-        
         //e.evt.preventDefault();
-        // update visibility in timeout, so we can check it in click event
         selectionRectangle.visible(false);
         selectionRectangle.destroy();
-        var shapes = stageRef.current.find('Shape, Line, Text');
+        var shapes = stageRef.current.find('Shape, Line, Text, Group');
         var box = selectionRectangle.getClientRect();
         
         const rowSelected:Konva.Node[] = shapes.filter((shape:any) =>
@@ -1424,7 +1893,7 @@ const App: FC = () => {
           rowSelected.forEach((node)=>{
             const nodeId:string = node.id();
             if(!nodeId.includes("area-") && !node.hasName('locked')){
-              node.name("locked");
+              node.addName("locked");
               selected.push(node);
               locksData.push(nodeId);
             }
@@ -1482,7 +1951,7 @@ const App: FC = () => {
     const position = stage.position(); // 현재 위치
     const idx = "obj_Id_"+(id).toString()
     
-    const defaultColor = 'black';
+    const defaultColor = currentColorRef.current;
 
     const realPointerPosition = {
       x: (pos.x - position.x) / scale,
@@ -1539,56 +2008,58 @@ const App: FC = () => {
       let konvaData : any;
       
       if (clickedIconBtn === 'rect'){
-          newShape = createNewRect(idx, shapeOptions, defaultColor)
-          
-          konvaData = {
-            id        : newShape.id(),
-            type      : Shape.Rect,
-            x         : newShape.x(),
-            y         : newShape.y(),
-            width     : newShape.width(), 
-            height    : newShape.height(),
-            fill      : defaultColor,
-            userId    : userId,
-            draggable : true,
-          }
+        newShape = createNewRect(idx, shapeOptions, defaultColor)
+
+        konvaData = {
+          id        : newShape.id(),
+          type      : Shape.Rect,
+          x         : newShape.x(),
+          y         : newShape.y(),
+          width     : newShape.width(), 
+          height    : newShape.height(),
+          fill      : defaultColor,
+          userId    : userId,
+          draggable : true,
         }
-        else if (clickedIconBtn === 'cir') {
-          newShape = createNewCir(idx, shapeOptions, defaultColor)
-          
-          konvaData = {
-            id        : newShape.id(),
-            type      : Shape.Circle,
-            x         : newShape.x(),
-            y         : newShape.y(),
-            width     : newShape.width(), 
-            height    : newShape.height(),
-            fill      : defaultColor,
-            userId    : userId,
-            draggable : true
-          }
+      }
+      else if (clickedIconBtn === 'cir') {
+        newShape = createNewCir(idx, shapeOptions, defaultColor)
+
+        konvaData = {
+          id        : newShape.id(),
+          type      : Shape.Circle,
+          x         : newShape.x(),
+          y         : newShape.y(),
+          width     : newShape.width(), 
+          height    : newShape.height(),
+          fill      : defaultColor,
+          userId    : userId,
+          draggable : true
         }
-        else if (clickedIconBtn === 'tri') {
-          newShape = createNewTri(idx, shapeOptions, 'black')
-          konvaData = {
-            id        : newShape.id(),
-            type      : Shape.RegularPolygon,
-            x         : newShape.x(),
-            y         : newShape.y(),
-            sides     : newShape.sides(),
-            radius    : newShape.radius(),
-            fill      : defaultColor,
-            userId    : userId,
-            draggable : true
-          }
+      }
+      else if (clickedIconBtn === 'tri') {
+        newShape = createNewTri(idx, shapeOptions, defaultColor)
+        konvaData = {
+          id        : newShape.id(),
+          type      : Shape.RegularPolygon,
+          x         : newShape.x(),
+          y         : newShape.y(),
+          sides     : newShape.sides(),
+          radius    : newShape.radius(),
+          fill      : defaultColor,
+          userId    : userId,
+          draggable : true
         }
-        layer.add(newShape);
-        
-        yDocRef.current.transact(() => {
-          yShape.set(idx, konvaData);
-          yObjects.set(idx, konvaData);
+      }
+      layer.add(newShape);
+
+      yDocRef.current.transact(() => {
+
+      yShape.set(idx, konvaData);
+      yObjects.set(idx, konvaData);
         }, undoManagerObj);
-      console.log(undoManagerObj.undoStack, yObjects);    //TEST
+        console.log(undoManagerObj.undoStack, yObjects);    //TEST
+    
     
     
 
@@ -1597,292 +2068,58 @@ const App: FC = () => {
     } 
     else if (tool === Tools.TEXT) {
       
-      yDocRef.current.transact(() => {
-        var textNode:any = createNewText(idx, realPointerPosition, "");
-        const konvaData = {
-          id       : textNode.id(),
-          text     : textNode.text(),
-          x        : textNode.x(),
-          y        : textNode.y(),
-          fontSize: textNode.fontSize(),
-          draggable: true,
-          width: textNode.width(),
-          userId    : userId,
-        }
-        layer.add(textNode);
+      var textNode:Konva.Text = createNewText(idx, realPointerPosition, "", defaultColor);
+      const konvaData = {
+        id       : textNode.id(),
+        text     : textNode.text(),
+        x        : textNode.x(),
+        y        : textNode.y(),
+        fill     : textNode.fill(),
+        fontSize: textNode.fontSize(),
+        draggable: true,
+        width: textNode.width(),
+        userId    : userId,
+      }
+      layer.add(textNode);
 
-        
-        yText.set(idx, konvaData);
-      //yObjects.set(idx, konvaData)
-        yObjects.set(idx, konvaData);
-      }, undoManagerObj); // Assuming undoManagerObj is your Y.UndoManager instance for yObjects
+
+      yDocRef.current.transact(() => {
+      yText.set(idx, konvaData);
+      yObjects.set(idx, konvaData);
+    }, undoManagerObj); // Assuming undoManagerObj is your Y.UndoManager instance for yObjects
+  
     
       
       id = uuidv4();
       setTool(Tools.CURSOR);
     }
     else if (tool === Tools.POSTIT) {
-      let PostItGroup = new Konva.Group({
-        name : 'postIt',
-        x: realPointerPosition.x,
-        y: realPointerPosition.y,
-        draggable: true,
-        id: "obj_Id_"+uuidv4(), // 각각의 포스트잇마다 uuid 잘 찍힘 
-      });
+      const postItGroup = createNewPostIt(idx, realPointerPosition, "");
 
-      const postItOptions = {
-        x: 0,
-        y: 0,
-      }
-      
-      let PostItText: any = new Konva.Text({
-        name: 'postItText',
-        ...postItOptions, // x, y
-        width: POSTIT_MIN_WIDTH,
-        height: textHeight, // POSTIT_MIN_HEIGHT
-        text: '',
-        fontSize: 20,
-        padding: 15,
-      });
-      
-      let initText = new Konva.Text({
-        name: 'initText',
-        ...postItOptions,
-        width: PostItText.width(),
-        text: 'Type anything! And also everyone in the meeting can vote on your topic by stamp👍🏽👎🏽',
-        fontSize: 20,
-        opacity: 0.4,
-        padding: 15,
-      });
-
-      let PostItRect = new Konva.Rect({
-        name : "postItRect",
-        ...postItOptions,
-        width: PostItText.width(),
-        height: PostItText.height(),
-        fill: '#FFD966',
-        shadowColor: 'black',
-        shadowBlur: 15,
-        shadowOffsetX: 5,
-        shadowOffsetY: 5,
-        shadowOpacity: 0.2,
-      });  
-
-      PostItGroup.add(PostItRect);
-      PostItGroup.add(PostItText);
-      PostItGroup.add(initText);
-      layer.add(PostItGroup);
-      setTool(Tools.CURSOR);
-
-      PostItGroup.on('dblclick dbltap', () => {
-        initText.hide();
-
-        if (PostItText.text() !== ''){
-          PostItText.hide();
-        }
-        
-        var textPosition = PostItText.absolutePosition();
-        
-        var areaPosition = {
-          x: stage.container().offsetLeft + textPosition.x,
-          y: stage.container().offsetTop + textPosition.y,
-        };
-        
-        var textarea = document.createElement('textarea');
-        document.body.appendChild(textarea);
-
-        textarea.value = PostItText.text();
-        textarea.style.position = 'absolute';
-        textarea.style.top = areaPosition.y + 'px';
-        textarea.style.left = areaPosition.x + 'px';
-        textarea.style.width = PostItText.width() - PostItText.padding() * 2 + 'px';
-        // textarea.style.height = PostItText.height() - PostItText.padding() * 2 + 'px';
-        textarea.style.fontSize = PostItText.fontSize() + 'px';
-        textarea.style.border = 'none';
-        textarea.style.padding = '15px';
-        textarea.style.margin = '0px';
-        textarea.style.overflow = 'hidden';
-        // textarea.style.background = 'gray';
-        textarea.style.background = 'none';
-        textarea.style.outline = 'none';
-        textarea.style.resize = 'none';
-        textarea.style.lineHeight = PostItText.lineHeight();
-        textarea.style.fontFamily = PostItText.fontFamily();
-        textarea.style.transformOrigin = 'left top';
-        textarea.style.textAlign = PostItText.align();
-        textarea.style.color = PostItText.fill();
-
-        const rotation = PostItText.rotation();
-        var transform = '';
-
-        if (rotation) {
-          transform += 'rotateZ(' + rotation + 'deg)';
-        }
-
-        var px = 0;
-        var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-        if (isFirefox) {
-          px += 2 + Math.round(PostItText.fontSize() / 20);
-        }
-
-        transform += 'translateY(-' + px + 'px)';
-        textarea.style.transform = transform;
-        
-        textarea.style.height = 'auto';
-        textarea.style.height = textarea.scrollHeight + 3 + 'px';
-
-        function setTextareaWidth(newWidth: any) {
-          if (!newWidth) {
-            // set width for placeholder
-            newWidth = PostItText.placeholder.length * PostItText.fontSize();
-          }
-          // some extra fixes on different browsers
-          var isSafari = /^((?!chrome|android).)*safari/i.test(
-            navigator.userAgent
-          );
-          var isFirefox =
-            navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-          if (isSafari || isFirefox) {
-            newWidth = Math.ceil(newWidth);
-          }
-
-          var isEdge =
-            document.DOCUMENT_NODE || /Edge/.test(navigator.userAgent);
-          if (isEdge) {
-            newWidth += 1;
-          }
-          textarea.style.width = newWidth + 'px';
-        }
-
-        /* 입력되는 텍스트 양에 따른 rect height 증가  */
-        textarea.addEventListener('keydown', function (e: any) {
-          let scale = PostItText.getAbsoluteScale().x;
-          setTextareaWidth(PostItText.width() * scale - PostItText.padding() * 2);
-          textarea.style.height = 'auto';
-          textarea.style.height = textarea.scrollHeight + PostItText.fontSize() + 'px';
-         
-          // todo: PostItRect height 증가
-          // console.log(textarea.style.height);
-          // let textareaHeight = (parseInt(textarea.style.height.slice(0, -2)) as any);
-          // console.log(textareaHeight);
-
-          const key = e.key.toLowerCase();
-          if (key == 'esc' || key == 'escape') {
-            PostItText.text(textarea.value);
-            PostItText.show();
-            textarea.remove();
-            stage.off('mouseup', handleOutsideClick);
-          }
-        });
-
-        function handleOutsideClick(e: any) {
-          if (textarea.value === '') {
-            initText.show();
-          }
-
-          if (e.target !== textarea) {
-            PostItText.text(textarea.value);
-            PostItText.show();
-            textarea.remove();
-            stage.off('mouseup', handleOutsideClick);
-          }
-        }
-        
-        if(textarea){
-          stage.on('mouseup', handleOutsideClick);
-          // PostItText.show();
-        }
-      });
-
-      PostItGroup.on('click', (e:any)=>{  // e.target: Text, e.currentTarget: Group       
-        if (groupTr === null) {
-          createNewTr();
+      const konvaData = {
+        type  : Shape.Group,
+        Group : {
+          id        : postItGroup.id(),
+          x         : postItGroup.x(),
+          y         : postItGroup.y(),
+          width     : postItGroup.width(),
+          height     : postItGroup.height(),
+          draggable : true,
+          userId    : userId,
+        },
+        Rect  : {},
+        Text  : {
+          text      : "",
         } 
-        else {          
-          groupTr.nodes([e.target]);  // e.target: PostItText
-        }
+      }
+
+      layer.add(postItGroup);
+
+      yShape.set(idx, konvaData);
     
-        const text = PostItGroup.findOne('.postItText')
-        const rect = PostItGroup.findOne('.postItRect')
-        const init = PostItGroup.findOne('.initText')
-        
-        if (text && rect) {
-          text.on('transform', () => {
-            text.setAttrs({
-              width: Math.max(text.width() * text.scaleX(), POSTIT_MIN_WIDTH),
-              height : Math.max(text.height() * text.scaleY(), POSTIT_MIN_HEIGHT),
-              scaleX: 1,
-              scaleY: 1,
-            });
-      
-            // text의 크기가 변경될 때 rect의 크기도 업데이트
-            rect.setAttrs({
-              width: text.width(),
-              height: text.height(),
-            });
-
-            // text의 너비가 변경될 때 initText의 너비도 업데이트
-            if (init) {
-              init.setAttrs({
-                width: text.width(),
-              })
-            }
-
-            // console.log('텍', text.height());
-          });
-        }
-      })
-    } 
-  };    
-
-  const createNewTextArea:any = (textNode:any, areaPosition:{x:number, y:number})=>{
-    const textarea = document.createElement('textarea');
-    document.body.appendChild(textarea);
-
-    textarea.value = textNode.text();
-    textarea.style.position = 'absolute';
-    textarea.style.top = areaPosition.y + 'px';
-    textarea.style.left = areaPosition.x + 'px';
-    textarea.style.width = textNode.width() - textNode.padding() * 2 + 'px';
-    textarea.style.height = textNode.height() - textNode.padding() * 2 + 1 + 'px';
-    textarea.style.fontSize = textNode.fontSize() + 'px';
-    textarea.style.border = 'none';
-    textarea.style.padding = '0px';
-    textarea.style.margin = '0px';
-    textarea.style.overflow = 'hidden';
-    textarea.style.background = 'none';
-    textarea.style.outline = 'none';
-    textarea.style.resize = 'none';
-    textarea.style.lineHeight = textNode.lineHeight();
-    textarea.style.fontFamily = textNode.fontFamily();
-    textarea.style.transformOrigin = 'left top';
-    textarea.style.textAlign = textNode.align();
-    textarea.style.color = textNode.fill();
-    let rotation = textNode.rotation();
-    var transform = '';
-    if (rotation) {
-      transform += 'rotateZ(' + rotation + 'deg)';
-    }
-
-    var px = 0;
-
-    var isFirefox =
-      navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-    if (isFirefox) {
-      px += 2 + Math.round(textNode.fontSize() / 20);
-    }
-    transform += 'translateY(-' + px + 'px)';
-
-    textarea.style.transform = transform;
-
-    // reset height
-    textarea.style.height = 'auto';
-    // after browsers resized it we can set actual value
-    textarea.style.height = textarea.scrollHeight + 3 + 'px';
-
-    textarea.focus();
-
-    return textarea;
+      yObjects.set(idx, konvaData)
+      setTool(Tools.CURSOR);
+    };    
   }
 
   const handleMouseWheel = (e: any) => {
@@ -1985,18 +2222,12 @@ const App: FC = () => {
       >
       
         <Layer></Layer>
-        
-        {/* <>
-          <MindMap stageRef = {stageRef} currentTool={tool} yDocRef = {yDocRef}/>
-        </> */}
         <>
           <MindMap stageRef = {stageRef} toolRef={toolRef} yDocRef = {yDocRef}/>
         </>
 
       </Stage>
-      <ColorProvider>
-        <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} setUserId={setUserId} />
-      </ColorProvider>
+      <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick}/>
     </div>
   );
 }
