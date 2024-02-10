@@ -43,7 +43,7 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
 
     return(
         <>
-            <ButtonGroup className={styles.BtnGroupContainer} variant="contained" aria-label="outlined primary button group" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", maxWidth: "100%", zIndex: '9999'}}>
+            <ButtonGroup color='primary' variant="contained" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", maxWidth: "100%", zIndex: '9999'}}>
                 <Tooltip arrow placement="top" title="Undo">
                     <IconButton className={styles.BtnGroupContainer}><UndoRoundedIcon /></IconButton>
                 </Tooltip>

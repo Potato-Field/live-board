@@ -7,14 +7,14 @@ import { ToolProvider } from './component/ToolContext';
 import { ColorProvider } from './component/ColorContext';
 import App from './App';
 import Lobby from './lobby';
-import { ThemeProvider, unstable_createMuiStrictModeTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
 
 let theme = createTheme({
   palette: {
     primary: {
-      main: '#0052cc',
+      main: '#707070',
     },
     secondary: {
       main: '#edf2ff',
