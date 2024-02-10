@@ -119,8 +119,9 @@ const App: FC = () => {
   
   const yTextRef = useRef<Y.Array<TextInputProps>>(yDocRef.current.getArray<TextInputProps>('texts'));
   
-  const undoManagerObj = new Y.UndoManager([yObjects]);
+  const undoManagerObj = new Y.UndoManager([yObjects, yText, yPens, yShape, yTrans, yMove]);
   const undoManagerPens = new Y.UndoManager([yPens]);
+  const undoManagerShape = new Y.UndoManager([yShape]);
   let yOldPens = yDocRef.current.getMap(' ');
   const undoStackArr:any = [];
   const redoStackArr:any = [];
@@ -200,7 +201,7 @@ const App: FC = () => {
     
       
 
-    // // Y.js에 저장된 것들 감시하고 업데이트 되면 캔버스에 그리기
+    // Y.js에 저장된 것들 감시하고 업데이트 되면 캔버스에 그리기
     yPens.observe(() => {
       yPens.forEach((konvaData:any, index:string)=>{
         
@@ -218,9 +219,13 @@ const App: FC = () => {
            
            
         }
-        yPens.delete(index);
+        // yDocRef.current.transact(() => {
+
+        //   yPens.delete(index);
+        // }, undoManagerObj);
       });  
     })
+    
    
 
     //마우스 움직임 감지
@@ -291,7 +296,7 @@ const App: FC = () => {
         if(node) return;
         newShape = createNewText(index, {x: konvaData.x, y: konvaData.y}, konvaData.text)
         stageRef.current.getLayers()[0].add(newShape);
-        yText.delete(index);
+        //yText.delete(index);
       });
     });
 
@@ -310,7 +315,9 @@ const App: FC = () => {
             newStamp.name(konvaData.image)
             stageRef.current.getLayers()[0].add(newStamp);
           }
-          yShape.delete(index);    
+          // yDocRef.current.transact(() => {
+          //   yShape.delete(index); 
+          // }, undoManagerObj);
         }
         else {
           if(konvaData.type === Shape.Rect){
@@ -323,7 +330,11 @@ const App: FC = () => {
             newShape = createNewTri(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill)
           }
           stageRef.current.getLayers()[0].add(newShape);
-          yShape.delete(index);
+
+          // yDocRef.current.transact(() => {
+          //   yShape.delete(index); 
+          // }, undoManagerObj);
+          //yShape.delete(index);   
         }
       });  
     })
@@ -336,7 +347,7 @@ const App: FC = () => {
         if(!node) return;
         node.x(konvaData.x)
         node.y(konvaData.y)
-        yMove.delete(index);
+        // yMove.delete(index);
       });
     })
 
@@ -351,7 +362,7 @@ const App: FC = () => {
         node.scaleX(konvaData.scaleX)
         node.scaleY(konvaData.scaleY)
         node.rotation(konvaData.rotation)
-        yTrans.delete(index);
+        // yTrans.delete(index);
       });
     })
 
@@ -430,19 +441,82 @@ const App: FC = () => {
         } 
       });
     };
+
+
     
     const handleDataLoaded = () => {
       
       setIsLoading(false);
       initializeCanvas();
-      yObjects.unobserve(handleDataLoaded);
+      //yObjects.unobserve(handleDataLoaded);
     };
+
+
+
+    // yObjects.observe((event) => {
+    //   setIsLoading(false);
+    //   const changedIds = Array.from(event.keysChanged);
+  
+    //   changedIds.forEach((id) => {
+    //     const konvaData = yObjects.get(id);
+  
+    //     // Check if the node already exists
+    //     const node = stageRef.current.children[0].findOne("#" + id);
+  
+    //     if (node) {
+    //       // Update the node's properties with the new data
+    //       updateCanvas(konvaData, id);
+    //     } else {
+    //       // If the node doesn't exist, create a new one
+    //       initializeCanvas();
+    //     }
+    //   });
+  
+    //   // Redraw the layer to reflect the changes
+    //   //stageRef.current.getLayers()[0].batchDraw();
+    // });
+    
 
     yObjects.observe(handleDataLoaded);
 
     yTextRef.current.observe(() => {
       setTextInputs(yTextRef.current.toArray());
     });
+
+
+
+    const updateCanvas = () => {
+      yObjects.observe(event => {
+        // Logic to handle updates
+        // This includes adding new objects, updating existing ones, or removing them
+        event.keysChanged.forEach(id => {
+          const konvaData = yObjects.get(id);
+          const node = stageRef.current.findOne(`#${id}`);
+          if (!konvaData) { // If data was removed
+            node?.destroy();
+          } else if (!node) { 
+            initializeCanvas();
+            // If it's a new object
+            // Create and add a new Konva node based on konvaData
+            // For example:
+            // const newNode = createKonvaNodeFromData(konvaData);
+            // stageRef.current.getLayers()[0].add(newNode);
+          } else {
+            // Update the existing node based on konvaData
+            // For example:
+            // updateKonvaNode(node, konvaData);
+          }
+        });
+        stageRef.current.batchDraw();
+      });
+    };
+    updateCanvas();
+
+
+
+
+
+
 
     return () => {      
       yMousePositions.delete(userId.current);
@@ -780,25 +854,7 @@ const App: FC = () => {
           }
         }
         
-      //   function removeTextarea() {
-      //     if(!textarea.parentNode) return;
-      //     textarea.parentNode.removeChild(textarea);
-      //     window.removeEventListener('click', handleOutsideClick);
-      //     textNode.show();
-          
-      //     const konvaData = {
-      //     type      : "Text", 
-      //     id        : textNode.id(),
-      //     x         : textNode.x(),
-      //     y         : textNode.y(),
-      //     width     : textNode.width(),
-      //     fontSize  : textNode.fontSize(),
-      //     text      : textNode.text(),
-      //     draggable : true,
-      //   }
-        
-      //   yObjects.set(textNode.id(), konvaData);
-      // }
+     
       function removeTextarea() {
         if (!textarea.parentNode) return;
         textarea.parentNode.removeChild(textarea);
@@ -895,106 +951,23 @@ const App: FC = () => {
     });
     tr.on('dragmove', function() {
       tr.getNodes().forEach((node:any)=>{        
-        const changeInfo = {
-          idx : node.id(),
-          x   : node.x(),
-          y   : node.y(),
-          userId : userId.current
-        }
-        yMove.set(node.id(), changeInfo);
+        yDocRef.current.transact(() => {
+          const changeInfo = {
+            idx : node.id(),
+            x   : node.x(),
+            y   : node.y(),
+            userId : userId.current
+          }
+          yMove.set(node.id(), changeInfo);
+        }, undoManagerObj); // Ensure this change is also tracked by the undo manager
+
       });
     });
 
-    // tr.on('dragend', function() {
-    //   isDrag.current = false;
-    //   let type:any;
-    //   let konvaData:any;
-    //   tr.getNodes().forEach((node:any)=>{
-    //     type = node.getClassName()
-    //     if (type === Shape.Line){
-    //       konvaData = {
-    //         type        : type,
-    //         id          : node.id(),
-    //         x           : node.x(),
-    //         y           : node.y(),
-    //         points      : node.points(),
-    //         stroke      : node.stroke(),
-    //         strokeWidth : node.strokeWidth(),
-    //         lineCap     : node.lineCap(),
-    //         lineJoin    : node.lineJoin(),
-    //         scaleX      : node.scaleX(),
-    //         scaleY      : node.scaleY(),
-    //         rotation    : node.rotation(),
-    //         draggable   : true,
-    //       }
-    //     } else if(type === Shape.RegularPolygon){
-    //       konvaData = {
-    //         type      : type, 
-    //         id        : node.id(),
-    //         x         : node.x(),
-    //         y         : node.y(),
-    //         sides     : node.sides(),
-    //         radius    : node.radius(),
-    //         fill      : node.fill(),
-    //         scaleX    : node.scaleX(),
-    //         scaleY    : node.scaleY(),
-    //         rotation  : node.rotation(),
-    //         draggable : true,
-    //       }
-    //     } else if (type === Shape.Circle || type === Shape.Rect){
-    //       konvaData = {
-    //         type      : type, 
-    //         id        : node.id(),
-    //         x         : node.x(),
-    //         y         : node.y(),
-    //         width     : node.width(),
-    //         height    : node.height(),
-    //         fill      : node.fill(),
-    //         scaleX    : node.scaleX(),
-    //         scaleY    : node.scaleY(),
-    //         rotation  : node.rotation(),
-    //         draggable : true,
-    //       }
-    //     } else if(type === Shape.Stamp){
-    //       konvaData = {
-    //         type      : type,
-    //         id        : node.id(),
-    //         x         : node.x(),
-    //         y         : node.y(),
-    //         width     : node.width(),
-    //         height    : node.height(),
-    //         image     : node.getName(),
-    //         scaleX    : node.scaleX(),
-    //         scaleY    : node.scaleY(),
-    //         rotation  : node.rotation(),
-    //         draggable : true
-    //       }
-    //     } else {
-    //       konvaData = {
-    //         type      : "Text", 
-    //         id        : node.id(),
-    //         x         : node.x(),
-    //         y         : node.y(),
-    //         width     : node.width(),
-    //         fontSize  : node.fontSize(),
-    //         text      : node.text(),
-    //         scaleX    : node.scaleX(),
-    //         scaleY    : node.scaleY(),
-    //         rotation  : node.rotation(),
-    //         draggable : true,
-    //       }
-          
-    //     }
-
-    //     yObjects.set(node.id(), konvaData)
-    //   });
-
-
-    // });
-
+   
     tr.on('dragend', function() {
       isDrag.current = false;
-      yDocRef.current.transact(() => { // Start transaction
+      yDocRef.current.transact(() => { 
         tr.getNodes().forEach((node:any) => {
           let type = node.getClassName();
           let konvaData: any;
@@ -1073,7 +1046,6 @@ const App: FC = () => {
             };
           }
     
-          // Update yObjects within the transaction
           yObjects.set(node.id(), konvaData);
         });
       }, undoManagerObj); // Pass undoManagerObj to track this transaction for undo/redo
@@ -1179,89 +1151,9 @@ const App: FC = () => {
         }
           yObjects.set(node.id(), konvaData);
         });
-      }, undoManagerObj); // Pass undoManagerObj to track this transaction
+      }, undoManagerObj);
     });
-    // tr.on('transformend', function() {
-    //   isTrans.current = false;
-    //   let type:Shape;
-    //   let konvaData:any;
-    //   tr.getNodes().forEach((node:any)=>{
-    //     type = node.getClassName()
-    //     if (type === Shape.Line){
-    //       konvaData = {
-    //         id          : node.id(),
-    //         x           : node.x(),
-    //         y           : node.y(),
-    //         points      : node.points(),
-    //         stroke      : node.stroke(),
-    //         strokeWidth : node.strokeWidth(),
-    //         lineCap     : node.lineCap(),
-    //         lineJoin    : node.lineJoin(),
-    //         scaleX      : node.scaleX(),
-    //         scaleY      : node.scaleY(),
-    //         rotation    : node.rotation(),
-    //         draggable   : true,
-    //       }
-    //     } else if(type === Shape.RegularPolygon){
-    //       konvaData = { 
-    //         id        : node.id(),
-    //         x         : node.x(),
-    //         y         : node.y(),
-    //         sides     : node.sides(),
-    //         radius    : node.radius(),
-    //         fill      : node.fill(),
-    //         scaleX    : node.scaleX(),
-    //         scaleY    : node.scaleY(),
-    //         rotation  : node.rotation(),
-    //         draggable : true,
-    //       }
-    //     } else if (type === Shape.Circle || type === Shape.Rect){
-    //       konvaData = { 
-    //         id        : node.id(),
-    //         x         : node.x(),
-    //         y         : node.y(),
-    //         width     : node.width(),
-    //         height    : node.height(),
-    //         fill      : node.fill(),
-    //         scaleX    : node.scaleX(),
-    //         scaleY    : node.scaleY(),
-    //         rotation  : node.rotation(),
-    //         draggable : true,
-    //       } 
-    //     } else if(type === Shape.Stamp){
-    //       konvaData = {
-    //         type      : type,
-    //         id        : node.id(),
-    //         x         : node.x(),
-    //         y         : node.y(),
-    //         width     : node.width(),
-    //         height    : node.height(),
-    //         image     : node.getName(), 
-    //         scaleX    : node.scaleX(),
-    //         scaleY    : node.scaleY(),
-    //         rotation  : node.rotation(),
-    //         draggable : true
-    //       }
-    //     } else {
-    //       konvaData = {
-    //         type      : "Text", 
-    //         id        : node.id(),
-    //         x         : node.x(),
-    //         y         : node.y(),
-    //         width     : node.width(),
-    //         fontSize  : node.fontSize(),
-    //         text      : node.text(),
-    //         scaleX    : node.scaleX(),
-    //         scaleY    : node.scaleY(),
-    //         rotation  : node.rotation(),
-    //         draggable : true,
-    //       }
-    //     }
-
-    //     yObjects.set(node.id(), konvaData)
-    //   });
-
-    // });
+    
 
     tr.on('mousedown touchstart', (e) => {
       e.cancelBubble = true;
@@ -1345,33 +1237,19 @@ const App: FC = () => {
       isDrawing.current = true;
       
       newLine = createNewLine(idx, [realPointerPosition.x, realPointerPosition.y], color)
-
+      
       layer.add(newLine);
-
-      // const changeInfo = {
-      //   type: "insert",
-      //   point: [realPointerPosition.x, realPointerPosition.y],
-      //   stroke : color
-      // };
-
-      // yPens.set(idx, changeInfo);
-
+      
+      const changeInfo = {
+        type: "insert",
+        point: [realPointerPosition.x, realPointerPosition.y],
+        stroke: color
+      };
       yDocRef.current.transact(() => {
-        const changeInfo = {
-          type: "insert",
-          point: [realPointerPosition.x, realPointerPosition.y],
-          stroke: color
-        };
         yPens.set(idx, changeInfo);
-      }, undoManagerPens);
-      //undoManagerPens.undo();
-      console.log("create", undoManagerPens, undoManagerPens.undoStack);
-
-
-
-      // console.log("before undo",undoManagerPens, undoManagerPens.scope);
-      // undoManagerPens.undo();
-      // console.log("afterundo", undoManagerPens, undoManagerPens.scope);
+        //yObjects.set(idx, changeInfo);    //my add code 
+      }, undoManagerObj);
+      console.log("create", undoManagerObj, undoManagerObj.undoStack);
 
     } else if (tool === Tools.HIGHLIGHTER) {
       //형광펜 이벤트
@@ -1449,7 +1327,7 @@ const App: FC = () => {
           point: [realPointerPosition.x, realPointerPosition.y],
         };
         yPens.set(idx, changeInfo);
-      }, undoManagerPens);
+      }, undoManagerObj);
       //console.log("moving", undoManagerPens, undoManagerPens.undoStack);
 
 
@@ -1462,11 +1340,13 @@ const App: FC = () => {
       const line = lines.find((line:any) => line.intersects(pointerPosition));
       if(line){
         const lineId = line.id();
-        const changeInfo = {
-          type: "delete"
-        };
-        yPens.set(lineId.toString(), changeInfo);
-        yObjects.set(lineId.toString(), changeInfo);
+        yDocRef.current.transact(() => {
+          const changeInfo = {
+            type: "delete"
+          };
+          yPens.set(lineId.toString(), changeInfo);
+          yObjects.set(lineId.toString(), changeInfo);
+        }, undoManagerObj);
       }
 
 
@@ -1492,20 +1372,20 @@ const App: FC = () => {
     const leaveEvtFlag:boolean = e.evt.type === 'mouseleave'? true:false  
 
     if(tool === Tools.PEN){
-      isDrawing.current = false;
-      const idx = "obj_Id_"+(id).toString()
-      if(newLine == null) return;
-      const konvaData = {
-        id          : idx,
-        type        : 'Line',
-        points      : newLine.points(),
-        stroke      : newLine.stroke(),
-        strokeWidth : newLine.strokeWidth(),
-        lineCap     : newLine.lineCap(),
-        lineJoin  : newLine.lineJoin(),
-      }
-      //yObjects.set(idx, konvaData)
       yDocRef.current.transact(() => {
+        isDrawing.current = false;
+        const idx = "obj_Id_"+(id).toString()
+        if(newLine == null) return;
+        const konvaData = {
+          id          : idx,
+          type        : 'Line',
+          points      : newLine.points(),
+          stroke      : newLine.stroke(),
+          strokeWidth : newLine.strokeWidth(),
+          lineCap     : newLine.lineCap(),
+          lineJoin  : newLine.lineJoin(),
+        }
+      //yObjects.set(idx, konvaData)
         yObjects.set(idx, konvaData);
       }, undoManagerObj); 
     
@@ -1618,11 +1498,11 @@ const App: FC = () => {
     if(tool === Tools.STAMP){
       let stampImg = new window.Image();
       stampImg.src = clickedIconBtn === 'thumbUp' ? thumbUpImg : thumbDownImg;
-      let konvaData;
+      let konvaData : any;
       
-
+      
       stampImg.onload = () => {
-       
+        
         /* 클릭 위치에 스탬프 찍기 */
         const newStamp = createNewStamp(idx, shapeOptions, stampImg);
         if(clickedIconBtn){
@@ -1640,13 +1520,15 @@ const App: FC = () => {
           draggable : true
         }
         layer.add(newStamp);
-        yShape.set(idx, konvaData);
         
-        //yObjects.set(idx, konvaData);
         yDocRef.current.transact(() => {
+          yShape.set(idx, konvaData);
           yObjects.set(idx, konvaData);
-        }, undoManagerObj); // Assuming undoManagerObj is your Y.UndoManager instance for yObjects
-      
+        }, undoManagerObj);
+        console.log(undoManagerObj.undoStack);
+        
+        
+        
       }
       
       id = uuidv4();
@@ -1654,85 +1536,84 @@ const App: FC = () => {
     }
     else if (tool === Tools.SHAPE){
       let newShape;
-      let konvaData;
-
+      let konvaData : any;
+      
       if (clickedIconBtn === 'rect'){
-        newShape = createNewRect(idx, shapeOptions, defaultColor)
-
-        konvaData = {
-          id        : newShape.id(),
-          type      : Shape.Rect,
-          x         : newShape.x(),
-          y         : newShape.y(),
-          width     : newShape.width(), 
-          height    : newShape.height(),
-          fill      : defaultColor,
-          userId    : userId,
-          draggable : true,
+          newShape = createNewRect(idx, shapeOptions, defaultColor)
+          
+          konvaData = {
+            id        : newShape.id(),
+            type      : Shape.Rect,
+            x         : newShape.x(),
+            y         : newShape.y(),
+            width     : newShape.width(), 
+            height    : newShape.height(),
+            fill      : defaultColor,
+            userId    : userId,
+            draggable : true,
+          }
         }
-      }
-      else if (clickedIconBtn === 'cir') {
-        newShape = createNewCir(idx, shapeOptions, defaultColor)
-
-        konvaData = {
-          id        : newShape.id(),
-          type      : Shape.Circle,
-          x         : newShape.x(),
-          y         : newShape.y(),
-          width     : newShape.width(), 
-          height    : newShape.height(),
-          fill      : defaultColor,
-          userId    : userId,
-          draggable : true
+        else if (clickedIconBtn === 'cir') {
+          newShape = createNewCir(idx, shapeOptions, defaultColor)
+          
+          konvaData = {
+            id        : newShape.id(),
+            type      : Shape.Circle,
+            x         : newShape.x(),
+            y         : newShape.y(),
+            width     : newShape.width(), 
+            height    : newShape.height(),
+            fill      : defaultColor,
+            userId    : userId,
+            draggable : true
+          }
         }
-      }
-      else if (clickedIconBtn === 'tri') {
-        newShape = createNewTri(idx, shapeOptions, 'black')
-        konvaData = {
-          id        : newShape.id(),
-          type      : Shape.RegularPolygon,
-          x         : newShape.x(),
-          y         : newShape.y(),
-          sides     : newShape.sides(),
-          radius    : newShape.radius(),
-          fill      : defaultColor,
-          userId    : userId,
-          draggable : true
+        else if (clickedIconBtn === 'tri') {
+          newShape = createNewTri(idx, shapeOptions, 'black')
+          konvaData = {
+            id        : newShape.id(),
+            type      : Shape.RegularPolygon,
+            x         : newShape.x(),
+            y         : newShape.y(),
+            sides     : newShape.sides(),
+            radius    : newShape.radius(),
+            fill      : defaultColor,
+            userId    : userId,
+            draggable : true
+          }
         }
-      }
-      layer.add(newShape);
-
-      yShape.set(idx, konvaData);
+        layer.add(newShape);
+        
+        yDocRef.current.transact(() => {
+          yShape.set(idx, konvaData);
+          yObjects.set(idx, konvaData);
+        }, undoManagerObj);
+      console.log(undoManagerObj.undoStack, yObjects);    //TEST
     
-      //yObjects.set(idx, konvaData)
-      yDocRef.current.transact(() => {
-        yObjects.set(idx, konvaData);
-      }, undoManagerObj); // Assuming undoManagerObj is your Y.UndoManager instance for yObjects
     
-
 
       id = uuidv4();
       setTool(Tools.CURSOR);
     } 
     else if (tool === Tools.TEXT) {
       
-      var textNode:any = createNewText(idx, realPointerPosition, "");
-      const konvaData = {
-        id       : textNode.id(),
-        text     : textNode.text(),
-        x        : textNode.x(),
-        y        : textNode.y(),
-        fontSize: textNode.fontSize(),
-        draggable: true,
-        width: textNode.width(),
-        userId    : userId,
-      }
-      layer.add(textNode);
-
-      
-      yText.set(idx, konvaData);
-      //yObjects.set(idx, konvaData)
       yDocRef.current.transact(() => {
+        var textNode:any = createNewText(idx, realPointerPosition, "");
+        const konvaData = {
+          id       : textNode.id(),
+          text     : textNode.text(),
+          x        : textNode.x(),
+          y        : textNode.y(),
+          fontSize: textNode.fontSize(),
+          draggable: true,
+          width: textNode.width(),
+          userId    : userId,
+        }
+        layer.add(textNode);
+
+        
+        yText.set(idx, konvaData);
+      //yObjects.set(idx, konvaData)
         yObjects.set(idx, konvaData);
       }, undoManagerObj); // Assuming undoManagerObj is your Y.UndoManager instance for yObjects
     
@@ -2055,26 +1936,25 @@ const App: FC = () => {
   }
 
   const handleUndo = () => {
-    console.log("before undo", undoManagerObj, undoManagerObj.undoStack, undoManagerObj.undoStack.length);
+    //console.log(yObjects);
+    console.log("before undo", undoManagerObj, undoManagerObj.undoStack, undoManagerObj.undoStack.length, yObjects);
     undoManagerObj.undo();
-    //console.log(yPens, yPens.size);
-    //undoManagerPens.undo();
-    console.log("after undo", undoManagerObj, undoManagerObj.undoStack, undoManagerObj.undoStack.length);
-    //console.log(undoManagerPens, yPens, yPens.size);
-    //console.log(undoManagerPens.undoing, undoManagerPens.undoStack);
-   
+
+    yObjects.observe((event) => {
+      console.log("undo then change event", event);
+    })
+    console.log("after undo", undoManagerObj, undoManagerObj.undoStack, undoManagerObj.undoStack.length, yObjects);
   }
+
   const handleRedo = () => {
+    console.log(yObjects);
     console.log("before redo", undoManagerObj, undoManagerObj.redoStack, undoManagerObj.undoStack.length);
     undoManagerObj.redo();
-    //console.log(yPens, yPens.size);
-    //undoManagerPens.undo();
+
     console.log("after redo", undoManagerObj, undoManagerObj.redoStack, undoManagerObj.undoStack.length);
-    
-    //undoManagerPens.redo();
-    console.log(undoManagerPens, yPens);
-    console.log(undoManagerPens.redoing, undoManagerPens.redoStack);
   }
+
+  
 
 
   return (
