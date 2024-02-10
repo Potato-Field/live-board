@@ -19,6 +19,7 @@ import NavBarRoom from './component/NavBarRoom';
 import thumbUpImg from './assets/thumbup.png';
 import thumbDownImg from './assets/thumbdown.png'
 
+import { CssBaseline } from '@mui/material';
 import "./index.css"
 
 //-----------CRDT---------------------
@@ -38,8 +39,6 @@ let multiSelectBlocker = {
 }
 
 let groupTr:Konva.Transformer | null = null;
-
-/* 전체 포스트잇 저장 배열 */
 
 //Container Components
 const App:FC = () => {
@@ -169,13 +168,13 @@ const App:FC = () => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current);
 
     /* 본인 로컬에서 작동 */
-    // const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
 
     /* 배포시 사용 */
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
+    // const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
     
       
 
@@ -2046,6 +2045,8 @@ const App:FC = () => {
   }
 
   return (
+    <>
+    <CssBaseline />
     <div style={{position: "relative", width: "100%"}}>
 
       <NavBarRoom stageRef = {stageRef} />
@@ -2075,6 +2076,7 @@ const App:FC = () => {
       </Stage>
       <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick}/>
     </div>
+    </>
   );
 }
 
