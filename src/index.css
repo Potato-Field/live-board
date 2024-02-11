@@ -137,3 +137,30 @@ body {
   background-size: 100% 100%;
   pointer-events: none; /* 이 div가 마우스 이벤트를 방해하지 않도록 설정 */
 }
+
+/* 영역 구분 위해 색상 임의로 지정해놓음. 곧 수정할거임. */
+
+/* #BtnGroupContained {
+  background-color: #d6a6a6;
+} */
+
+#BtnGroupCursor {
+  background-color: rgba(218, 215, 215, 0.571);
+}
+
+#BtnGroupTools {
+  background-color: #727272;
+}
+
+#BtnGroupColors{
+  background-color: rgba(160, 160, 160, 0.979);
+}
+
+/* 아이콘 */
+#BtnGroupTools svg{
+  color: white;
+}
+
+/* #BtnGroupContained button:focus{
+  background-color: rgb(0, 0, 0);
+} */

@@ -16,7 +16,6 @@ import { ButtonGroup, IconButton, Tooltip } from '@mui/material';
 import UndoRoundedIcon from '@mui/icons-material/UndoRounded';
 import RedoRoundedIcon from '@mui/icons-material/RedoRounded';
 import CircleIcon from '@mui/icons-material/Circle';
-
 import { faPen, faHighlighter } from '@fortawesome/free-solid-svg-icons'
 
 import styles from './ButtonCustomGroup.module.css';
@@ -43,33 +42,37 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
 
     return(
         <>
-            <ButtonGroup color='primary' variant="contained" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", maxWidth: "100%", zIndex: '9999'}}>
-                <Tooltip arrow placement="top" title="Undo">
-                    <IconButton className={styles.BtnGroupContainer}><UndoRoundedIcon /></IconButton>
-                </Tooltip>
-                <Tooltip arrow placement="top" title="Redo">
-                    <IconButton className={styles.BtnGroupContainer}><RedoRoundedIcon /></IconButton>
-                </Tooltip>
+            <ButtonGroup id='BtnGroupContained' variant="contained" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", maxWidth: "100%"}}>
+                <ButtonGroup id='BtnGroupCursor'>
+                    <Tooltip arrow placement="top" title="Undo">
+                        <IconButton className={styles.BtnGroupContainer}><UndoRoundedIcon /></IconButton>
+                    </Tooltip>
+                    <Tooltip arrow placement="top" title="Redo">
+                        <IconButton className={styles.BtnGroupContainer}><RedoRoundedIcon /></IconButton>
+                    </Tooltip>
+                </ButtonGroup>
 
-                <ButtonGroup className='cursorBox BtnGroup' orientation="vertical" style={{margin:0}}>
+                <ButtonGroup className='cursorBox BtnGroup' orientation="vertical">
                     <Cursor props = {Tools.CURSOR}/>
                     <Hand props = {Tools.HAND}/>
                 </ButtonGroup>
 
-                <Text   props = {Tools.TEXT}/>
-                <Pen    props = {Tools.PEN} icon = {faPen}/>
-                <Pen    props = {Tools.HIGHLIGHTER} icon = {faHighlighter}/>
-                <Eraser props = {Tools.ERASER} />
-                <PostIt props={Tools.POSTIT}/>
+                <ButtonGroup id="BtnGroupTools">
+                    <Text   props = {Tools.TEXT}/>
+                    <Pen    props = {Tools.PEN} icon = {faPen}/>
+                    <Pen    props = {Tools.HIGHLIGHTER} icon = {faHighlighter}/>
+                    <Eraser props = {Tools.ERASER} />
+                    <PostIt props={Tools.POSTIT}/>
 
-                <ButtonGroup className='shapeBox'>
-                    <Stamp handleIconBtnClick={handleIconBtnClick} props={Tools.STAMP}/>
-                    <Shape handleIconBtnClick={handleIconBtnClick} props={Tools.SHAPE}/>
+                    <ButtonGroup className='shapeBox'>
+                        <Stamp handleIconBtnClick={handleIconBtnClick} props={Tools.STAMP}/>
+                        <Shape handleIconBtnClick={handleIconBtnClick} props={Tools.SHAPE}/>
+                    </ButtonGroup>
+
+                    <MindMap props = {Tools.MINDMAP}/>
                 </ButtonGroup>
 
-                <MindMap props = {Tools.MINDMAP}/>
-
-                <ButtonGroup className='colorBox'  orientation="vertical">
+                <ButtonGroup id='BtnGroupColors' orientation="vertical">
                     <ButtonGroup>
                         <Tooltip arrow placement="top" title="Black">
                             <IconButton onClick={()=>{handleColorClick('#000000')}}><CircleIcon className={styles.circle} style={{color: '000000'}}/></IconButton>
@@ -91,7 +94,7 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
                         </Tooltip>
                         <Tooltip arrow placement="top" title="Custom">
                             <IconButton id='customColorBtn'>
-                                <input type="color" id={styles.customColor} className={styles.circle} name="customColor" value={currentColor} onChange={handleColorClick} style={{borderRadius: '50%'}}/>
+                                <input type="color" id={styles.customColor} className={styles.circle} name="customColor" value={currentColor} onChange={handleColorClick}/>
                             </IconButton>
                         </Tooltip>
                     </ButtonGroup>
