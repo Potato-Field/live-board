@@ -1,6 +1,8 @@
-import Button from '@mui/material/Button';
 import { useTool } from './ToolContext';
 import { Tools } from './Tools';
+import { IconButton, Tooltip } from '@mui/material';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSitemap } from '@fortawesome/free-solid-svg-icons';
 
 interface MindMapProps {
     props: Tools;
@@ -21,8 +23,11 @@ export default function MindMap({ props }:MindMapProps){
 
     return(
         <>
-            <Button id={componentElem.id} onClick={()=>{setTool(props)}}>{componentElem.name}</Button>
+        <Tooltip arrow placement="top" title="Mind map">
+            <IconButton id={componentElem.id} onClick={()=>{setTool(props)}}>
+                <FontAwesomeIcon icon={faSitemap} size='xl' />
+            </IconButton>
+        </Tooltip>
         </>
     );
-
 }

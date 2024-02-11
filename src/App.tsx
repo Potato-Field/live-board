@@ -19,6 +19,7 @@ import NavBarRoom from './component/NavBarRoom';
 import thumbUpImg from './assets/thumbup.png';
 import thumbDownImg from './assets/thumbdown.png'
 
+import { CssBaseline } from '@mui/material';
 import "./index.css"
 
 //-----------CRDT---------------------
@@ -38,8 +39,6 @@ let multiSelectBlocker = {
 }
 
 let groupTr:Konva.Transformer | null = null;
-
-/* 전체 포스트잇 저장 배열 */
 
 //Container Components
 const App:FC = () => {
@@ -2048,6 +2047,7 @@ const App:FC = () => {
   }
 
   return (
+    <>
     <div style={{position: "relative", width: "100%"}}>
 
       <NavBarRoom stageRef = {stageRef} />
@@ -2070,6 +2070,7 @@ const App:FC = () => {
       >
       
         <Layer></Layer>
+
         <>
           <MindMap stageRef = {stageRef} toolRef={toolRef} yDocRef = {yDocRef}/>
         </>
@@ -2077,6 +2078,7 @@ const App:FC = () => {
       </Stage>
       <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick}/>
     </div>
+    </>
   );
 }
 

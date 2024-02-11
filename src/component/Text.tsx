@@ -1,8 +1,8 @@
-import Button from '@mui/material/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFont } from '@fortawesome/free-solid-svg-icons'
 import { useTool } from './ToolContext';
 import { Tools } from './Tools';
+import { IconButton, Tooltip } from '@mui/material';
 
 interface TextProps {
     props: Tools;
@@ -23,9 +23,11 @@ export default function Text({ props }:TextProps){
 
     return(
         <>
-            <Button id={componentElem.id} onClick={()=>{setTool(props)}}>
-                <FontAwesomeIcon icon={faFont} size='2xl' />
-            </Button>
+        <Tooltip arrow placement="top" title="Text">
+            <IconButton id={componentElem.id} onClick={()=>{setTool(props)}}>
+                <FontAwesomeIcon icon={faFont} size='xl' />
+            </IconButton>
+        </Tooltip>
         </>
     );
 }

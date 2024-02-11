@@ -1,7 +1,7 @@
 import { Tools } from './Tools';
 import { useTool } from './ToolContext';
-import IconButton from '@mui/material/Button';
 import StickyNote2RoundedIcon from '@mui/icons-material/StickyNote2Rounded';
+import { IconButton, Tooltip } from '@mui/material';
 
 interface PostItProps {
     // handleIconBtnClick: (e: any) => void;
@@ -22,10 +22,12 @@ export default function PostIt({ props }:PostItProps) {
     }
 
     return(
-        <>
+        <>        
+        <Tooltip arrow placement="top" title="Sticky note">
             <IconButton id={componentElem.id} onClick={()=>{setTool(props);}}>
                 <StickyNote2RoundedIcon fontSize='large'/>
             </IconButton>
+        </Tooltip>
         </>                                                               
     );
 }
