@@ -19,7 +19,6 @@ import NavBarRoom from './component/NavBarRoom';
 import thumbUpImg from './assets/thumbup.png';
 import thumbDownImg from './assets/thumbdown.png'
 
-import { CssBaseline } from '@mui/material';
 import "./index.css"
 
 //-----------CRDT---------------------
@@ -49,7 +48,6 @@ const App:FC = () => {
   
   const POSTIT_MIN_WIDTH = 250;  // init size
   const POSTIT_MIN_HEIGHT = 300; // init size
-  const [textHeight] = useState<number>(POSTIT_MIN_HEIGHT); // 포스트잇 텍스트 높이
 
   /*
    * [CRDT] 
@@ -943,7 +941,7 @@ const App:FC = () => {
       name: 'postItText',
       ...postItOptions, // x, y
       width: POSTIT_MIN_WIDTH,
-      height: textHeight, // POSTIT_MIN_HEIGHT
+      height: POSTIT_MIN_HEIGHT,
       text: text,
       fontSize: 20,
       padding: 15,
@@ -1012,8 +1010,7 @@ const App:FC = () => {
       textarea.style.position = 'absolute';
       textarea.style.top = areaPosition.y + 'px';
       textarea.style.left = areaPosition.x + 'px';
-      textarea.style.width = postItText.width() - postItText.padding() * 2 + 'px';
-      // textarea.style.height = PostItText.height() - PostItText.padding() * 2 + 'px';
+      textarea.style.width = postItText.width() + 'px';
       textarea.style.fontSize = postItText.fontSize() + 'px';
       textarea.style.border = 'none';
       textarea.style.padding = '15px';
@@ -1045,9 +1042,6 @@ const App:FC = () => {
       transform += 'translateY(-' + px + 'px)';
       textarea.style.transform = transform;
       
-      textarea.style.height = 'auto';
-      textarea.style.height = textarea.scrollHeight + 3 + 'px';
-
       //creatNewTextArea End-------------------------------
 
       //Text 동기화 시작---------------------------
@@ -1117,15 +1111,25 @@ const App:FC = () => {
 
       /* 입력되는 텍스트 양에 따른 rect height 증가  */
       textarea.addEventListener('keydown', function (e: any) {
-        let scale = postItText.getAbsoluteScale().x;
-        setTextareaWidth(postItText.width() * scale - postItText.padding() * 2);
+        setTextareaWidth(postItText.width());
         textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + postItText.fontSize() + 'px';
+        // console.log(textarea.style.height)
        
-        // todo: PostItRect height 증가
-        // console.log(textarea.style.height);
-        // let textareaHeight = (parseInt(textarea.style.height.slice(0, -2)) as any);
-        // console.log(textareaHeight);
+        const text = postItGroup.findOne('.postItText')
+        const rect = postItGroup.findOne('.postItRect')
+
+        let textareaHeight = (parseInt(textarea.style.height.slice(0, -2)) as any); // 'px' 제거
+        
+        if (text && rect) {
+          text.setAttrs({
+            height: Math.max(textareaHeight, text.attrs.height),
+          });
+
+          rect.setAttrs({
+            height: text.height(),
+          });
+        }
 
         const key = e.key.toLowerCase();
         if (key == 'esc' || key == 'escape') {
@@ -1133,7 +1137,6 @@ const App:FC = () => {
           postItText.show();
           textarea.remove();
           stageRef.current.off('mouseup', handleOutsideClick);
-
 
           const konvaData = {
             type  : Shape.Group,
