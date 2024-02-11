@@ -48,7 +48,6 @@ const App:FC = () => {
   
   const POSTIT_MIN_WIDTH = 250;  // init size
   const POSTIT_MIN_HEIGHT = 300; // init size
-  const [textHeight] = useState<number>(POSTIT_MIN_HEIGHT); // 포스트잇 텍스트 높이
 
   /*
    * [CRDT] 
@@ -167,13 +166,13 @@ const App:FC = () => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current);
 
     /* 본인 로컬에서 작동 */
-    // const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
 
     /* 배포시 사용 */
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
+    // const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
     
       
 
@@ -942,7 +941,7 @@ const App:FC = () => {
       name: 'postItText',
       ...postItOptions, // x, y
       width: POSTIT_MIN_WIDTH,
-      height: textHeight, // POSTIT_MIN_HEIGHT
+      height: POSTIT_MIN_HEIGHT,
       text: text,
       fontSize: 20,
       padding: 15,
@@ -1006,19 +1005,16 @@ const App:FC = () => {
       var textarea = document.createElement('textarea');
       document.body.appendChild(textarea);
       
-
-      //textarea.value = PostItText.text();
       textarea.style.position = 'absolute';
       textarea.style.top = areaPosition.y + 'px';
       textarea.style.left = areaPosition.x + 'px';
-      textarea.style.width = postItText.width() - postItText.padding() * 2 + 'px';
-      // textarea.style.height = PostItText.height() - PostItText.padding() * 2 + 'px';
+      textarea.style.width = postItText.width() + 'px';
+      textarea.style.height = postItText.height() + 'px';
       textarea.style.fontSize = postItText.fontSize() + 'px';
       textarea.style.border = 'none';
       textarea.style.padding = '15px';
       textarea.style.margin = '0px';
       textarea.style.overflow = 'hidden';
-      // textarea.style.background = 'gray';
       textarea.style.background = 'none';
       textarea.style.outline = 'none';
       textarea.style.resize = 'none';
@@ -1044,9 +1040,6 @@ const App:FC = () => {
       transform += 'translateY(-' + px + 'px)';
       textarea.style.transform = transform;
       
-      textarea.style.height = 'auto';
-      textarea.style.height = textarea.scrollHeight + 3 + 'px';
-
       //creatNewTextArea End-------------------------------
 
       //Text 동기화 시작---------------------------
@@ -1116,15 +1109,24 @@ const App:FC = () => {
 
       /* 입력되는 텍스트 양에 따른 rect height 증가  */
       textarea.addEventListener('keydown', function (e: any) {
-        let scale = postItText.getAbsoluteScale().x;
-        setTextareaWidth(postItText.width() * scale - postItText.padding() * 2);
+        setTextareaWidth(postItText.width());
         textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + postItText.fontSize() + 'px';
        
-        // todo: PostItRect height 증가
-        // console.log(textarea.style.height);
-        // let textareaHeight = (parseInt(textarea.style.height.slice(0, -2)) as any);
-        // console.log(textareaHeight);
+        const text = postItGroup.findOne('.postItText')
+        const rect = postItGroup.findOne('.postItRect')
+
+        let textareaHeight = (parseInt(textarea.style.height.slice(0, -2)) as any); // 'px' 제거
+        
+        if (text && rect) {
+          text.setAttrs({
+            height: Math.max(textareaHeight, text.attrs.height),
+          });
+
+          rect.setAttrs({
+            height: text.height(),
+          });
+        }
 
         const key = e.key.toLowerCase();
         if (key == 'esc' || key == 'escape') {
@@ -1132,7 +1134,6 @@ const App:FC = () => {
           postItText.show();
           textarea.remove();
           stageRef.current.off('mouseup', handleOutsideClick);
-
 
           const konvaData = {
             type  : Shape.Group,
