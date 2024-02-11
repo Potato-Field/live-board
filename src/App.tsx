@@ -215,12 +215,26 @@ const App:FC = () => {
     ySelectedNodes.observe((event) =>{
       event.changes.keys.forEach((change, key)=>{
         if(key == userId.current) return;
+        const oldGroup:Konva.Group | undefined = stageRef.current.children[0].findOne(`#area-group-${key}`)
         if(change.action == 'delete'){
-          const oldGroup = stageRef.current.children[0].findOne(`#area-group-${key}`)
           if(!oldGroup) return;
           oldGroup.remove();
+        }   
+        else if(change.action == 'update'){
+          if(!oldGroup) return;
+          const userAreaData:any = ySelectedNodes.get(key);
+          oldGroup.getChildren().forEach((node:any)=>{
+            node.x(userAreaData.x);
+            node.y(userAreaData.y);
+            if(node.getClassName() == Shape.Rect){
+              node.width(userAreaData.width);
+              node.height(userAreaData.height);
+            }
 
-        } else {
+          })
+        }
+        else if(change.action == 'add'){
+          if(oldGroup) return;
           const userAreaData:any = ySelectedNodes.get(key);
           createNewUserArea(key, userAreaData);
         }
@@ -1249,7 +1263,15 @@ const App:FC = () => {
     tr.on('dragstart', function() {
       isDrag.current = true;
     });
-    tr.on('dragmove', function() {
+    tr.on('dragmove', function(e:any) {
+      //마우스 동기화
+      const mousePosition = { x: e.evt.clientX, y: e.evt.clientY, selectTool : toolRef.current };
+      if(userId.current){
+        yMousePositions.set(userId.current, mousePosition);
+      }
+
+      
+      
       tr.getNodes().forEach((node:any)=>{    
         const changeInfo = {
           idx : node.id(),
@@ -1259,6 +1281,18 @@ const App:FC = () => {
         }
         yMove.set(node.id(), changeInfo);
       });
+      
+      const selectionRect = tr.getClientRect();
+
+      // 선택 영역 정보를 절대 좌표계로 변환하여 저장
+      const absoluteSelectionInfo = {
+        x: selectionRect.x / stageRef.current.scaleX(),
+        y: selectionRect.y / stageRef.current.scaleY(),
+        width: selectionRect.width / stageRef.current.scaleX(),
+        height: selectionRect.height / stageRef.current.scaleY(),
+      };
+
+      ySelectedNodes.set(userId.current, absoluteSelectionInfo);
     });
 
     tr.on('dragend', function() {
@@ -1423,6 +1457,19 @@ const App:FC = () => {
           rotation : node.rotation(),
           userId : userId.current
         }
+
+        const selectionRect = tr.getClientRect();
+
+        // 선택 영역 정보를 절대 좌표계로 변환하여 저장
+        const absoluteSelectionInfo = {
+          x: selectionRect.x / stageRef.current.scaleX(),
+          y: selectionRect.y / stageRef.current.scaleY(),
+          width: selectionRect.width / stageRef.current.scaleX(),
+          height: selectionRect.height / stageRef.current.scaleY(),
+        };
+  
+        ySelectedNodes.set(userId.current, absoluteSelectionInfo);
+
         yTrans.set(node.id(), changeInfo); 
       });
 
