@@ -69,28 +69,28 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
 
                 <MindMap props = {Tools.MINDMAP}/>
 
-                <ButtonGroup className='shapeBox'  orientation="vertical" style={{margin:0}}>
-                    <ButtonGroup className='colorBox'>
+                <ButtonGroup className='colorBox'  orientation="vertical">
+                    <ButtonGroup>
                         <Tooltip arrow placement="top" title="Black">
-                            <IconButton className={styles.colorBtn} onClick={()=>{handleColorClick('#000000')}}><CircleIcon className={styles.circle} style={{color: '000000'}}/></IconButton>
+                            <IconButton onClick={()=>{handleColorClick('#000000')}}><CircleIcon className={styles.circle} style={{color: '000000'}}/></IconButton>
                         </Tooltip>
                         <Tooltip arrow placement="top" title="Red">
-                            <IconButton className={styles.colorBtn} onClick={()=>{handleColorClick('#E7464B')}}><CircleIcon className={styles.circle} style={{color: 'E7464B'}}/></IconButton>
+                            <IconButton onClick={()=>{handleColorClick('#E7464B')}}><CircleIcon className={styles.circle} style={{color: 'E7464B'}}/></IconButton>
                         </Tooltip>
                         <Tooltip arrow placement="top" title="Blue">
-                            <IconButton className={styles.colorBtn} onClick={()=>{handleColorClick('#3B7EF2')}}><CircleIcon className={styles.circle} style={{color: '3B7EF2'}}/></IconButton>
+                            <IconButton onClick={()=>{handleColorClick('#3B7EF2')}}><CircleIcon className={styles.circle} style={{color: '3B7EF2'}}/></IconButton>
                         </Tooltip>
                     </ButtonGroup>
-                    <ButtonGroup  className={styles.BtnGroupContainer} style={{margin:0}}>
+                    <ButtonGroup>
                         <Tooltip arrow placement="top" title="Green">
-                            <IconButton className={styles.colorBtn} onClick={()=>{handleColorClick('#79D375')}}><CircleIcon className={styles.circle} style={{color: '79D375'}}/></IconButton>
+                            <IconButton onClick={()=>{handleColorClick('#79D375')}}><CircleIcon className={styles.circle} style={{color: '79D375'}}/></IconButton>
                         </Tooltip>
 
                         <Tooltip arrow placement="top" title="Yellow">
-                            <IconButton className={styles.colorBtn} onClick={()=>{handleColorClick('#F7D054')}}><CircleIcon className={styles.circle} style={{color: 'F7D054'}}/></IconButton>
+                            <IconButton onClick={()=>{handleColorClick('#F7D054')}}><CircleIcon className={styles.circle} style={{color: 'F7D054'}}/></IconButton>
                         </Tooltip>
                         <Tooltip arrow placement="top" title="Custom">
-                            <IconButton className={styles.colorBtn}>
+                            <IconButton id='customColorBtn'>
                                 <input type="color" id={styles.customColor} className={styles.circle} name="customColor" value={currentColor} onChange={handleColorClick} style={{borderRadius: '50%'}}/>
                             </IconButton>
                         </Tooltip>
