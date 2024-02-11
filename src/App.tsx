@@ -166,13 +166,13 @@ const App:FC = () => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current);
 
     /* 본인 로컬에서 작동 */
-    // const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
 
     /* 배포시 사용 */
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
+    // const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
     
       
 
@@ -1005,18 +1005,16 @@ const App:FC = () => {
       var textarea = document.createElement('textarea');
       document.body.appendChild(textarea);
       
-
-      //textarea.value = PostItText.text();
       textarea.style.position = 'absolute';
       textarea.style.top = areaPosition.y + 'px';
       textarea.style.left = areaPosition.x + 'px';
       textarea.style.width = postItText.width() + 'px';
+      textarea.style.height = postItText.height() + 'px';
       textarea.style.fontSize = postItText.fontSize() + 'px';
       textarea.style.border = 'none';
       textarea.style.padding = '15px';
       textarea.style.margin = '0px';
       textarea.style.overflow = 'hidden';
-      // textarea.style.background = 'gray';
       textarea.style.background = 'none';
       textarea.style.outline = 'none';
       textarea.style.resize = 'none';
@@ -1114,7 +1112,6 @@ const App:FC = () => {
         setTextareaWidth(postItText.width());
         textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + postItText.fontSize() + 'px';
-        // console.log(textarea.style.height)
        
         const text = postItGroup.findOne('.postItText')
         const rect = postItGroup.findOne('.postItRect')
