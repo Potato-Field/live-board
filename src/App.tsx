@@ -341,7 +341,7 @@ const App:FC = () => {
         if(node) return;
         if(konvaData == null) return;
         if(konvaData.type == Shape.Line){
-          console.log(konvaData.penStyle)
+          
           const newLine =  createNewLine(index, konvaData.points, konvaData.stroke, konvaData.penStyle)
           newLine.visible(false)
           stageRef.current.getLayers()[0].add(newLine);
@@ -977,6 +977,7 @@ const App:FC = () => {
     postItGroup.add(postItRect);
     postItGroup.add(postItText);
     postItGroup.add(initText);
+    
     if(text !== ""){
       initText.hide();
     }
@@ -1207,9 +1208,7 @@ const App:FC = () => {
 
       if (groupTr === null) {
         createNewTr();
-      } 
-
-      if(groupTr && groupTr.nodes().length == 0) {          
+      } else {          
         groupTr.nodes([e.target]);  // e.target: PostItText
       }
       
@@ -1415,7 +1414,6 @@ const App:FC = () => {
     });
     tr.on('transform', function() {
       tr.getNodes().forEach((node:any)=>{        
-
         const changeInfo = {
           idx      : node.id(),
           x        : node.x(),
@@ -1776,7 +1774,7 @@ const App:FC = () => {
 
         let selected:any[] = [];
         let locksData:string[] = [];
-        
+        let rotationFlag = true;
         if(groupTr == null){
           createNewTr(); 
         }
@@ -1789,11 +1787,15 @@ const App:FC = () => {
               node.addName("locked");
               selected.push(node);
               locksData.push(nodeId);
+              if(node.getClassName() == Shape.Group){
+                rotationFlag = false;
+              }
             }
           })
-
           if(selected.length > 0){
             groupTr.nodes(selected);
+            groupTr.rotateEnabled(rotationFlag);
+            
             const selectionRect = groupTr.getClientRect();
 
             // 선택 영역 정보를 절대 좌표계로 변환하여 저장
