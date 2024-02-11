@@ -19,7 +19,6 @@ import NavBarRoom from './component/NavBarRoom';
 import thumbUpImg from './assets/thumbup.png';
 import thumbDownImg from './assets/thumbdown.png'
 
-import { CssBaseline } from '@mui/material';
 import "./index.css"
 
 //-----------CRDT---------------------
