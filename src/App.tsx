@@ -123,8 +123,6 @@ const App:FC = () => {
     return color;
   }
   
-
-
   function updateMousePositionOnScreen(userId:string, mousePosition:any) {
     let mouseIcon = document.getElementById(`mouse-${userId}`);
     if (!mouseIcon) {
@@ -169,10 +167,10 @@ const App:FC = () => {
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     /* 병철 로컬에서 작동 */
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
 
     /* 배포시 사용 */
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
     
       
 
@@ -230,11 +228,14 @@ const App:FC = () => {
           if(!oldGroup) return;
           const userAreaData:any = ySelectedNodes.get(key);
           oldGroup.getChildren().forEach((node:any)=>{
-            node.x(userAreaData.x);
-            node.y(userAreaData.y);
             if(node.getClassName() == Shape.Rect){
               node.width(userAreaData.width);
               node.height(userAreaData.height);
+              node.x(userAreaData.x);
+              node.y(userAreaData.y);
+            }else {
+              node.x(userAreaData.x);
+              node.y(userAreaData.y-23);
             }
 
           })
@@ -470,7 +471,7 @@ const App:FC = () => {
     const newRect = new Konva.Rect({
       id : `area-${paramUserId}`,
       stroke: 'rgba(255,0,0,0.5)',
-      strokeWidth : 3,
+      strokeWidth : 7,
       visible : true,
     })
     
@@ -500,7 +501,7 @@ const App:FC = () => {
     newRect.height(pos.height)
     
     nameTag.x(pos.x)
-    nameTag.y(pos.y) 
+    nameTag.y(pos.y-23) 
     
     stageRef.current.getLayers()[0].add(groups);
     
@@ -1310,16 +1311,13 @@ const App:FC = () => {
       });
       
       const selectionRect = tr.getClientRect();
-      const rotationFlag = tr.rotateEnabled();
-      // const scale = stageRef.current.scaleX(); // 현재 스케일
-      // const position = stageRef.current.position(); // 현재 위치 
 
       // 선택 영역 정보를 절대 좌표계로 변환하여 저장
       const absoluteSelectionInfo = {
         x: (selectionRect.x - position.x) / scale,
-        y: rotationFlag?(selectionRect.y + tr.rotateAnchorOffset() - position.y) / scale :(selectionRect.y - position.y) / scale ,
+        y: (selectionRect.y - position.y) / scale ,
         width: selectionRect.width / stageRef.current.scaleX(),
-        height: rotationFlag?(selectionRect.height - tr.rotateAnchorOffset()) / stageRef.current.scaleY():selectionRect.height / stageRef.current.scaleY(),
+        height: selectionRect.height / stageRef.current.scaleY(),
       };
       
 
@@ -1489,23 +1487,23 @@ const App:FC = () => {
           userId : userId.current
         }
 
-        const selectionRect = tr.getClientRect();
-        const rotationFlag = tr.rotateEnabled();
-        const scale = stageRef.current.scaleX(); // 현재 스케일
-        const position = stageRef.current.position(); // 현재 위치 
-  
-        // 선택 영역 정보를 절대 좌표계로 변환하여 저장
-        const absoluteSelectionInfo = {
-          x: (selectionRect.x - position.x) / scale,
-          y: rotationFlag?(selectionRect.y + tr.rotateAnchorOffset() - position.y) / scale :(selectionRect.y - position.y) / scale ,
-          width: selectionRect.width / stageRef.current.scaleX(),
-          height: rotationFlag?(selectionRect.height - tr.rotateAnchorOffset()) / stageRef.current.scaleY():selectionRect.height / stageRef.current.scaleY(),
-        };
-  
-        ySelectedNodes.set(userId.current, absoluteSelectionInfo);
-
+        
         yTrans.set(node.id(), changeInfo); 
       });
+      const selectionRect = tr.getClientRect();
+      const scale = stageRef.current.scaleX(); // 현재 스케일
+      const position = stageRef.current.position(); // 현재 위치 
+      
+      // 선택 영역 정보를 절대 좌표계로 변환하여 저장
+      const absoluteSelectionInfo = {
+        x: (selectionRect.x - position.x) / scale,
+        y: (selectionRect.y - position.y) / scale ,
+        width: selectionRect.width / stageRef.current.scaleX(),
+        height: selectionRect.height / stageRef.current.scaleY(),
+        
+      };
+      
+      ySelectedNodes.set(userId.current, absoluteSelectionInfo);
 
     });
     tr.on('transformend', function() {
@@ -1894,10 +1892,10 @@ const App:FC = () => {
 
             // 선택 영역 정보를 절대 좌표계로 변환하여 저장
             const absoluteSelectionInfo = {
-              x: (selectionRect.x - position.x) / scale,
-              y: rotationFlag?(selectionRect.y + groupTr.rotateAnchorOffset() - position.y) / scale :(selectionRect.y - position.y) / scale ,
-              width: selectionRect.width / stageRef.current.scaleX(),
-              height: rotationFlag?(selectionRect.height - groupTr.rotateAnchorOffset()) / stageRef.current.scaleY():selectionRect.height / stageRef.current.scaleY(),
+              x     : (selectionRect.x - position.x) / scale,
+              y     : (selectionRect.y - position.y) / scale ,
+              width : selectionRect.width / stageRef.current.scaleX(),
+              height: selectionRect.height / stageRef.current.scaleY(),
             };
             
             ySelectedNodes.set(userId.current, absoluteSelectionInfo);
