@@ -123,8 +123,6 @@ const App:FC = () => {
     return color;
   }
   
-
-
   function updateMousePositionOnScreen(userId:string, mousePosition:any) {
     let mouseIcon = document.getElementById(`mouse-${userId}`);
     if (!mouseIcon) {
@@ -149,7 +147,7 @@ const App:FC = () => {
     }
     
     const userCurrentTool = Tools[mousePosition.selectTool];
-
+    
     mouseIcon.setAttribute("class", `tool-${userCurrentTool}`);
     mouseIcon.style.left = `${mousePosition.x}px`;
     mouseIcon.style.top = `${mousePosition.y}px`;
@@ -205,8 +203,14 @@ const App:FC = () => {
         if (change.action === 'delete') {
           
         } else if (change.action === 'add' || change.action === 'update') {
-          const mousePosition = yMousePositions.get(key);
-          updateMousePositionOnScreen(key, mousePosition);
+          const mousePosition:any = yMousePositions.get(key);
+          const adjustedPosition = {
+            x          : mousePosition.x * stageRef.current.scaleX() + stageRef.current.x(),
+            y          : (mousePosition.y+(43 / stageRef.current.scaleY())) * stageRef.current.scaleY() + stageRef.current.y(),
+            selectTool : mousePosition.selectTool,
+            //scale      : mousePosition.scale
+          };
+          updateMousePositionOnScreen(key, adjustedPosition);
         }
       });
     });
@@ -224,11 +228,14 @@ const App:FC = () => {
           if(!oldGroup) return;
           const userAreaData:any = ySelectedNodes.get(key);
           oldGroup.getChildren().forEach((node:any)=>{
-            node.x(userAreaData.x);
-            node.y(userAreaData.y);
             if(node.getClassName() == Shape.Rect){
               node.width(userAreaData.width);
               node.height(userAreaData.height);
+              node.x(userAreaData.x);
+              node.y(userAreaData.y);
+            }else {
+              node.x(userAreaData.x);
+              node.y(userAreaData.y-23);
             }
 
           })
@@ -459,22 +466,15 @@ const App:FC = () => {
 
   const createNewUserArea = (paramUserId:string, pos:{x:number, y:number, width:number, height:number})=>{
     
-    const adjustedPosition = {
-      x: pos.x * stageRef.current.scaleX(),
-      y: pos.y * stageRef.current.scaleY(),
-      width: pos.width * stageRef.current.scaleX(),
-      height: pos.height * stageRef.current.scaleY(),
-    };
-    
     if(pos.width == 0 && pos.height == 0) return;
-
+    
     const newRect = new Konva.Rect({
       id : `area-${paramUserId}`,
       stroke: 'rgba(255,0,0,0.5)',
-      strokeWidth : 3,
+      strokeWidth : 7,
       visible : true,
     })
-
+    
     const nameTag = new Konva.Text({
       id : `area-tag-${paramUserId}`,
       fill: 'rgba(255,0,0,0.5)',
@@ -486,27 +486,27 @@ const App:FC = () => {
       height: 100,
       text : `${paramUserId}`
     })
-
+    
     const groups = new Konva.Group({
       id : `area-group-${paramUserId}`,
     })
-
-
+    
+    
     groups.add(newRect);
     groups.add(nameTag);
-
-    newRect.x(adjustedPosition.x)
-    newRect.y(adjustedPosition.y)
-    newRect.width(adjustedPosition.width)
-    newRect.height(adjustedPosition.height)
-
-    nameTag.x(adjustedPosition.x)
-    nameTag.y(adjustedPosition.y) 
-
+    
+    newRect.x(pos.x)
+    newRect.y(pos.y)
+    newRect.width(pos.width)
+    newRect.height(pos.height)
+    
+    nameTag.x(pos.x)
+    nameTag.y(pos.y-23) 
+    
     stageRef.current.getLayers()[0].add(groups);
     
   }
-
+  
   const createNewLine = (idx:string, pos:number[], color:any, penStyle:Tools = Tools.PEN) =>{
     let newLine:Konva.Line;
     
@@ -594,6 +594,7 @@ const App:FC = () => {
   }
   
   const createNewRect = (id:string, pos:{x:number, y:number}, color:any)=>{
+
     const newShape = new Konva.Rect({
       id        : id,
       x         : pos.x,
@@ -1265,11 +1266,38 @@ const App:FC = () => {
     });
     tr.on('dragmove', function(e:any) {
       //마우스 동기화
-      const mousePosition = { x: e.evt.clientX, y: e.evt.clientY, selectTool : toolRef.current };
+      //const mousePosition = { x: e.evt.clientX, y: e.evt.clientY, selectTool : toolRef.current };
+      
+      // const mousePosition = { 
+      //   x: (e.evt.clientX - stageRef.current.x()) / stageRef.current.scaleX(), 
+      //   y: (e.evt.clientY - stageRef.current.y()) / stageRef.current.scaleX(), 
+      //   selectTool : toolRef.current,
+      //   scale: stageRef.current.scaleX()
+      // };
+      // if(userId.current){
+      //   yMousePositions.set(userId.current, mousePosition);
+      // }
+      const stage = e.target.getStage();
+    
+      const pos = stage.getPointerPosition();
+      const scale = stage.scaleX(); // 현재 스케일
+      const position = stage.position(); // 현재 위치
+      
+      const realPointerPosition = {
+        x: (pos.x - position.x) / stage.scaleX(),
+        y: (pos.y - position.y) / stage.scaleY(),
+      };
+  
+      const mousePosition = { 
+        x: realPointerPosition.x, 
+        y: realPointerPosition.y, 
+        selectTool : toolRef.current,
+        scale: scale
+      };
+  
       if(userId.current){
         yMousePositions.set(userId.current, mousePosition);
       }
-
       
       
       tr.getNodes().forEach((node:any)=>{    
@@ -1286,11 +1314,12 @@ const App:FC = () => {
 
       // 선택 영역 정보를 절대 좌표계로 변환하여 저장
       const absoluteSelectionInfo = {
-        x: selectionRect.x / stageRef.current.scaleX(),
-        y: selectionRect.y / stageRef.current.scaleY(),
+        x: (selectionRect.x - position.x) / scale,
+        y: (selectionRect.y - position.y) / scale ,
         width: selectionRect.width / stageRef.current.scaleX(),
         height: selectionRect.height / stageRef.current.scaleY(),
       };
+      
 
       ySelectedNodes.set(userId.current, absoluteSelectionInfo);
     });
@@ -1458,20 +1487,23 @@ const App:FC = () => {
           userId : userId.current
         }
 
-        const selectionRect = tr.getClientRect();
-
-        // 선택 영역 정보를 절대 좌표계로 변환하여 저장
-        const absoluteSelectionInfo = {
-          x: selectionRect.x / stageRef.current.scaleX(),
-          y: selectionRect.y / stageRef.current.scaleY(),
-          width: selectionRect.width / stageRef.current.scaleX(),
-          height: selectionRect.height / stageRef.current.scaleY(),
-        };
-  
-        ySelectedNodes.set(userId.current, absoluteSelectionInfo);
-
+        
         yTrans.set(node.id(), changeInfo); 
       });
+      const selectionRect = tr.getClientRect();
+      const scale = stageRef.current.scaleX(); // 현재 스케일
+      const position = stageRef.current.position(); // 현재 위치 
+      
+      // 선택 영역 정보를 절대 좌표계로 변환하여 저장
+      const absoluteSelectionInfo = {
+        x: (selectionRect.x - position.x) / scale,
+        y: (selectionRect.y - position.y) / scale ,
+        width: selectionRect.width / stageRef.current.scaleX(),
+        height: selectionRect.height / stageRef.current.scaleY(),
+        
+      };
+      
+      ySelectedNodes.set(userId.current, absoluteSelectionInfo);
 
     });
     tr.on('transformend', function() {
@@ -1534,6 +1566,7 @@ const App:FC = () => {
         } else {
           if (type === Shape.Line){
             konvaData = {
+              type        : type,
               id          : node.id(),
               x           : node.x(),
               y           : node.y(),
@@ -1552,6 +1585,7 @@ const App:FC = () => {
             }
           } else if(type === Shape.RegularPolygon){
             konvaData = { 
+              type      : type,
               id        : node.id(),
               x         : node.x(),
               y         : node.y(),
@@ -1565,6 +1599,7 @@ const App:FC = () => {
             }
           } else if (type === Shape.Circle || type === Shape.Rect){
             konvaData = { 
+              type      : type,
               id        : node.id(),
               x         : node.x(),
               y         : node.y(),
@@ -1687,7 +1722,6 @@ const App:FC = () => {
       } 
       
     } else if (tool === Tools.PEN || tool === Tools.HIGHLIGHTER) {
-      //console.log(yPens, "pens group");   //TEST
 
       //펜 이벤트
       isDrawing.current = true;
@@ -1708,21 +1742,28 @@ const App:FC = () => {
   };
 
   const handleMouseMove = (e: any) => {
-    const mousePosition = { x: e.evt.clientX, y: e.evt.clientY, selectTool : toolRef.current };
-    if(userId.current){
-      yMousePositions.set(userId.current, mousePosition);
-    }
-
+    
     const stage = e.target.getStage();
-
+    
     const pos = stage.getPointerPosition();
     const scale = stage.scaleX(); // 현재 스케일
     const position = stage.position(); // 현재 위치
     
     const realPointerPosition = {
-      x: (pos.x - position.x) / scale,
-      y: (pos.y - position.y) / scale,
+      x: (pos.x - position.x) / stage.scaleX(),
+      y: (pos.y - position.y) / stage.scaleY(),
     };
+
+    const mousePosition = { 
+      x: realPointerPosition.x, 
+      y: realPointerPosition.y, 
+      selectTool : toolRef.current,
+      scale: scale
+    };
+
+    if(userId.current){
+      yMousePositions.set(userId.current, mousePosition);
+    }
 
     if(tool === Tools.CURSOR){
       if (!isSelected.current) return;
@@ -1779,6 +1820,10 @@ const App:FC = () => {
 
   const handleMouseUp = (e:any) => {
     const leaveEvtFlag:boolean = e.evt.type === 'mouseleave'? true:false  
+    const stage = e.target.getStage();
+
+    const scale = stage.scaleX(); // 현재 스케일
+    const position = stage.position(); // 현재 위치 
 
     if(tool === Tools.PEN || tool === Tools.HIGHLIGHTER){
       isDrawing.current = false;
@@ -1847,12 +1892,12 @@ const App:FC = () => {
 
             // 선택 영역 정보를 절대 좌표계로 변환하여 저장
             const absoluteSelectionInfo = {
-              x: selectionRect.x / stageRef.current.scaleX(),
-              y: selectionRect.y / stageRef.current.scaleY(),
-              width: selectionRect.width / stageRef.current.scaleX(),
+              x     : (selectionRect.x - position.x) / scale,
+              y     : (selectionRect.y - position.y) / scale ,
+              width : selectionRect.width / stageRef.current.scaleX(),
               height: selectionRect.height / stageRef.current.scaleY(),
             };
-
+            
             ySelectedNodes.set(userId.current, absoluteSelectionInfo);
             yLockNodes.set(userId.current, JSON.stringify(locksData));
           }
