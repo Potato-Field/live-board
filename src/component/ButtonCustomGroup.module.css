@@ -1,0 +1,34 @@
+#customColor{
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+}
+
+#customColor::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+#customColor::-webkit-color-swatch {
+    border-radius: 50%;
+    border: none;
+}
+
+#customColor::-moz-color-swatch {
+    border-radius: 50%;
+    border: none;
+}
+
+.circle{
+    width: 20px;
+    height: 20px;
+}
+
+#customColorBtn{
+    /* TODO: 다른 색깔 아이콘 버튼이랑 크기 맞추기 */
+}

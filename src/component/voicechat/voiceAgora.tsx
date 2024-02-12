@@ -21,7 +21,6 @@ const VoiceAgora: React.FC = () => {
     const [roomId] = useState<string>("main");
     const [micMuted, setMicMuted] = useState<boolean>(true);
     const [members, setMembers] = useState<Array<string>>([]);
-    // const [members, setMembers] = useState<Array<number>>([]);
     const [userVolumes, setUserVolumes] = useState<{ [nickname: string]: number }>({});
     const rtcUid = nickname;
     const rtcClientRef = useRef<IAgoraRTCClient | null>(null);
@@ -31,32 +30,34 @@ const VoiceAgora: React.FC = () => {
         remoteAudioTracks: {},
     });
 
-    // const initRtm = async (nickname) => {
-    //     const rtmClient: IAgoraRTM = 
-    // }
-
 
     const initRtc = async () => {
         const token = null
+        // 클라이언트 유저 생성
         const rtcClient: IAgoraRTCClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+        // 본인 설정
         rtcClientRef.current = rtcClient;
+        // Agora RTC 서버에 join, publish, left 통신보내기
         rtcClient.on('user-joined', handleUserJoined);
         rtcClient.on('user-published', handleUserPublished);
         rtcClient.on('user-left', handleUserLeft);
 
+        // join 대기
         await rtcClient.join(appid, roomId, token, rtcUid);
-        // const { nickname } = location.state || { nickname: '' };
-
+        
+        // 마이크, 오디오 트랙 생성
         const localAudioTrack: ILocalAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+        // 본인 마이크, 오디오로 설정
         audioTracksRef.current.localAudioTrack = localAudioTrack;
 
         localAudioTrack.setMuted(micMuted);
+        // 오디오 트랙에 publish 
         await rtcClient.publish(localAudioTrack);
 
 
 
-        setMembers([rtcUid]);        // 볼륨 인디케이터 초기화
-
+        setMembers([rtcUid]);        
+        // 볼륨 인디케이터 초기화
         initVolumeIndicator();
 
     };
@@ -95,7 +96,7 @@ const VoiceAgora: React.FC = () => {
         await rtcClientRef.current?.unpublish();
         await rtcClientRef.current?.leave();
 
-        navigate("/")
+        navigate("/lobby", { state: { nickname: nickname} })
     };
 
     const handleUserJoined = (user: { uid: string; nickname: string; }) => {
@@ -106,16 +107,6 @@ const VoiceAgora: React.FC = () => {
             return isUserExist ? prevMembers : [...prevMembers, user.uid];
         });
     };
-
-    // const handleUserJoined = (user: any) => {
-    //     console.log('USER:', user);
-    //     setMembers(prevMembers => {
-    //         // 새로운 사용자가 이미 목록에 있는지 확인합니다.
-    //         const isUserExist = prevMembers.includes(user.uid);
-    //         // 존재하지 않는 경우에만 목록에 추가합니다.
-    //         return isUserExist ? prevMembers : [...prevMembers, user.uid];
-    //     });
-    // };
 
     const handleUserPublished = async (user: any, mediaType: "audio" | "video") => {
         const track = await rtcClientRef.current?.subscribe(user, mediaType);

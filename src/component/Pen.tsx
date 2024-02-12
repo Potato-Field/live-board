@@ -1,8 +1,8 @@
-import Button from '@mui/material/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { useTool } from './ToolContext';
 import { Tools } from './Tools';
+import { IconButton, Tooltip } from '@mui/material';
 
 interface PenProps {
     /*
@@ -30,9 +30,11 @@ export default function Pen({ props, icon }:PenProps){
 
     return(
         <>
-            <Button id={componentElem.id} onTouchEnd={()=>{setTool(props)}} onClick={()=>{setTool(props)}}>
-                <FontAwesomeIcon icon={icon} size='2xl' />
-            </Button>
+        <Tooltip arrow placement="top" title={componentElem.id === 'PEN' ? 'Pen' : 'Highlighter'}>
+            <IconButton id={componentElem.id} onTouchEnd={()=>{setTool(props)}} onClick={()=>{setTool(props)}}>
+                <FontAwesomeIcon icon={icon} size='xl' />
+            </IconButton>
+        </Tooltip>
         </>
     );
 }

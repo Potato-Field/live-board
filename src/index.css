@@ -4,7 +4,7 @@
   /* font-weight: 400; */
   text-align: center;
 
-  /* color-scheme: light;  라이트 모드만 지원 */
+  color-scheme: light;
   /* background-color: #fafafa; */
 
   font-synthesis: none;
@@ -19,12 +19,11 @@
 body {
   min-width: 100vw;
   min-height: 100vh;
-  margin: 0;
+  /* margin: 0; */
   /* padding: 20;
   display: flex;
   place-items: center; */
   overflow: hidden;
-  
 }
 
 #container {

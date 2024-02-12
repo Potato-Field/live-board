@@ -39,12 +39,6 @@ let multiSelectBlocker = {
 
 let groupTr:Konva.Transformer | null = null;
 
-//let undoManagerObj :any;
-
-
-
-/* 전체 포스트잇 저장 배열 */
-
 //Container Components
 const App:FC = () => {
 
@@ -54,7 +48,6 @@ const App:FC = () => {
   
   const POSTIT_MIN_WIDTH = 250;  // init size
   const POSTIT_MIN_HEIGHT = 300; // init size
-  const [textHeight] = useState<number>(POSTIT_MIN_HEIGHT); // 포스트잇 텍스트 높이
 
   /*
    * [CRDT] 
@@ -186,7 +179,7 @@ const App:FC = () => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current);
 
     /* 본인 로컬에서 작동 */
-    // const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
@@ -240,12 +233,26 @@ const App:FC = () => {
     ySelectedNodes.observe((event) =>{
       event.changes.keys.forEach((change, key)=>{
         if(key == userId.current) return;
+        const oldGroup:Konva.Group | undefined = stageRef.current.children[0].findOne(`#area-group-${key}`)
         if(change.action == 'delete'){
-          const oldGroup = stageRef.current.children[0].findOne(`#area-group-${key}`)
           if(!oldGroup) return;
           oldGroup.remove();
+        }   
+        else if(change.action == 'update'){
+          if(!oldGroup) return;
+          const userAreaData:any = ySelectedNodes.get(key);
+          oldGroup.getChildren().forEach((node:any)=>{
+            node.x(userAreaData.x);
+            node.y(userAreaData.y);
+            if(node.getClassName() == Shape.Rect){
+              node.width(userAreaData.width);
+              node.height(userAreaData.height);
+            }
 
-        } else {
+          })
+        }
+        else if(change.action == 'add'){
+          if(oldGroup) return;
           const userAreaData:any = ySelectedNodes.get(key);
           createNewUserArea(key, userAreaData);
         }
@@ -370,7 +377,7 @@ const App:FC = () => {
         if(node) return;
         if(konvaData == null) return;
         if(konvaData.type == Shape.Line){
-          //console.log(konvaData.penStyle)
+          
           const newLine =  createNewLine(index, konvaData.points, konvaData.stroke, konvaData.penStyle)
           newLine.visible(false)
           stageRef.current.getLayers()[0].add(newLine);
@@ -1096,7 +1103,7 @@ const App:FC = () => {
       name: 'postItText',
       ...postItOptions, // x, y
       width: POSTIT_MIN_WIDTH,
-      height: textHeight, // POSTIT_MIN_HEIGHT
+      height: POSTIT_MIN_HEIGHT,
       text: text,
       fontSize: 20,
       padding: 15,
@@ -1130,6 +1137,7 @@ const App:FC = () => {
     postItGroup.add(postItRect);
     postItGroup.add(postItText);
     postItGroup.add(initText);
+    
     if(text !== ""){
       initText.hide();
     }
@@ -1159,19 +1167,16 @@ const App:FC = () => {
       var textarea = document.createElement('textarea');
       document.body.appendChild(textarea);
       
-
-      //textarea.value = PostItText.text();
       textarea.style.position = 'absolute';
       textarea.style.top = areaPosition.y + 'px';
       textarea.style.left = areaPosition.x + 'px';
-      textarea.style.width = postItText.width() - postItText.padding() * 2 + 'px';
-      // textarea.style.height = PostItText.height() - PostItText.padding() * 2 + 'px';
+      textarea.style.width = postItText.width() + 'px';
+      textarea.style.height = postItText.height() + 'px';
       textarea.style.fontSize = postItText.fontSize() + 'px';
       textarea.style.border = 'none';
       textarea.style.padding = '15px';
       textarea.style.margin = '0px';
       textarea.style.overflow = 'hidden';
-      // textarea.style.background = 'gray';
       textarea.style.background = 'none';
       textarea.style.outline = 'none';
       textarea.style.resize = 'none';
@@ -1197,9 +1202,6 @@ const App:FC = () => {
       transform += 'translateY(-' + px + 'px)';
       textarea.style.transform = transform;
       
-      textarea.style.height = 'auto';
-      textarea.style.height = textarea.scrollHeight + 3 + 'px';
-
       //creatNewTextArea End-------------------------------
 
       //Text 동기화 시작---------------------------
@@ -1269,15 +1271,24 @@ const App:FC = () => {
 
       /* 입력되는 텍스트 양에 따른 rect height 증가  */
       textarea.addEventListener('keydown', function (e: any) {
-        let scale = postItText.getAbsoluteScale().x;
-        setTextareaWidth(postItText.width() * scale - postItText.padding() * 2);
+        setTextareaWidth(postItText.width());
         textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + postItText.fontSize() + 'px';
        
-        // todo: PostItRect height 증가
-        // console.log(textarea.style.height);
-        // let textareaHeight = (parseInt(textarea.style.height.slice(0, -2)) as any);
-        // console.log(textareaHeight);
+        const text = postItGroup.findOne('.postItText')
+        const rect = postItGroup.findOne('.postItRect')
+
+        let textareaHeight = (parseInt(textarea.style.height.slice(0, -2)) as any); // 'px' 제거
+        
+        if (text && rect) {
+          text.setAttrs({
+            height: Math.max(textareaHeight, text.attrs.height),
+          });
+
+          rect.setAttrs({
+            height: text.height(),
+          });
+        }
 
         const key = e.key.toLowerCase();
         if (key == 'esc' || key == 'escape') {
@@ -1285,7 +1296,6 @@ const App:FC = () => {
           postItText.show();
           textarea.remove();
           stageRef.current.off('mouseup', handleOutsideClick);
-
 
           const konvaData = {
             type  : Shape.Group,
@@ -1365,9 +1375,7 @@ const App:FC = () => {
 
       if (groupTr === null) {
         createNewTr();
-      } 
-
-      if(groupTr && groupTr.nodes().length == 0) {          
+      } else {          
         groupTr.nodes([e.target]);  // e.target: PostItText
       }
       
@@ -1408,7 +1416,15 @@ const App:FC = () => {
     tr.on('dragstart', function() {
       isDrag.current = true;
     });
-    tr.on('dragmove', function() {
+    tr.on('dragmove', function(e:any) {
+      //마우스 동기화
+      const mousePosition = { x: e.evt.clientX, y: e.evt.clientY, selectTool : toolRef.current };
+      if(userId.current){
+        yMousePositions.set(userId.current, mousePosition);
+      }
+
+      
+      
       tr.getNodes().forEach((node:any)=>{    
         const changeInfo = {
           idx : node.id(),
@@ -1417,9 +1433,21 @@ const App:FC = () => {
           userId : userId.current
         }
         yDocRef.current.transact(() => {
-        yMove.set(node.id(), changeInfo);
+          yMove.set(node.id(), changeInfo);
+        }, undoManagerObj);
       });
-    }, undoManagerObj);
+      
+      const selectionRect = tr.getClientRect();
+
+      // 선택 영역 정보를 절대 좌표계로 변환하여 저장
+      const absoluteSelectionInfo = {
+        x: selectionRect.x / stageRef.current.scaleX(),
+        y: selectionRect.y / stageRef.current.scaleY(),
+        width: selectionRect.width / stageRef.current.scaleX(),
+        height: selectionRect.height / stageRef.current.scaleY(),
+      };
+
+      ySelectedNodes.set(userId.current, absoluteSelectionInfo);
     });
 
    
@@ -1585,7 +1613,6 @@ const App:FC = () => {
     });
     tr.on('transform', function() {
       tr.getNodes().forEach((node:any)=>{        
-
         const changeInfo = {
           idx      : node.id(),
           x        : node.x(),
@@ -1595,6 +1622,19 @@ const App:FC = () => {
           rotation : node.rotation(),
           userId : userId.current
         }
+
+        const selectionRect = tr.getClientRect();
+
+        // 선택 영역 정보를 절대 좌표계로 변환하여 저장
+        const absoluteSelectionInfo = {
+          x: selectionRect.x / stageRef.current.scaleX(),
+          y: selectionRect.y / stageRef.current.scaleY(),
+          width: selectionRect.width / stageRef.current.scaleX(),
+          height: selectionRect.height / stageRef.current.scaleY(),
+        };
+  
+        ySelectedNodes.set(userId.current, absoluteSelectionInfo);
+
         yTrans.set(node.id(), changeInfo); 
       });
 
@@ -1968,7 +2008,7 @@ const App:FC = () => {
 
         let selected:any[] = [];
         let locksData:string[] = [];
-        
+        let rotationFlag = true;
         if(groupTr == null){
           createNewTr(); 
         }
@@ -1981,11 +2021,15 @@ const App:FC = () => {
               node.addName("locked");
               selected.push(node);
               locksData.push(nodeId);
+              if(node.getClassName() == Shape.Group){
+                rotationFlag = false;
+              }
             }
           })
-
           if(selected.length > 0){
             groupTr.nodes(selected);
+            groupTr.rotateEnabled(rotationFlag);
+            
             const selectionRect = groupTr.getClientRect();
 
             // 선택 영역 정보를 절대 좌표계로 변환하여 저장
@@ -2312,6 +2356,7 @@ const App:FC = () => {
 
 
   return (
+    <>
     <div style={{position: "relative", width: "100%"}}>
       {/* <NavBarLobby /> */}
       <button onClick={handleUndo}>Undo</button>
@@ -2339,6 +2384,7 @@ const App:FC = () => {
       >
       
         <Layer></Layer>
+
         <>
           <MindMap stageRef = {stageRef} toolRef={toolRef} yDocRef = {yDocRef}/>
         </>
@@ -2346,6 +2392,7 @@ const App:FC = () => {
       </Stage>
       <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick}/>
     </div>
+    </>
   );
 }
 

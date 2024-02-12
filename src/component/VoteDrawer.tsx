@@ -1,10 +1,9 @@
 import * as React from 'react';
 import { useState } from 'react';
 import Konva from 'konva';
-
-import Box from '@mui/joy/Box';
-import Drawer from '@mui/joy/Drawer';
-import Divider from '@mui/joy/Divider';
+import Box from '@mui/material/Box';
+import Drawer from '@mui/material/Drawer';
+import Divider from '@mui/material/Divider';
 import HowToVoteIcon from '@mui/icons-material/HowToVote';
 import { Card, CardContent, Typography, CardActions, Grid, IconButton } from '@mui/material';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
@@ -126,8 +125,8 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
         <HowToVoteIcon fontSize='large' />
       </IconButton>
 
-      <Drawer open={open} onClose={()=>{setOpen(false)}} size='sm'>
-        <h2>Vote results with postit</h2>
+      <Drawer open={open} onClose={()=>{setOpen(false)}} >
+        <h2 style={{padding:'1rem', margin: 0}}>Vote results with postit</h2>
         <Divider />
         <Box role="presentation"> 
         

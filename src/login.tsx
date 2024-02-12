@@ -26,7 +26,7 @@ const Login = () => {
         }else{
             // 서버에 요청하여 users 목록 업데이트해야함.
             setUsers(prevUsers => [...prevUsers, { nickname: username }]);
-            navigate('/app', { state: { nickname: username, loggedIn: true } });
+            navigate('/lobby', { state: { nickname: username} });
 
         }
         // 로그인 로직 구현
