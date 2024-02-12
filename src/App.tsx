@@ -39,6 +39,10 @@ let multiSelectBlocker = {
 
 let groupTr:Konva.Transformer | null = null;
 
+//let undoManagerObj :any;
+
+
+
 /* 전체 포스트잇 저장 배열 */
 
 //Container Components
@@ -104,13 +108,17 @@ const App:FC = () => {
   
   const yTextRef = useRef<Y.Array<TextInputProps>>(yDocRef.current.getArray<TextInputProps>('texts'));
   
-  const undoManagerObj = new Y.UndoManager([yObjects, yText, yPens, yShape, yTrans, yMove]);
-  const undoManagerPens = new Y.UndoManager([yPens]);
-  const undoManagerShape = new Y.UndoManager([yShape]);
-  let yOldPens = yDocRef.current.getMap(' ');
-  const undoStackArr:any = [];
-  const redoStackArr:any = [];
-
+  //const undoManagerObj = new Y.UndoManager([yObjects, yText, yPens, yShape, yTrans, yMove]);
+  // console.log(undoManagerObj)
+  
+  // const undoManagerObjRef = useRef(null);
+  // if(!undoManagerObjRef.current){
+  //   undoManagerObjRef.current = new Y.UndoManager([yObjects]);
+  // }
+  //const undoManagerObj = undoManagerObjRef.current;
+  
+  const undoManagerObj = new Y.UndoManager([yObjects]);
+  
 
 
   //블록 변수
@@ -362,7 +370,7 @@ const App:FC = () => {
         if(node) return;
         if(konvaData == null) return;
         if(konvaData.type == Shape.Line){
-          console.log(konvaData.penStyle)
+          //console.log(konvaData.penStyle)
           const newLine =  createNewLine(index, konvaData.points, konvaData.stroke, konvaData.penStyle)
           newLine.visible(false)
           stageRef.current.getLayers()[0].add(newLine);
@@ -451,29 +459,6 @@ const App:FC = () => {
 
 
 
-    // yObjects.observe((event) => {
-    //   setIsLoading(false);
-    //   const changedIds = Array.from(event.keysChanged);
-  
-    //   changedIds.forEach((id) => {
-    //     const konvaData = yObjects.get(id);
-  
-    //     // Check if the node already exists
-    //     const node = stageRef.current.children[0].findOne("#" + id);
-  
-    //     if (node) {
-    //       // Update the node's properties with the new data
-    //       updateCanvas(konvaData, id);
-    //     } else {
-    //       // If the node doesn't exist, create a new one
-    //       initializeCanvas();
-    //     }
-    //   });
-  
-    //   // Redraw the layer to reflect the changes
-    //   //stageRef.current.getLayers()[0].batchDraw();
-    // });
-    
 
     yObjects.observe(handleDataLoaded);
 
@@ -483,29 +468,110 @@ const App:FC = () => {
 
 
 
+    // const updateCanvas = () => {
+    //   yObjects.observe(event => {
+    //     // Logic to handle updates
+    //     // This includes adding new objects, updating existing ones, or removing them
+    //     event.keysChanged.forEach(id => {
+    //       const konvaData = yObjects.get(id);
+    //       const node = stageRef.current.findOne(`#${id}`);
+    //       console.log(konvaData, node, event.keysChanged, "changed event konvaData, node !!!!!!!!!");
+    //       if (!konvaData) { // If data was removed
+    //         node?.destroy();
+    //       } else if (!node) { 
+    //         initializeCanvas();
+    //         // If it's a new object
+    //         // Create and add a new Konva node based on konvaData
+    //         // For example:
+    //         // const newNode = createKonvaNodeFromData(konvaData);
+    //         // stageRef.current.getLayers()[0].add(newNode);
+    //       } else {
+    //         // Update the existing node based on konvaData
+    //         // For example:
+    //         // updateKonvaNode(node, konvaData);
+    //         node?.destroy();
+    //         initializeCanvas();
+    //       }
+    //     });
+    //   });
+    // };
+    // updateCanvas();
+
+    const createNodeFromKonvaData = (id:string, konvaData:any) => { 
+      let newShape;
+      switch (konvaData.type) {
+        case 'Line':
+          return new Konva.Line({
+            id: id,
+            points: konvaData.points,
+            stroke: konvaData.stroke,
+            strokeWidth: konvaData.strokeWidth,
+            lineCap: konvaData.lineCap,
+            lineJoin: konvaData.lineJoin,
+            // Add other properties as needed
+          });
+        case Shape.Rect:
+          newShape = createNewRect(id, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+          break;
+        case Shape.Circle:
+          newShape = createNewCir(id, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+          break;
+        case Shape.RegularPolygon:
+          newShape = createNewTri(id, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+          break;
+        case Shape.Stamp:
+          let stampImg = new window.Image();
+          stampImg.src = konvaData.image === 'thumbUp' ? thumbUpImg : thumbDownImg;
+          stampImg.onload = () => {
+            newShape = createNewStamp(id, {x: konvaData.x, y: konvaData.y}, stampImg);
+            newShape.name(konvaData.image);
+          }
+          break;
+        case Shape.Group:
+          newShape = createNewPostIt(id, {x:konvaData.Group.x, y:konvaData.Group.y}, konvaData.Text.text);
+          break;
+        case Shape.Text:
+          newShape = createNewText(id, {x: konvaData.x, y: konvaData.y}, konvaData.text);
+          break;
+        default:
+          return null;
+      }
+
+      if (newShape) {
+        newShape.visible(false);
+        stageRef.current.getLayers()[0].add(newShape);
+        newShape.scaleX(konvaData.scaleX);
+        newShape.scaleY(konvaData.scaleY);
+        newShape.rotation(konvaData.rotation);
+        newShape.visible(true);
+      }
+      
+    }
+
+
     const updateCanvas = () => {
       yObjects.observe(event => {
         // Logic to handle updates
         // This includes adding new objects, updating existing ones, or removing them
         event.keysChanged.forEach(id => {
           const konvaData = yObjects.get(id);
-          const node = stageRef.current.findOne(`#${id}`);
-          if (!konvaData) { // If data was removed
+          
+          let node = stageRef.current.findOne(`#${id}`);
+          console.log(konvaData, node, event.keysChanged, "changed event konvaData, node !!!!!!!!!");
+          //console.log(undoManagerObj.undoStack,  "check undeoManager !!!!");
+          //console.log(undoManagerObj.undoStack.length, "undostack length yobject!!!!");
+          if (!konvaData || node) { // If data was removed
             node?.destroy();
-          } else if (!node) { 
-            initializeCanvas();
-            // If it's a new object
-            // Create and add a new Konva node based on konvaData
-            // For example:
-            // const newNode = createKonvaNodeFromData(konvaData);
-            // stageRef.current.getLayers()[0].add(newNode);
-          } else {
-            // Update the existing node based on konvaData
-            // For example:
-            // updateKonvaNode(node, konvaData);
           }
+
+          if(konvaData){
+            const newNode = createNodeFromKonvaData(id, konvaData);
+            if(newNode){
+              stageRef.current.getLayers()[0].add(newNode);
+            }
+          }
+        
         });
-        stageRef.current.batchDraw();
       });
     };
     updateCanvas();
@@ -930,8 +996,7 @@ const App:FC = () => {
         window.removeEventListener('click', handleOutsideClick);
         textNode.show();
     
-        yDocRef.current.transact(() => {
-          const konvaData = {
+        const konvaData = {
           type      : Shape.Text, 
           id        : textNode.id(),
           x         : textNode.x(),
@@ -942,8 +1007,9 @@ const App:FC = () => {
           draggable : true,
         }
         
-        yObjects.set(textNode.id(), konvaData);
-      }, undoManagerObj);
+        yDocRef.current.transact(() => {
+          yObjects.set(textNode.id(), konvaData);
+        }, undoManagerObj);
       }
       
       function setTextareaWidth(newWidth:any) {
@@ -1239,7 +1305,10 @@ const App:FC = () => {
             } 
           }
 
-          yObjects.set(postItGroup.id(), konvaData);
+          yDocRef.current.transact(() => {
+            yObjects.set(postItGroup.id(), konvaData);
+          }, undoManagerObj);
+
         }
       });
 
@@ -1272,7 +1341,9 @@ const App:FC = () => {
             } 
           }
           
-          yObjects.set(postItGroup.id(), konvaData);
+          yDocRef.current.transact(() => {
+            yObjects.set(postItGroup.id(), konvaData);
+          }, undoManagerObj);
         }
       }
       
@@ -1495,8 +1566,13 @@ const App:FC = () => {
           }
         }
         yDocRef.current.transact(() => { 
-        yObjects.set(node.id(), konvaData)
-      }, undoManagerObj);
+          yObjects.set(node.id(), konvaData)
+        }, undoManagerObj);
+        // console.log("createline in drag end");
+        // console.log("undoStack.length",undoManagerObj.undoStack.length);
+        // console.log("redoStack.length", undoManagerObj.redoStack.length);
+
+
       });
 
 
@@ -1656,9 +1732,9 @@ const App:FC = () => {
           }
         }
         yDocRef.current.transact(() => {
-        yObjects.set(node.id(), konvaData)
+          yObjects.set(node.id(), konvaData)
+        }, undoManagerObj);
       });
-    }, undoManagerObj);
 
     });
     
@@ -1754,11 +1830,11 @@ const App:FC = () => {
         stroke : newLine.stroke(),
         penStyle: toolRef.current
       };
-      yDocRef.current.transact(() => {
+      //yDocRef.current.transact(() => {
         yPens.set(idx, changeInfo);
         //yObjects.set(idx, changeInfo);    //my add code 
-      }, undoManagerObj);
-      console.log("create", undoManagerObj, undoManagerObj.undoStack);
+      //}, undoManagerObj);
+      //console.log("create", undoManagerObj, undoManagerObj.undoStack);
 
     }
   };
@@ -1814,9 +1890,9 @@ const App:FC = () => {
         point: [realPointerPosition.x, realPointerPosition.y],
         penStyle : tool
       };
-      yDocRef.current.transact(() => {
+      //yDocRef.current.transact(() => {
       yPens.set(idx, changeInfo);
-    }, undoManagerObj);
+    //}, undoManagerObj);
     }
     else if(tool === Tools.ERASER){
       const stage = e.target.getStage()
@@ -1830,6 +1906,7 @@ const App:FC = () => {
           const changeInfo = {
             type: "delete"
           };
+          //yPens 주석 처리해도 같은 결과?
           yPens.set(lineId.toString(), changeInfo);
           yObjects.set(lineId.toString(), changeInfo);
         }, undoManagerObj);
@@ -1857,9 +1934,17 @@ const App:FC = () => {
         penStyle    : tool,
         draggable   : true
       }
+      console.log("handlemouseup 1090, before");
+      console.log(newLine, idx, konvaData, "data check 1930");
+        console.log("undoStack.length",undoManagerObj.undoStack.length);
+        console.log("redoStack.length", undoManagerObj.redoStack.length);
       yDocRef.current.transact(() => {
-      yObjects.set(idx, konvaData)
-    }, undoManagerObj); 
+        yObjects.set(idx, konvaData)
+        //console.log("mouse down set line", yObjects, undoManagerObj.undoStack);
+      }, undoManagerObj); 
+      console.log("handlemouseup 1090, after");
+        console.log("undoStack.length",undoManagerObj.undoStack.length);
+        console.log("redoStack.length", undoManagerObj.redoStack.length);
       
       newLine = null;
       id = uuidv4();
@@ -1990,18 +2075,27 @@ const App:FC = () => {
         }
         layer.add(newStamp);
         
+        yShape.set(idx, konvaData);
+
+        console.log("handlemouseclick 2074, before");
+        console.log("undoStack.length",undoManagerObj.undoStack.length);
+        console.log("redoStack.length", undoManagerObj.redoStack.length);
+
         yDocRef.current.transact(() => {
-          yShape.set(idx, konvaData);
           yObjects.set(idx, konvaData);
+          console.log(undoManagerObj.undoStack, "2000, ");
         }, undoManagerObj);
-        console.log(undoManagerObj.undoStack);
+
+        console.log("handlemouseclick 2083, before");
+        console.log("undoStack.length",undoManagerObj.undoStack.length);
+        console.log("redoStack.length", undoManagerObj.redoStack.length);
         
         
         
       }
       
       id = uuidv4();
-      setTool(Tools.CURSOR);
+      //setTool(Tools.CURSOR);
     }
     else if (tool === Tools.SHAPE){
       let newShape;
@@ -2052,19 +2146,25 @@ const App:FC = () => {
         }
       }
       layer.add(newShape);
+      yShape.set(idx, konvaData);
+
+      console.log("handlemouseclick 2135, before");
+        console.log("undoStack.length",undoManagerObj.undoStack.length);
+        console.log("redoStack.length", undoManagerObj.redoStack.length);
 
       yDocRef.current.transact(() => {
-
-      yShape.set(idx, konvaData);
-      yObjects.set(idx, konvaData);
-        }, undoManagerObj);
-        console.log(undoManagerObj.undoStack, yObjects);    //TEST
+        yObjects.set(idx, konvaData);
+      }, undoManagerObj);
+        //console.log(undoManagerObj.undoStack, yObjects);    //TEST
+        console.log("handlemouseclick 2143, after");
+        console.log("undoStack.length",undoManagerObj.undoStack.length);
+        console.log("redoStack.length", undoManagerObj.redoStack.length);
     
     
     
 
       id = uuidv4();
-      setTool(Tools.CURSOR);
+      // setTool(Tools.CURSOR);
     } 
     else if (tool === Tools.TEXT) {
       
@@ -2082,16 +2182,16 @@ const App:FC = () => {
       }
       layer.add(textNode);
 
-
-      yDocRef.current.transact(() => {
+      
       yText.set(idx, konvaData);
+      yDocRef.current.transact(() => {
       yObjects.set(idx, konvaData);
     }, undoManagerObj); // Assuming undoManagerObj is your Y.UndoManager instance for yObjects
   
     
       
       id = uuidv4();
-      setTool(Tools.CURSOR);
+      //setTool(Tools.CURSOR);
     }
     else if (tool === Tools.POSTIT) {
       const postItGroup = createNewPostIt(idx, realPointerPosition, "");
@@ -2115,9 +2215,12 @@ const App:FC = () => {
 
       layer.add(postItGroup);
 
-      yShape.set(idx, konvaData);
-    
-      yObjects.set(idx, konvaData)
+      yDocRef.current.transact(() => {
+        yShape.set(idx, konvaData);
+      
+        yObjects.set(idx, konvaData)
+      }, undoManagerObj);
+
       setTool(Tools.CURSOR);
     };    
   }
@@ -2173,22 +2276,36 @@ const App:FC = () => {
   }
 
   const handleUndo = () => {
+    if(undoManagerObj.redo.length>0){
+      undoManagerObj.clear();
+    }
     //console.log(yObjects);
     console.log("before undo", undoManagerObj, undoManagerObj.undoStack, undoManagerObj.undoStack.length, yObjects);
+    console.log(undoManagerObj.undoStack.length, "undostack length");
+    console.log(undoManagerObj.redoStack.length, "redostack length");
+    console.log(yObjects, "yObject before!!!!");
     undoManagerObj.undo();
 
-    yObjects.observe((event) => {
-      console.log("undo then change event", event);
-    })
+    // yObjects.observe((event) => {
+    //   console.log("undo then change event", event);
+    // })
     console.log("after undo", undoManagerObj, undoManagerObj.undoStack, undoManagerObj.undoStack.length, yObjects);
+    console.log(undoManagerObj.undoStack.length, "undostack length");
+    console.log(undoManagerObj.redoStack.length, "redostack length");
+    console.log(yObjects, "yObject after!!!!");
   }
 
   const handleRedo = () => {
-    console.log(yObjects);
     console.log("before redo", undoManagerObj, undoManagerObj.redoStack, undoManagerObj.undoStack.length);
+    console.log(undoManagerObj.undoStack.length, "undostack length");
+    console.log(undoManagerObj.redoStack.length, "redostack length");
+    console.log(yObjects, "yObject before!!!!");
     undoManagerObj.redo();
 
     console.log("after redo", undoManagerObj, undoManagerObj.redoStack, undoManagerObj.undoStack.length);
+    console.log(undoManagerObj.undoStack.length, "undostack length");
+    console.log(undoManagerObj.redoStack.length, "redostack length");
+    console.log(yObjects, "yObject after!!!!");
   }
 
   
