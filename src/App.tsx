@@ -28,6 +28,7 @@ import { uuidv4 } from 'lib0/random.js';
 import {TextInputProps} from './component/TextEditor';
 import { Shape } from './component/UserShape';
 import MindMap from './component/MindMap';
+import { faSlash } from '@fortawesome/free-solid-svg-icons';
 
 /* 블록 하는 좌표 */
 let multiSelectBlocker = {
@@ -102,16 +103,24 @@ const App:FC = () => {
   const yTextRef = useRef<Y.Array<TextInputProps>>(yDocRef.current.getArray<TextInputProps>('texts'));
   
   //const undoManagerObj = new Y.UndoManager([yObjects, yText, yPens, yShape, yTrans, yMove]);
-  // console.log(undoManagerObj)
+ 
+  ////////version1
+  //const undoManagerObj = new Y.UndoManager([yObjects]);
   
-  // const undoManagerObjRef = useRef(null);
-  // if(!undoManagerObjRef.current){
-  //   undoManagerObjRef.current = new Y.UndoManager([yObjects]);
-  // }
-  //const undoManagerObj = undoManagerObjRef.current;
-  
-  const undoManagerObj = new Y.UndoManager([yObjects]);
-  
+  // ///version2
+  // let undoManagerObjRef = useRef<Y.UndoManager | null>(null);
+  // if(!undoManagerObjRef)
+  //   undoManagerObjRef = new Y.UndoManager([yObjects]);
+  // const undoManagerObj = undoManagerObjRef.current;
+
+
+  const undoManagerObjRef = useRef<Y.UndoManager | null>(null);
+  const undoManagerObj = undoManagerObjRef.current;
+
+  useEffect(() => {
+    undoManagerObjRef.current = new Y.UndoManager([yObjects]);
+  }, []);
+
 
 
   //블록 변수
@@ -296,50 +305,50 @@ const App:FC = () => {
         if(node) return;
         newShape = createNewText(index, {x: konvaData.x, y: konvaData.y}, konvaData.text)
         stageRef.current.getLayers()[0].add(newShape);
-        //yText.delete(index);
+        yText.delete(index);
       });
     });
 
-    yShape.observe(() => {
-      yShape.forEach((konvaData:any, index:string)=>{
-        const node = stageRef.current.children[0].findOne("#"+index)
-        let newShape:any;
-        if(node) return;
-        if(konvaData.type === Shape.Stamp){
-          let stampImg = new window.Image();
-          stampImg.src = konvaData.image === 'thumbUp' ? thumbUpImg : thumbDownImg;
+    // yShape.observe(() => {
+    //   yShape.forEach((konvaData:any, index:string)=>{
+    //     const node = stageRef.current.children[0].findOne("#"+index)
+    //     let newShape:any;
+    //     if(node) return;
+    //     if(konvaData.type === Shape.Stamp){
+    //       let stampImg = new window.Image();
+    //       stampImg.src = konvaData.image === 'thumbUp' ? thumbUpImg : thumbDownImg;
     
-          stampImg.onload = () => {
+    //       stampImg.onload = () => {
             
-            const newStamp = createNewStamp(index, {x: konvaData.x, y: konvaData.y}, stampImg)
-            newStamp.name(konvaData.image)
-            stageRef.current.getLayers()[0].add(newStamp);
-          }
-          // yDocRef.current.transact(() => {
-          //   yShape.delete(index); 
-          // }, undoManagerObj);
-        }
-        else {
-          if(konvaData.type === Shape.Rect){
-            newShape = createNewRect(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill)
+    //         const newStamp = createNewStamp(index, {x: konvaData.x, y: konvaData.y}, stampImg)
+    //         newStamp.name(konvaData.image)
+    //         stageRef.current.getLayers()[0].add(newStamp);
+    //       }
+    //       // yDocRef.current.transact(() => {
+    //          yShape.delete(index); 
+    //       // }, undoManagerObj);
+    //     }
+    //     else {
+    //       if(konvaData.type === Shape.Rect){
+    //         newShape = createNewRect(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill)
 
-          } else if(konvaData.type === Shape.Circle){
-            newShape = createNewCir(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill)
+    //       } else if(konvaData.type === Shape.Circle){
+    //         newShape = createNewCir(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill)
             
-          } else if(konvaData.type === Shape.RegularPolygon){
-            newShape = createNewTri(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill)
-          } else if(konvaData.type === Shape.Group){
-            newShape = createNewPostIt(index, {x: konvaData.Group.x, y: konvaData.Group.y}, konvaData.Text.text)
-          }
-          stageRef.current.getLayers()[0].add(newShape);
+    //       } else if(konvaData.type === Shape.RegularPolygon){
+    //         newShape = createNewTri(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill)
+    //       } else if(konvaData.type === Shape.Group){
+    //         newShape = createNewPostIt(index, {x: konvaData.Group.x, y: konvaData.Group.y}, konvaData.Text.text)
+    //       }
+    //       stageRef.current.getLayers()[0].add(newShape);
 
-          // yDocRef.current.transact(() => {
-          //   yShape.delete(index); 
-          // }, undoManagerObj);
-          //yShape.delete(index);   
-        }
-      });  
-    })
+    //       // yDocRef.current.transact(() => {
+    //          yShape.delete(index); 
+    //       // }, undoManagerObj);
+    //       //yShape.delete(index);   
+    //     }
+    //   });  
+    // })
 
     yMove.observe(() => {
       yMove.forEach((konvaData:any, index:string)=>{
@@ -349,7 +358,7 @@ const App:FC = () => {
         if(!node) return;
         node.x(konvaData.x)
         node.y(konvaData.y)
-        // yMove.delete(index);
+         yMove.delete(index);
       });
     })
 
@@ -364,16 +373,118 @@ const App:FC = () => {
         node.scaleX(konvaData.scaleX)
         node.scaleY(konvaData.scaleY)
         node.rotation(konvaData.rotation)
-        // yTrans.delete(index);
+         yTrans.delete(index);
       });
     })
 
 
-    // 초기화 함수 정의
-    const initializeCanvas = () => {
-      yObjects.forEach((konvaData:any, index:string) => {
+    // // 초기화 함수 정의
+    // const initializeCanvas = () => {
+    //   yObjects.forEach((konvaData:any, index:string) => {
         
-        const node = stageRef.current.children[0].findOne("#"+index)
+    //     const node = stageRef.current.children[0].findOne("#"+index)
+    //     if(node) return;
+    //     if(konvaData == null) return;
+    //     if(konvaData.type == Shape.Line){
+          
+    //       const newLine =  createNewLine(index, konvaData.points, konvaData.stroke, konvaData.penStyle)
+    //       newLine.visible(false)
+    //       stageRef.current.getLayers()[0].add(newLine);
+    //       newLine.move({x:konvaData.x, y:konvaData.y});
+  
+    //       newLine.scaleX(konvaData.scaleX)
+    //       newLine.scaleY(konvaData.scaleY)
+    //       newLine.rotation(konvaData.rotation)
+    //       newLine.visible(true);
+    //     } else {
+          
+    //       if(konvaData.type == Shape.Rect){
+    //         const newShape = createNewRect(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+    //         newShape.visible(false)
+    //         stageRef.current.getLayers()[0].add(newShape);
+    //         newShape.scaleX(konvaData.scaleX)
+    //         newShape.scaleY(konvaData.scaleY)
+    //         newShape.rotation(konvaData.rotation)
+    //         newShape.visible(true);
+    //       }
+    //       else if(konvaData.type == Shape.Circle){
+    //         const newShape = createNewCir(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+    //         newShape.visible(false)
+    //         stageRef.current.getLayers()[0].add(newShape);
+    //         newShape.scaleX(konvaData.scaleX)
+    //         newShape.scaleY(konvaData.scaleY)
+    //         newShape.rotation(konvaData.rotation)
+    //         newShape.visible(true);
+    //       } 
+    //       else if(konvaData.type == Shape.RegularPolygon){
+    //         const newShape = createNewTri(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+    //         newShape.visible(false)
+    //         stageRef.current.getLayers()[0].add(newShape);
+    //         newShape.scaleX(konvaData.scaleX)
+    //         newShape.scaleY(konvaData.scaleY)
+    //         newShape.rotation(konvaData.rotation)
+    //         newShape.visible(true);
+    //       }
+    //       else if(konvaData.type == Shape.Stamp){
+    //         let stampImg = new window.Image();
+            
+    //         stampImg.src = konvaData.image === 'thumbUp' ? thumbUpImg : thumbDownImg;
+      
+    //         stampImg.onload = () => {
+              
+    //           const newStamp = createNewStamp(index, {x: konvaData.x, y: konvaData.y}, stampImg)
+    //           newStamp.name(konvaData.image)
+    //           newStamp.visible(false)
+    //           stageRef.current.getLayers()[0].add(newStamp);
+    //           newStamp.scaleX(konvaData.scaleX)
+    //           newStamp.scaleY(konvaData.scaleY)
+    //           newStamp.rotation(konvaData.rotation)
+    //           newStamp.visible(true);
+    //         }           
+    //       } 
+    //       else if(konvaData.type == Shape.Group) { 
+    //         const newShape = createNewPostIt(index, {x:konvaData.Group.x, y:konvaData.Group.y}, konvaData.Text.text);
+    //         newShape.visible(false)
+    //         stageRef.current.getLayers()[0].add(newShape);
+    //         newShape.scaleX(konvaData.Group.scaleX)
+    //         newShape.scaleY(konvaData.Group.scaleY)
+    //         newShape.rotation(konvaData.Group.rotation)
+    //         newShape.visible(true);
+    //       } 
+    //       else if(konvaData.type == Shape.Text){
+    //         const newShape = createNewText(index, {x: konvaData.x, y: konvaData.y}, konvaData.text)
+    //         newShape.visible(false)
+    //         stageRef.current.getLayers()[0].add(newShape);
+    //         newShape.scaleX(konvaData.scaleX)
+    //         newShape.scaleY(konvaData.scaleY)
+    //         newShape.rotation(konvaData.rotation)
+    //         newShape.visible(true);
+    //       }
+    //     } 
+    //   });
+    // };
+
+
+    
+    // const handleDataLoaded = () => {
+      
+    //   setIsLoading(false);
+    //   initializeCanvas();
+    //   //yObjects.unobserve(handleDataLoaded);
+    // };
+
+    //yObjects.observe(handleDataLoaded);
+
+
+
+    
+    yTextRef.current.observe(() => {
+      setTextInputs(yTextRef.current.toArray());
+    });
+
+
+    const createNodeFromKonvaData2 = (index: string, konvaData: any) => {
+      const node = stageRef.current.children[0].findOne("#"+index)
         if(node) return;
         if(konvaData == null) return;
         if(konvaData.type == Shape.Line){
@@ -387,7 +498,8 @@ const App:FC = () => {
           newLine.scaleY(konvaData.scaleY)
           newLine.rotation(konvaData.rotation)
           newLine.visible(true);
-        } else {
+        } 
+        else {
           
           if(konvaData.type == Shape.Rect){
             const newShape = createNewRect(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
@@ -452,133 +564,99 @@ const App:FC = () => {
             newShape.visible(true);
           }
         } 
-      });
-    };
 
-
-    
-    const handleDataLoaded = () => {
-      
-      setIsLoading(false);
-      initializeCanvas();
-      //yObjects.unobserve(handleDataLoaded);
-    };
-
-
-
-
-    yObjects.observe(handleDataLoaded);
-
-    yTextRef.current.observe(() => {
-      setTextInputs(yTextRef.current.toArray());
-    });
-
-
-
-    // const updateCanvas = () => {
-    //   yObjects.observe(event => {
-    //     // Logic to handle updates
-    //     // This includes adding new objects, updating existing ones, or removing them
-    //     event.keysChanged.forEach(id => {
-    //       const konvaData = yObjects.get(id);
-    //       const node = stageRef.current.findOne(`#${id}`);
-    //       console.log(konvaData, node, event.keysChanged, "changed event konvaData, node !!!!!!!!!");
-    //       if (!konvaData) { // If data was removed
-    //         node?.destroy();
-    //       } else if (!node) { 
-    //         initializeCanvas();
-    //         // If it's a new object
-    //         // Create and add a new Konva node based on konvaData
-    //         // For example:
-    //         // const newNode = createKonvaNodeFromData(konvaData);
-    //         // stageRef.current.getLayers()[0].add(newNode);
-    //       } else {
-    //         // Update the existing node based on konvaData
-    //         // For example:
-    //         // updateKonvaNode(node, konvaData);
-    //         node?.destroy();
-    //         initializeCanvas();
-    //       }
-    //     });
-    //   });
-    // };
-    // updateCanvas();
-
-    const createNodeFromKonvaData = (id:string, konvaData:any) => { 
-      let newShape;
-      switch (konvaData.type) {
-        case 'Line':
-          return new Konva.Line({
-            id: id,
-            points: konvaData.points,
-            stroke: konvaData.stroke,
-            strokeWidth: konvaData.strokeWidth,
-            lineCap: konvaData.lineCap,
-            lineJoin: konvaData.lineJoin,
-            // Add other properties as needed
-          });
-        case Shape.Rect:
-          newShape = createNewRect(id, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
-          break;
-        case Shape.Circle:
-          newShape = createNewCir(id, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
-          break;
-        case Shape.RegularPolygon:
-          newShape = createNewTri(id, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
-          break;
-        case Shape.Stamp:
-          let stampImg = new window.Image();
-          stampImg.src = konvaData.image === 'thumbUp' ? thumbUpImg : thumbDownImg;
-          stampImg.onload = () => {
-            newShape = createNewStamp(id, {x: konvaData.x, y: konvaData.y}, stampImg);
-            newShape.name(konvaData.image);
-          }
-          break;
-        case Shape.Group:
-          newShape = createNewPostIt(id, {x:konvaData.Group.x, y:konvaData.Group.y}, konvaData.Text.text);
-          break;
-        case Shape.Text:
-          newShape = createNewText(id, {x: konvaData.x, y: konvaData.y}, konvaData.text);
-          break;
-        default:
-          return null;
-      }
-
-      if (newShape) {
-        newShape.visible(false);
-        stageRef.current.getLayers()[0].add(newShape);
-        newShape.scaleX(konvaData.scaleX);
-        newShape.scaleY(konvaData.scaleY);
-        newShape.rotation(konvaData.rotation);
-        newShape.visible(true);
-      }
-      
     }
 
 
+    // const createNodeFromKonvaData = (id:string, konvaData:any) => { 
+    //   let newShape;
+    //   switch (konvaData.type) {
+    //     case 'Line':
+    //       let newLine;
+    //       // return new Konva.Line({
+    //       //   id: id,
+    //       //   points: konvaData.points,
+    //       //   stroke: konvaData.stroke,
+    //       //   strokeWidth: konvaData.strokeWidth,
+    //       //   lineCap: konvaData.lineCap,
+    //       //   lineJoin: konvaData.lineJoin,
+    //       //   // Add other properties as needed
+    //       // });
+    //       newLine = createNewLine(id, konvaData.points, konvaData.stroke, konvaData.penStyle);
+    //       newLine.visible(false);
+    //       stageRef.current.getLayers()[0].add(newLine);
+    //       newLine.move({x: konvaData.x, y: konvaData.y});
+    //       newLine.scaleX(konvaData.scaleX);
+    //       newLine.scaleY(konvaData.scaleY);
+    //       newLine.rotation(konvaData.rotation);
+    //       newLine.visible(true);
+    //       return newLine;
+    //       break;
+    //     case Shape.Rect:
+    //       newShape = createNewRect(id, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+    //       break;
+    //     case Shape.Circle:
+    //       newShape = createNewCir(id, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+    //       break;
+    //     case Shape.RegularPolygon:
+    //       newShape = createNewTri(id, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+    //       break;
+    //     case Shape.Stamp:
+    //       let stampImg = new window.Image();
+    //       stampImg.src = konvaData.image === 'thumbUp' ? thumbUpImg : thumbDownImg;
+    //       stampImg.onload = () => {
+    //         newShape = createNewStamp(id, {x: konvaData.x, y: konvaData.y}, stampImg);
+    //         newShape.name(konvaData.image);
+    //       }
+    //       break;
+    //     case Shape.Group:
+    //       newShape = createNewPostIt(id, {x:konvaData.Group.x, y:konvaData.Group.y}, konvaData.Text.text);
+    //       break;
+    //     case Shape.Text:
+    //       newShape = createNewText(id, {x: konvaData.x, y: konvaData.y}, konvaData.text);
+    //       break;
+    //     default:
+    //       return null;
+    //   }
+
+    //   if (newShape) {
+    //     newShape.visible(false);
+    //     stageRef.current.getLayers()[0].add(newShape);
+    //     newShape.scaleX(konvaData.scaleX);
+    //     newShape.scaleY(konvaData.scaleY);
+    //     newShape.rotation(konvaData.rotation);
+    //     newShape.visible(true);
+    //     return newShape;
+    //   }
+      
+    // }
+
+
     const updateCanvas = () => {
-      yObjects.observe(event => {
-        // Logic to handle updates
-        // This includes adding new objects, updating existing ones, or removing them
+      setIsLoading(false);
+      yObjects.observe((event) => {
+
         event.keysChanged.forEach(id => {
           const konvaData = yObjects.get(id);
-          
           let node = stageRef.current.findOne(`#${id}`);
           console.log(konvaData, node, event.keysChanged, "changed event konvaData, node !!!!!!!!!");
-          //console.log(undoManagerObj.undoStack,  "check undeoManager !!!!");
-          //console.log(undoManagerObj.undoStack.length, "undostack length yobject!!!!");
-          if (!konvaData || node) { // If data was removed
+
+          //node?.destroy();
+          if (!konvaData || node) { 
             node?.destroy();
           }
 
           if(konvaData){
-            const newNode = createNodeFromKonvaData(id, konvaData);
-            if(newNode){
-              stageRef.current.getLayers()[0].add(newNode);
-            }
+            // const newNode = createNodeFromKonvaData(id, konvaData);
+            // if(newNode){
+            //   stageRef.current.getLayers()[0].add(newNode);
+            // }
+            createNodeFromKonvaData2(id, konvaData);
           }
-        
         });
+        
+
+
       });
     };
     updateCanvas();
@@ -1594,7 +1672,7 @@ const App:FC = () => {
           }
         }
         yDocRef.current.transact(() => { 
-          yObjects.set(node.id(), konvaData)
+          yObjects.set(node.id(), konvaData);
         }, undoManagerObj);
         // console.log("createline in drag end");
         // console.log("undoStack.length",undoManagerObj.undoStack.length);
@@ -1942,11 +2020,11 @@ const App:FC = () => {
       const line = lines.find((line:any) => line.intersects(pointerPosition));
       if(line){
         const lineId = line.id();
+        const changeInfo = {
+          type: "delete"
+        };
+        //yPens 주석 처리해도 같은 결과?
         yDocRef.current.transact(() => {
-          const changeInfo = {
-            type: "delete"
-          };
-          //yPens 주석 처리해도 같은 결과?
           yPens.set(lineId.toString(), changeInfo);
           yObjects.set(lineId.toString(), changeInfo);
         }, undoManagerObj);
@@ -1974,17 +2052,17 @@ const App:FC = () => {
         penStyle    : tool,
         draggable   : true
       }
-      console.log("handlemouseup 1090, before");
-      console.log(newLine, idx, konvaData, "data check 1930");
-        console.log("undoStack.length",undoManagerObj.undoStack.length);
-        console.log("redoStack.length", undoManagerObj.redoStack.length);
+      // console.log("handlemouseup 1090, before");
+      // console.log(newLine, idx, konvaData, "data check 1930");
+      //   console.log("undoStack.length",undoManagerObj.undoStack.length);
+      //   console.log("redoStack.length", undoManagerObj.redoStack.length);
       yDocRef.current.transact(() => {
         yObjects.set(idx, konvaData)
         //console.log("mouse down set line", yObjects, undoManagerObj.undoStack);
       }, undoManagerObj); 
-      console.log("handlemouseup 1090, after");
-        console.log("undoStack.length",undoManagerObj.undoStack.length);
-        console.log("redoStack.length", undoManagerObj.redoStack.length);
+      // console.log("handlemouseup 1090, after");
+      //   console.log("undoStack.length",undoManagerObj.undoStack.length);
+      //   console.log("redoStack.length", undoManagerObj.redoStack.length);
       
       newLine = null;
       id = uuidv4();
@@ -2121,25 +2199,25 @@ const App:FC = () => {
         
         yShape.set(idx, konvaData);
 
-        console.log("handlemouseclick 2074, before");
-        console.log("undoStack.length",undoManagerObj.undoStack.length);
-        console.log("redoStack.length", undoManagerObj.redoStack.length);
+        // console.log("handlemouseclick 2074, before");
+        // console.log("undoStack.length",undoManagerObj.undoStack.length);
+        // console.log("redoStack.length", undoManagerObj.redoStack.length);
 
         yDocRef.current.transact(() => {
           yObjects.set(idx, konvaData);
-          console.log(undoManagerObj.undoStack, "2000, ");
         }, undoManagerObj);
+        //console.log(undoManagerObj.undoStack, "2000, ");
 
-        console.log("handlemouseclick 2083, before");
-        console.log("undoStack.length",undoManagerObj.undoStack.length);
-        console.log("redoStack.length", undoManagerObj.redoStack.length);
+        // console.log("handlemouseclick 2083, before");
+        // console.log("undoStack.length",undoManagerObj.undoStack.length);
+        // console.log("redoStack.length", undoManagerObj.redoStack.length);
         
         
         
       }
       
       id = uuidv4();
-      //setTool(Tools.CURSOR);
+      setTool(Tools.CURSOR);
     }
     else if (tool === Tools.SHAPE){
       let newShape;
@@ -2192,23 +2270,23 @@ const App:FC = () => {
       layer.add(newShape);
       yShape.set(idx, konvaData);
 
-      console.log("handlemouseclick 2135, before");
-        console.log("undoStack.length",undoManagerObj.undoStack.length);
-        console.log("redoStack.length", undoManagerObj.redoStack.length);
+      // console.log("handlemouseclick 2135, before");
+      //   console.log("undoStack.length",undoManagerObj.undoStack.length);
+      //   console.log("redoStack.length", undoManagerObj.redoStack.length);
 
       yDocRef.current.transact(() => {
         yObjects.set(idx, konvaData);
       }, undoManagerObj);
         //console.log(undoManagerObj.undoStack, yObjects);    //TEST
-        console.log("handlemouseclick 2143, after");
-        console.log("undoStack.length",undoManagerObj.undoStack.length);
-        console.log("redoStack.length", undoManagerObj.redoStack.length);
+        // console.log("handlemouseclick 2143, after");
+        // console.log("undoStack.length",undoManagerObj.undoStack.length);
+        // console.log("redoStack.length", undoManagerObj.redoStack.length);
     
     
     
 
       id = uuidv4();
-      // setTool(Tools.CURSOR);
+       setTool(Tools.CURSOR);
     } 
     else if (tool === Tools.TEXT) {
       
@@ -2230,7 +2308,7 @@ const App:FC = () => {
       yText.set(idx, konvaData);
       yDocRef.current.transact(() => {
       yObjects.set(idx, konvaData);
-    }, undoManagerObj); // Assuming undoManagerObj is your Y.UndoManager instance for yObjects
+    }, undoManagerObj); 
   
     
       
@@ -2320,15 +2398,16 @@ const App:FC = () => {
   }
 
   const handleUndo = () => {
-    if(undoManagerObj.redo.length>0){
-      undoManagerObj.clear();
-    }
+    // if(undoManagerObj.redo.length>0){
+
+    //   undoManagerObj.clear();
+    // }
     //console.log(yObjects);
     console.log("before undo", undoManagerObj, undoManagerObj.undoStack, undoManagerObj.undoStack.length, yObjects);
     console.log(undoManagerObj.undoStack.length, "undostack length");
     console.log(undoManagerObj.redoStack.length, "redostack length");
     console.log(yObjects, "yObject before!!!!");
-    undoManagerObj.undo();
+    undoManagerObj?.undo();
 
     // yObjects.observe((event) => {
     //   console.log("undo then change event", event);
@@ -2344,7 +2423,7 @@ const App:FC = () => {
     console.log(undoManagerObj.undoStack.length, "undostack length");
     console.log(undoManagerObj.redoStack.length, "redostack length");
     console.log(yObjects, "yObject before!!!!");
-    undoManagerObj.redo();
+    undoManagerObj?.redo();
 
     console.log("after redo", undoManagerObj, undoManagerObj.redoStack, undoManagerObj.undoStack.length);
     console.log(undoManagerObj.undoStack.length, "undostack length");
@@ -2359,8 +2438,8 @@ const App:FC = () => {
     <>
     <div style={{position: "relative", width: "100%"}}>
       {/* <NavBarLobby /> */}
-      <button onClick={handleUndo}>Undo</button>
-      <button onClick={handleRedo}>Redo</button>
+      {/* <button onClick={handleUndo}>Undo</button>
+      <button onClick={handleRedo}>Redo</button> */}
 
       {/* <VoiceChat /> */}
       
@@ -2390,7 +2469,7 @@ const App:FC = () => {
         </>
 
       </Stage>
-      <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick}/>
+      <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} handleUndo={handleUndo} handleRedo={handleRedo}/>
     </div>
     </>
   );

@@ -23,9 +23,11 @@ import styles from './ButtonCustomGroup.module.css';
 
 interface ButtonCustomGroupProps {
     handleIconBtnClick: (id: string) => void;
+    handleUndo: () => void;
+    handleRedo: () => void;
 }
 
-export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) =>{
+export const ButtonCustomGroup = ({handleIconBtnClick, handleUndo, handleRedo}: ButtonCustomGroupProps) =>{
     const { currentColor, setCurrentColor } = useColor();
 
     // 색상 변경
@@ -45,10 +47,10 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
         <>
             <ButtonGroup color='primary' variant="contained" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", maxWidth: "100%", zIndex: '9999'}}>
                 <Tooltip arrow placement="top" title="Undo">
-                    <IconButton className={styles.BtnGroupContainer}><UndoRoundedIcon /></IconButton>
+                    <IconButton onClick={handleUndo} className={styles.BtnGroupContainer}><UndoRoundedIcon /></IconButton>
                 </Tooltip>
                 <Tooltip arrow placement="top" title="Redo">
-                    <IconButton className={styles.BtnGroupContainer}><RedoRoundedIcon /></IconButton>
+                    <IconButton onClick={handleRedo} className={styles.BtnGroupContainer}><RedoRoundedIcon /></IconButton>
                 </Tooltip>
 
                 <ButtonGroup className='cursorBox BtnGroup' orientation="vertical" style={{margin:0}}>
