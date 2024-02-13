@@ -693,7 +693,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
     };
     
 
-    setTmpButtoninStage();
+    //setTmpButtoninStage();
 
 
     const handleUndo = () => {

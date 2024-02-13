@@ -2,8 +2,7 @@ import {
   FC
   , useState
   , useRef
-  , useEffect, 
-  useCallback
+  , useEffect,
 } from 'react';
 import { useLocation} from 'react-router-dom';
 import Konva from 'konva';
@@ -312,7 +311,7 @@ const App:FC = () => {
         let newShape:any;
         if(node) return;
         newShape = createNewText(index, {x: konvaData.x, y: konvaData.y}, konvaData.text)
-        stageRef.current.getLayers()[0].add(newShape);
+        //stageRef.current.getLayers()[0].add(newShape);
         yText.delete(index);
       });
     });
@@ -476,70 +475,6 @@ const App:FC = () => {
     }
 
 
-    // const createNodeFromKonvaData = (id:string, konvaData:any) => { 
-    //   let newShape;
-    //   switch (konvaData.type) {
-    //     case 'Line':
-    //       let newLine;
-    //       // return new Konva.Line({
-    //       //   id: id,
-    //       //   points: konvaData.points,
-    //       //   stroke: konvaData.stroke,
-    //       //   strokeWidth: konvaData.strokeWidth,
-    //       //   lineCap: konvaData.lineCap,
-    //       //   lineJoin: konvaData.lineJoin,
-    //       //   // Add other properties as needed
-    //       // });
-    //       newLine = createNewLine(id, konvaData.points, konvaData.stroke, konvaData.penStyle);
-    //       newLine.visible(false);
-    //       stageRef.current.getLayers()[0].add(newLine);
-    //       newLine.move({x: konvaData.x, y: konvaData.y});
-    //       newLine.scaleX(konvaData.scaleX);
-    //       newLine.scaleY(konvaData.scaleY);
-    //       newLine.rotation(konvaData.rotation);
-    //       newLine.visible(true);
-    //       return newLine;
-    //       break;
-    //     case Shape.Rect:
-    //       newShape = createNewRect(id, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
-    //       break;
-    //     case Shape.Circle:
-    //       newShape = createNewCir(id, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
-    //       break;
-    //     case Shape.RegularPolygon:
-    //       newShape = createNewTri(id, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
-    //       break;
-    //     case Shape.Stamp:
-    //       let stampImg = new window.Image();
-    //       stampImg.src = konvaData.image === 'thumbUp' ? thumbUpImg : thumbDownImg;
-    //       stampImg.onload = () => {
-    //         newShape = createNewStamp(id, {x: konvaData.x, y: konvaData.y}, stampImg);
-    //         newShape.name(konvaData.image);
-    //       }
-    //       break;
-    //     case Shape.Group:
-    //       newShape = createNewPostIt(id, {x:konvaData.Group.x, y:konvaData.Group.y}, konvaData.Text.text);
-    //       break;
-    //     case Shape.Text:
-    //       newShape = createNewText(id, {x: konvaData.x, y: konvaData.y}, konvaData.text);
-    //       break;
-    //     default:
-    //       return null;
-    //   }
-
-    //   if (newShape) {
-    //     newShape.visible(false);
-    //     stageRef.current.getLayers()[0].add(newShape);
-    //     newShape.scaleX(konvaData.scaleX);
-    //     newShape.scaleY(konvaData.scaleY);
-    //     newShape.rotation(konvaData.rotation);
-    //     newShape.visible(true);
-    //     return newShape;
-    //   }
-      
-    // }
-
-
     const updateCanvas = () => {
       setIsLoading(false);
       yObjects.observe((event) => {
@@ -547,7 +482,7 @@ const App:FC = () => {
         event.keysChanged.forEach(id => {
           const konvaData = yObjects.get(id);
           let node = stageRef.current.findOne(`#${id}`);
-          console.log(konvaData, node, event.keysChanged, "changed event konvaData, node !!!!!!!!!");
+          //console.log(konvaData,  node, event.keysChanged, "changed event konvaData, node !!!!!!!!!");
 
           //node?.destroy();
           if (!konvaData || node) { 
@@ -1890,6 +1825,9 @@ const App:FC = () => {
       //console.log("create", undoManagerObj, undoManagerObj.undoStack);
 
     }
+    else if(tool === Tools.ERASER){
+      isDrawing.current = true;
+    }
   };
 
   const handleMouseMove = (e: any) => {
@@ -1954,21 +1892,50 @@ const App:FC = () => {
       yPens.set(idx, changeInfo);
     //}, undoManagerObj);
     }
-    else if(tool === Tools.ERASER){
-      const stage = e.target.getStage()
-      const pointerPosition = stage.getPointerPosition();
-      const lines = stage.getLayers()[0].getChildren((node:any) => {return node.getClassName() === 'Line'});
 
-      const line = lines.find((line:any) => line.intersects(pointerPosition));
-      if(line){
-        const lineId = line.id();
-        const changeInfo = {
-          type: "delete"
-        };
-        //yPens 주석 처리해도 같은 결과?
+    else if (tool === Tools.ERASER) {
+      if (!isDrawing.current || !stageRef.current) return;
+    
+      const pos = stageRef.current.getPointerPosition();
+      if (!pos) return;
+    
+      const areaSize = 30; 
+      const area = {
+        x: pos.x - areaSize / 2,
+        y: pos.y - areaSize / 2,
+        width: areaSize,
+        height: areaSize
+      };
+    
+      const shapes = stageRef.current.getLayers()[0].getChildren((node) => {
+        const classNames = ['Line', 'Circle', 'Rect', 'RegularPolygon', 'Image', 'Text', 'Group'];
+        return classNames.includes(node.getClassName());
+      });
+    
+      const targetErase = shapes.find(node => {
+        if (node.getType() === 'Group') {
+          const group = node as Konva.Group; 
+          return group.getChildren().some((child: Konva.Node) => {
+            if (typeof child.getClientRect === 'function') {
+              const childRect = child.getClientRect();
+              return Konva.Util.haveIntersection(area, childRect);
+            }
+            return false;
+          });
+        } else if (node.getType() === 'Shape') {
+          const shape = node as Konva.Shape; 
+          const shapeRect = shape.getClientRect();
+          return Konva.Util.haveIntersection(area, shapeRect);
+        }
+        return false;
+      });
+      
+      if (targetErase) {
+        const targetEraseId = targetErase.id();
+        const changeInfo = { type: "delete" };
+        
         yDocRef.current.transact(() => {
-          yPens.set(lineId.toString(), changeInfo);
-          yObjects.set(lineId.toString(), changeInfo);
+          yObjects.set(targetEraseId, changeInfo);
         }, undoManagerObj);
       }
     }
@@ -2012,6 +1979,9 @@ const App:FC = () => {
       
       newLine = null;
       id = uuidv4();
+    }
+    else if(tool == Tools.ERASER){
+      isDrawing.current = false;
     }
     else if(tool === Tools.CURSOR){
       if(isSelected.current){
@@ -2239,6 +2209,7 @@ const App:FC = () => {
       var textNode:Konva.Text = createNewText(idx, realPointerPosition, "", defaultColor);
       const konvaData = {
         id       : textNode.id(),
+        type     : Shape.Text,
         text     : textNode.text(),
         x        : textNode.x(),
         y        : textNode.y(),
@@ -2249,17 +2220,16 @@ const App:FC = () => {
         userId    : userId,
       }
       layer.add(textNode);
-
       
       yText.set(idx, konvaData);
       yDocRef.current.transact(() => {
-      yObjects.set(idx, konvaData);
-    }, undoManagerObj); 
+        yObjects.set(idx, konvaData);
+      }, undoManagerObj); 
   
     
       
       id = uuidv4();
-      //setTool(Tools.CURSOR);
+      setTool(Tools.CURSOR);
     }
     else if (tool === Tools.POSTIT) {
       const postItGroup = createNewPostIt(idx, realPointerPosition, "");
@@ -2282,9 +2252,9 @@ const App:FC = () => {
       }
 
       layer.add(postItGroup);
+      yShape.set(idx, konvaData);
 
       yDocRef.current.transact(() => {
-        yShape.set(idx, konvaData);
       
         yObjects.set(idx, konvaData)
       }, undoManagerObj);
@@ -2352,10 +2322,10 @@ const App:FC = () => {
   
   const handleUndo = () => {
     //console.log(yObjects);
-    console.log("before undo", undoManagerObj, undoManagerObj?.undoStack, undoManagerObj?.undoStack.length, yObjects);
-    console.log(undoManagerObj?.undoStack.length, "undostack length");
-    console.log(undoManagerObj?.redoStack.length, "redostack length");
-    console.log(yObjects, "yObject before!!!!");
+    // console.log("before undo", undoManagerObj, undoManagerObj?.undoStack, undoManagerObj?.undoStack.length, yObjects);
+    // console.log(undoManagerObj?.undoStack.length, "undostack length");
+    // console.log(undoManagerObj?.redoStack.length, "redostack length");
+    // console.log(yObjects, "yObject before!!!!");
     undoManagerObj?.undo();
     //undoManagerMindMap?.undo();
 
@@ -2363,24 +2333,24 @@ const App:FC = () => {
     // yObjects.observe((event) => {
     //   console.log("undo then change event", event);
     // })
-    console.log("after undo", undoManagerObj, undoManagerObj?.undoStack, undoManagerObj?.undoStack.length, yObjects);
-    console.log(undoManagerObj?.undoStack.length, "undostack length");
-    console.log(undoManagerObj?.redoStack.length, "redostack length");
-    console.log(yObjects, "yObject after!!!!");
+    // console.log("after undo", undoManagerObj, undoManagerObj?.undoStack, undoManagerObj?.undoStack.length, yObjects);
+    // console.log(undoManagerObj?.undoStack.length, "undostack length");
+    // console.log(undoManagerObj?.redoStack.length, "redostack length");
+    // console.log(yObjects, "yObject after!!!!");
   }
 
   const handleRedo = () => {
-    console.log("before redo", undoManagerObj, undoManagerObj?.redoStack, undoManagerObj?.undoStack.length);
-    console.log(undoManagerObj?.undoStack.length, "undostack length");
-    console.log(undoManagerObj?.redoStack.length, "redostack length");
-    console.log(yObjects, "yObject before!!!!");
+    // console.log("before redo", undoManagerObj, undoManagerObj?.redoStack, undoManagerObj?.undoStack.length);
+    // console.log(undoManagerObj?.undoStack.length, "undostack length");
+    // console.log(undoManagerObj?.redoStack.length, "redostack length");
+    // console.log(yObjects, "yObject before!!!!");
     undoManagerObj?.redo();
     //undoManagerMindMap?.redo();
 
-    console.log("after redo", undoManagerObj, undoManagerObj?.redoStack, undoManagerObj?.undoStack.length);
-    console.log(undoManagerObj?.undoStack.length, "undostack length");
-    console.log(undoManagerObj?.redoStack.length, "redostack length");
-    console.log(yObjects, "yObject after!!!!");
+    // console.log("after redo", undoManagerObj, undoManagerObj?.redoStack, undoManagerObj?.undoStack.length);
+    // console.log(undoManagerObj?.undoStack.length, "undostack length");
+    // console.log(undoManagerObj?.redoStack.length, "redostack length");
+    // console.log(yObjects, "yObject after!!!!");
   }
 
   
