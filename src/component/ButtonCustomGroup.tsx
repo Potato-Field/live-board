@@ -1,4 +1,4 @@
-import { ChangeEvent } from 'react';
+import { ChangeEvent, useState } from 'react';
 
 import { Tools } from './Tools';
 import { useColor } from './ColorContext';
@@ -16,7 +16,8 @@ import { ButtonGroup, IconButton, Tooltip } from '@mui/material';
 import UndoRoundedIcon from '@mui/icons-material/UndoRounded';
 import RedoRoundedIcon from '@mui/icons-material/RedoRounded';
 import CircleIcon from '@mui/icons-material/Circle';
-import { faPen, faHighlighter } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPen, faHighlighter, faStamp, faShapes } from '@fortawesome/free-solid-svg-icons'
 
 import styles from './ButtonCustomGroup.module.css';
 
@@ -39,6 +40,8 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
             setCurrentColor(customColor); 
         }
     };
+
+    const [open, setOpen] = useState(false);
 
     return(
         <>
@@ -64,10 +67,17 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
                     <Eraser props = {Tools.ERASER} />
                     <PostIt props={Tools.POSTIT}/>
 
-                    <ButtonGroup className='shapeBox'>
-                        <Stamp handleIconBtnClick={handleIconBtnClick} props={Tools.STAMP}/>
-                        <Shape handleIconBtnClick={handleIconBtnClick} props={Tools.SHAPE}/>
-                    </ButtonGroup>
+                    <Tooltip arrow placement="top" title="Stamp">
+                        <IconButton>
+                            <FontAwesomeIcon icon={faStamp} size='xl'/>
+                        </IconButton>
+                    </Tooltip>
+
+                    <Tooltip arrow placement="top" title="Shape">
+                        <IconButton>
+                            <FontAwesomeIcon icon={faShapes} size='xl'/>
+                        </IconButton>
+                    </Tooltip>
 
                     <MindMap props = {Tools.MINDMAP}/>
                 </ButtonGroup>
@@ -100,6 +110,15 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
                     </ButtonGroup>
                 </ButtonGroup>
             </ButtonGroup>
+
+            {/* <ButtonGroup id='BtnGroupContained' variant="contained" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", maxWidth: "100%"}}>
+                <Stamp handleIconBtnClick={handleIconBtnClick} props={Tools.STAMP}/>
+            </ButtonGroup>
+
+            <ButtonGroup id='BtnGroupContained' variant="contained" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", maxWidth: "100%"}}>
+                <Shape handleIconBtnClick={handleIconBtnClick} props={Tools.SHAPE}/>
+            </ButtonGroup> */}
+
         </>
     );
 }
