@@ -144,20 +144,20 @@ body {
   background-color: #d6a6a6;
 } */
 
-#BtnGroupCursor {
+#btnGroupCursor {
   background-color: rgba(218, 215, 215, 0.571);
 }
 
-#BtnGroupTools {
+#btnGroupTools {
   background-color: #727272;
 }
 
-#BtnGroupColors{
+#btnGroupColors{
   background-color: rgba(160, 160, 160, 0.979);
 }
 
 /* 아이콘 */
-#BtnGroupTools svg{
+#btnGroupTools svg{
   color: white;
 }
 

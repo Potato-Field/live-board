@@ -45,8 +45,8 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
 
     return(
         <>
-            <ButtonGroup id='BtnGroupContained' variant="contained" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", maxWidth: "100%"}}>
-                <ButtonGroup id='BtnGroupCursor'>
+            <ButtonGroup id='btnGroupContained' variant="contained" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", maxWidth: "100%"}}>
+                <ButtonGroup id='btnGroupCursor'>
                     <Tooltip arrow placement="top" title="Undo">
                         <IconButton className={styles.BtnGroupContainer}><UndoRoundedIcon /></IconButton>
                     </Tooltip>
@@ -60,7 +60,7 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
                     <Hand props = {Tools.HAND}/>
                 </ButtonGroup>
 
-                <ButtonGroup id="BtnGroupTools">
+                <ButtonGroup id="btnGroupTools">
                     <Text   props = {Tools.TEXT}/>
                     <Pen    props = {Tools.PEN} icon = {faPen}/>
                     <Pen    props = {Tools.HIGHLIGHTER} icon = {faHighlighter}/>
@@ -82,7 +82,7 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
                     <MindMap props = {Tools.MINDMAP}/>
                 </ButtonGroup>
 
-                <ButtonGroup id='BtnGroupColors' orientation="vertical">
+                <ButtonGroup id='btnGroupColors' orientation="vertical">
                     <ButtonGroup>
                         <Tooltip arrow placement="top" title="Black">
                             <IconButton onClick={()=>{handleColorClick('#000000')}}><CircleIcon className={styles.circle} style={{color: '000000'}}/></IconButton>
@@ -111,11 +111,11 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
                 </ButtonGroup>
             </ButtonGroup>
 
-            {/* <ButtonGroup id='BtnGroupContained' variant="contained" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", maxWidth: "100%"}}>
+            <ButtonGroup id='allStamp' variant="contained" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", maxWidth: "100%"}}>
                 <Stamp handleIconBtnClick={handleIconBtnClick} props={Tools.STAMP}/>
             </ButtonGroup>
 
-            <ButtonGroup id='BtnGroupContained' variant="contained" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", maxWidth: "100%"}}>
+            {/* <ButtonGroup id='BtnGroupContained' variant="contained" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", maxWidth: "100%"}}>
                 <Shape handleIconBtnClick={handleIconBtnClick} props={Tools.SHAPE}/>
             </ButtonGroup> */}
 
