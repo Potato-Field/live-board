@@ -42,11 +42,11 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
 
 
 
-   //const undoManagerMindMapRef = useRef<Y.UndoManager | null>(null);
-   //const undoManagerMindMap = undoManagerMindMapRef.current;
-  //  useEffect(() => {
-  //   undoManagerMindMapRef.current = new Y.UndoManager([yTargets, yConnectors]);
-  //  }, []);
+   const undoManagerMindMapRef = useRef<Y.UndoManager | null>(null);
+   const undoManagerMindMap = undoManagerMindMapRef.current;
+   useEffect(() => {
+    undoManagerMindMapRef.current = new Y.UndoManager([yTargets, yConnectors]);
+   }, []);
   
 
 
@@ -86,9 +86,9 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
                           value: "new-node",
                           childIds: [],
                       };
-                      //yDocRef.current.transact(() => {
+                      yDocRef.current.transact(() => {
                         yTargets.set(newNodeId, newNode);
-                      //}, undoManagerMindMap);
+                      }, undoManagerMindMap);
                   }
               }
           });
@@ -114,7 +114,10 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
                     value: "new-node",
                     childIds: [],
                 };
-                yTargets.set(newNodeId, newNode);
+                yDocRef.current.transact(() => {
+                  yTargets.set(newNodeId, newNode);
+
+                }, undoManagerMindMap);
             }
         }
     };
@@ -149,14 +152,22 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
   
       const newTargetId = generateRandomId(`target-${yTargets.size}`);
       const newTarget = { id: newTargetId, x: newX, y: newY, value: `new-node${yTargets.size}`, childIds: [] };
-      yTargets.set(newTargetId, newTarget);
+
+      yDocRef.current.transact(() => {
+
+        yTargets.set(newTargetId, newTarget);
+      }, undoManagerMindMap);
 
       //child target id 추가하는 부분
       const updatedTarget = {
         ...baseTarget, 
         childIds: [...baseTarget.childIds, newTargetId]
       };
-      yTargets.set(targetId, updatedTarget);
+
+      yDocRef.current.transact(() => {
+
+        yTargets.set(targetId, updatedTarget);
+      }, undoManagerMindMap);
 
   
       const newConnectorId = generateRandomId(`connector-${yConnectors.size}`);
@@ -216,7 +227,10 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
           if (e.key === 'Enter' && !e.shiftKey) {
             const nowTarget = yTargets.get(targetId);
             if(nowTarget){
-              yTargets.set(targetId, { ...nowTarget, value: textArea.value });
+              yDocRef.current.transact(()=>{
+                yTargets.set(targetId, { ...nowTarget, value: textArea.value });
+
+              }, undoManagerMindMap);
             }
             textArea.parentNode?.removeChild(textArea);
             targetText?.show();
@@ -322,8 +336,10 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
     node?.destroy();
     textNode?.destroy();
 
-    
-    yTargets.delete(targetId);
+    yDocRef.current.transact(() => {
+
+      yTargets.delete(targetId);
+    }, undoManagerMindMap)
 
     yConnectors.forEach((connector, connectorId) => {
       if (connector.from === targetId || connector.to === targetId) {
@@ -527,7 +543,9 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
                 x: node?.x()??target.x,
                 y: node?.y()??target.y,
               }
-              yTargets.set(id, updatedTarget);
+              yDocRef.current.transact(() => {
+                yTargets.set(id, updatedTarget);
+              }, undoManagerMindMap);
               //layerRef.current?.add(target);
         
             
@@ -606,7 +624,9 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
               x: offsetX + (textNode?.x()??textX),
               y: offsetY + (textNode?.y()??textY),
             }
-            yTargets.set(id, updatedTarget);
+            yDocRef.current.transact(() => {
+              yTargets.set(id, updatedTarget);
+            }, undoManagerMindMap);
             updateConnectors(id);
           }
         });
@@ -648,14 +668,66 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
     // console.log("!!!!!!!!!!!!!!!!!!!!!!come out");//TEST
     
 
+    const setTmpButtoninStage = () => {
+      const menu = document.createElement('div');
+      document.body.appendChild(menu);
 
+      menu.style.position = 'absolute';
+      menu.style.left = '50px'; // Added 'px' unit
+      menu.style.top = '50px'; // Added 'px' unit
+      menu.style.backgroundColor = '#f9f9f9';
+      menu.style.boxShadow = '0px 8px 16px 0px rgba(0,0,0,0.2)';
+      menu.style.zIndex = '1000';
+      menu.style.padding = '10px';
+    
+      const createButton = document.createElement('button');
+      createButton.innerHTML = 'Undo';
+      createButton.onclick = () => handleUndo(); // Using arrow function for consistency
+    
+      const createButton2 = document.createElement('button');
+      createButton2.innerHTML = 'Redo';
+      createButton2.onclick = () => handleRedo(); // Using arrow function for consistency
+    
+      menu.appendChild(createButton);
+      menu.appendChild(createButton2);
+    };
+    
+
+    setTmpButtoninStage();
+
+
+    const handleUndo = () => {
+      console.log("before, mindmap UNDO")
+      console.log(undoManagerMindMap?.undoStack.length, "undostack length");
+      console.log(undoManagerMindMap?.redoStack.length, "redostack length");
+      undoManagerMindMap?.undo();
+      console.log("after, mindmap UNDO")
+      console.log(undoManagerMindMap?.undoStack.length, "undostack length");
+      console.log(undoManagerMindMap?.redoStack.length, "redostack length");
+    }
+
+    const handleRedo = () => {
+      console.log("before, mindmap REDO")
+      console.log(undoManagerMindMap?.undoStack.length, "undostack length");
+      console.log(undoManagerMindMap?.redoStack.length, "redostack length");
+      undoManagerMindMap?.redo();
+      console.log("before, mindmap REDO")
+      console.log(undoManagerMindMap?.undoStack.length, "undostack length");
+      console.log(undoManagerMindMap?.redoStack.length, "redostack length");
+     
+    }
+  
+  
 
 
    
 
 
   // return {nodeTargets, setNodeTargets};
-  return (<></>);
+  return (<>
+  
+  
+  </>);
 });
 
 export default MindMap;
