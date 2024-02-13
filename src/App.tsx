@@ -186,13 +186,13 @@ const App:FC = () => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current);
 
     /* 본인 로컬에서 작동 */
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
 
     /* 배포시 사용 */
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
     
       
 
@@ -311,7 +311,7 @@ const App:FC = () => {
         let newShape:any;
         if(node) return;
         newShape = createNewText(index, {x: konvaData.x, y: konvaData.y}, konvaData.text)
-        //stageRef.current.getLayers()[0].add(newShape);
+        stageRef.current.getLayers()[0].add(newShape);
         yText.delete(index);
       });
     });
@@ -329,7 +329,7 @@ const App:FC = () => {
             
             const newStamp = createNewStamp(index, {x: konvaData.x, y: konvaData.y}, stampImg)
             newStamp.name(konvaData.image)
-            //stageRef.current.getLayers()[0].add(newStamp);
+            stageRef.current.getLayers()[0].add(newStamp);
           }
           // yDocRef.current.transact(() => {
              yShape.delete(index); 
@@ -347,7 +347,7 @@ const App:FC = () => {
           } else if(konvaData.type === Shape.Group){
             newShape = createNewPostIt(index, {x: konvaData.Group.x, y: konvaData.Group.y}, konvaData.Text.text)
           }
-          //stageRef.current.getLayers()[0].add(newShape);
+          stageRef.current.getLayers()[0].add(newShape);
 
           // yDocRef.current.transact(() => {
              yShape.delete(index); 
@@ -1374,9 +1374,9 @@ const App:FC = () => {
           y   : node.y(),
           userId : userId.current
         }
-        yDocRef.current.transact(() => {
+        // yDocRef.current.transact(() => {
           yMove.set(node.id(), changeInfo);
-        }, undoManagerObj);
+        // }, undoManagerObj);
       });
       
       const selectionRect = tr.getClientRect();
