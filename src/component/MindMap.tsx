@@ -668,54 +668,54 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
     // console.log("!!!!!!!!!!!!!!!!!!!!!!come out");//TEST
     
 
-    const setTmpButtoninStage = () => {
-      const menu = document.createElement('div');
-      document.body.appendChild(menu);
+    // const setTmpButtoninStage = () => {
+    //   const menu = document.createElement('div');
+    //   document.body.appendChild(menu);
 
-      menu.style.position = 'absolute';
-      menu.style.left = '50px'; // Added 'px' unit
-      menu.style.top = '50px'; // Added 'px' unit
-      menu.style.backgroundColor = '#f9f9f9';
-      menu.style.boxShadow = '0px 8px 16px 0px rgba(0,0,0,0.2)';
-      menu.style.zIndex = '1000';
-      menu.style.padding = '10px';
+    //   menu.style.position = 'absolute';
+    //   menu.style.left = '50px'; // Added 'px' unit
+    //   menu.style.top = '50px'; // Added 'px' unit
+    //   menu.style.backgroundColor = '#f9f9f9';
+    //   menu.style.boxShadow = '0px 8px 16px 0px rgba(0,0,0,0.2)';
+    //   menu.style.zIndex = '1000';
+    //   menu.style.padding = '10px';
     
-      const createButton = document.createElement('button');
-      createButton.innerHTML = 'Undo';
-      createButton.onclick = () => handleUndo(); // Using arrow function for consistency
+    //   const createButton = document.createElement('button');
+    //   createButton.innerHTML = 'Undo';
+    //   createButton.onclick = () => handleUndo(); // Using arrow function for consistency
     
-      const createButton2 = document.createElement('button');
-      createButton2.innerHTML = 'Redo';
-      createButton2.onclick = () => handleRedo(); // Using arrow function for consistency
+    //   const createButton2 = document.createElement('button');
+    //   createButton2.innerHTML = 'Redo';
+    //   createButton2.onclick = () => handleRedo(); // Using arrow function for consistency
     
-      menu.appendChild(createButton);
-      menu.appendChild(createButton2);
-    };
+    //   menu.appendChild(createButton);
+    //   menu.appendChild(createButton2);
+    // };
     
 
     //setTmpButtoninStage();
 
 
-    const handleUndo = () => {
-      console.log("before, mindmap UNDO")
-      console.log(undoManagerMindMap?.undoStack.length, "undostack length");
-      console.log(undoManagerMindMap?.redoStack.length, "redostack length");
-      undoManagerMindMap?.undo();
-      console.log("after, mindmap UNDO")
-      console.log(undoManagerMindMap?.undoStack.length, "undostack length");
-      console.log(undoManagerMindMap?.redoStack.length, "redostack length");
-    }
+    // const handleUndo = () => {
+    //   console.log("before, mindmap UNDO")
+    //   console.log(undoManagerMindMap?.undoStack.length, "undostack length");
+    //   console.log(undoManagerMindMap?.redoStack.length, "redostack length");
+    //   undoManagerMindMap?.undo();
+    //   console.log("after, mindmap UNDO")
+    //   console.log(undoManagerMindMap?.undoStack.length, "undostack length");
+    //   console.log(undoManagerMindMap?.redoStack.length, "redostack length");
+    // }
 
-    const handleRedo = () => {
-      console.log("before, mindmap REDO")
-      console.log(undoManagerMindMap?.undoStack.length, "undostack length");
-      console.log(undoManagerMindMap?.redoStack.length, "redostack length");
-      undoManagerMindMap?.redo();
-      console.log("before, mindmap REDO")
-      console.log(undoManagerMindMap?.undoStack.length, "undostack length");
-      console.log(undoManagerMindMap?.redoStack.length, "redostack length");
+    // const handleRedo = () => {
+    //   console.log("before, mindmap REDO")
+    //   console.log(undoManagerMindMap?.undoStack.length, "undostack length");
+    //   console.log(undoManagerMindMap?.redoStack.length, "redostack length");
+    //   undoManagerMindMap?.redo();
+    //   console.log("before, mindmap REDO")
+    //   console.log(undoManagerMindMap?.undoStack.length, "undostack length");
+    //   console.log(undoManagerMindMap?.redoStack.length, "redostack length");
      
-    }
+    // }
   
   
 
