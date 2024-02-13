@@ -28,6 +28,8 @@ type Target = {
   }
   
 
+//  export const undoManagerMindMapRef = useRef<Y.UndoManager | null>(null);
+//  export const undoManagerMindMap = undoManagerMindMapRef.current;
 
 //const MindMap = forwardRef((ref: RefObject<Konva.Stage>) => {
 export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefObject<Konva.Stage>, toolRef: any
@@ -37,6 +39,18 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
     // const [connectors, setConnectors] = useState<Connector[]>([]);
     //const toolRef.current = toolRef.current;
    //console.log(toolRef.current, Tools.MINDMAP);
+
+
+
+   //const undoManagerMindMapRef = useRef<Y.UndoManager | null>(null);
+   //const undoManagerMindMap = undoManagerMindMapRef.current;
+  //  useEffect(() => {
+  //   undoManagerMindMapRef.current = new Y.UndoManager([yTargets, yConnectors]);
+  //  }, []);
+  
+
+
+
     const layerRef = useRef<Konva.Layer>();
 
     const yTargets: Y.Map<Target> = yDocRef.current.getMap('targets');
@@ -72,7 +86,9 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
                           value: "new-node",
                           childIds: [],
                       };
-                      yTargets.set(newNodeId, newNode);
+                      //yDocRef.current.transact(() => {
+                        yTargets.set(newNodeId, newNode);
+                      //}, undoManagerMindMap);
                   }
               }
           });
