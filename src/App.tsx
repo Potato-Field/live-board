@@ -25,7 +25,7 @@ import "./index.css"
 import * as Y from "yjs";
 import { WebrtcProvider } from "y-webrtc";
 import { uuidv4 } from 'lib0/random.js';
-import {TextInputProps} from './component/TextEditor';
+
 import { Shape } from './component/UserShape';
 // import MindMap, {undoManagerMindMap} from './component/MindMap';
 import MindMap from './component/MindMap';
