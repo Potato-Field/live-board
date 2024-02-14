@@ -627,7 +627,7 @@ const App:FC = () => {
         });
       });
     };
-    updateCanvas();
+    // updateCanvas();
 
 
 
@@ -1102,9 +1102,8 @@ const App:FC = () => {
         textarea.addEventListener('keydown', function () {
           let scale = textNode.getAbsoluteScale().x;
           setTextareaWidth(textNode.width() * scale);
-        textarea.style.height = 'auto';
-        textarea.style.height =
-        textarea.scrollHeight + textNode.fontSize() + 'px';
+          textarea.style.height = 'auto';
+          textarea.style.height = textarea.scrollHeight + textNode.fontSize() + 'px';
       });
 
       function handleOutsideClick(e:any) {
@@ -1135,7 +1134,7 @@ const App:FC = () => {
 
   const createNewPostIt = (id:string, pos:{x:number, y:number}, text:string = "")=>{
     const yTextData = yDocRef.current.getText(id); //text 동기화 추가
-    const defaultString = 'Type anything! And also everyone in the meeting can vote on your topic by stamp👍🏽👎🏽';
+    const defaultString = '무엇이든 작성하세요! 스탬프를 이용해 메모에 대한 투표를 진행할 수도 있습니다. 👍🏽👎🏽';
 
     let postItGroup = new Konva.Group({
       name : 'postIt',
@@ -1144,7 +1143,6 @@ const App:FC = () => {
       draggable: true,
       id: id, // 각각의 포스트잇마다 uuid 잘 찍힘 
     });
-
     
     const postItOptions = {
       x: 0,
@@ -1165,13 +1163,14 @@ const App:FC = () => {
     
     let initText = new Konva.Text({
       id : id+"_piit",
-      name: 'postItinitText',
+      name: 'postItInitText',
       ...postItOptions,
       width: postItText.width(),
       text: defaultString,
       fontSize: 20,
       opacity: 0.4,
       padding: 15,
+      lineHeight: 1.2,
     });
     
     let postItRect = new Konva.Rect({
@@ -1222,13 +1221,12 @@ const App:FC = () => {
       document.body.appendChild(textarea);
       const scale = stageRef.current.scaleX();
 
-
       textarea.style.position = 'absolute';
       textarea.style.top = areaPosition.y + 'px';
       textarea.style.left = areaPosition.x + 'px';
-      textarea.style.width = postItText.width()*scale + 'px';
-      textarea.style.height = postItText.height()*scale + 'px';
-      textarea.style.fontSize = postItText.fontSize()*scale + 'px';
+      textarea.style.width = postItText.width() * scale + 'px';
+      textarea.style.height = postItText.height() * scale + 'px';
+      textarea.style.fontSize = postItText.fontSize() * scale + 'px';
       textarea.style.border = 'none';
       textarea.style.padding = '15px';
       textarea.style.margin = '0px';
@@ -1327,18 +1325,18 @@ const App:FC = () => {
 
       /* 입력되는 텍스트 양에 따른 rect height 증가  */
       textarea.addEventListener('keydown', function (e: any) {
+        const text = postItGroup.findOne('.postItText')
+        const rect = postItGroup.findOne('.postItRect')
+
         setTextareaWidth(postItText.width());
         textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + postItText.fontSize() + 'px';
-       
-        const text = postItGroup.findOne('.postItText')
-        const rect = postItGroup.findOne('.postItRect')
 
         let textareaHeight = (parseInt(textarea.style.height.slice(0, -2)) as any); // 'px' 제거
         
         if (text && rect) {
           text.setAttrs({
-            height: Math.max(textareaHeight, text.attrs.height),
+            height: Math.max(textareaHeight, POSTIT_MIN_HEIGHT),
           });
 
           rect.setAttrs({
@@ -1436,7 +1434,7 @@ const App:FC = () => {
       
       const text = postItGroup.findOne('.postItText')
       const rect = postItGroup.findOne('.postItRect')
-      const init = postItGroup.findOne('.postItText')
+      const init = postItGroup.findOne('.postItInitText')
       
       if (text && rect) {
         text.on('transform', () => {
@@ -1890,7 +1888,8 @@ const App:FC = () => {
         stageRef.current.draggable(true)
         
       } 
-    } else if (tool === Tools.CURSOR){
+    } 
+    else if (tool === Tools.CURSOR){
       if(e.target === stage){
 
         //블록(다중 선택하는 영역) 기능
@@ -1908,6 +1907,7 @@ const App:FC = () => {
           yLockNodes.delete(userId.current);
           groupTr.nodes([]);
         }
+
         selectionRectangle= new Konva.Rect({
           fill: 'rgba(0,0,255,0.3)',
           visible : true,
@@ -1927,7 +1927,17 @@ const App:FC = () => {
         selectionRectangle.height(1);
         isSelected.current = true;
         layer.add(selectionRectangle)
-      } 
+      }
+      // else {
+      //   if(e.target.name() === 'postItInitText' || e.target.name() === 'postItText'){
+      //     console.log("ss")
+      //     // groupTr?.borderEnabled(false);
+      //     groupTr?.rotateEnabled(false);
+      //     // groupTr?.resizeEnabled(false);
+      //   } else{
+      //     console.log(e.target.name())
+      //   }
+      // }
       
     } else if (tool === Tools.PEN || tool === Tools.HIGHLIGHTER) {
 
@@ -2151,9 +2161,9 @@ const App:FC = () => {
         if(groupTr == null){
           createNewTr();
         } 
+        
         if(groupTr){
           if(groupTr.nodes().length < 2){
-            
             groupTr.nodes([selected]);
           }
         }
