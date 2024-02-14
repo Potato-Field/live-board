@@ -367,90 +367,90 @@ const App:FC = () => {
     });
 
 
-    const initializeCanvas = () => {
-      yObjects.forEach((konvaData:any, index:string) => {
+    // const initializeCanvas = () => {
+    //   yObjects.forEach((konvaData:any, index:string) => {
         
-        const node = stageRef.current.children[0].findOne("#"+index)
-        if(node) return;
-        if(konvaData == null) return;
-        if(konvaData.type == Shape.Line){
+    //     const node = stageRef.current.children[0].findOne("#"+index)
+    //     if(node) return;
+    //     if(konvaData == null) return;
+    //     if(konvaData.type == Shape.Line){
           
-          const newLine =  createNewLine(index, konvaData.points, konvaData.stroke, konvaData.penStyle)
-          newLine.visible(false)
-          stageRef.current.getLayers()[0].add(newLine);
-          newLine.move({x:konvaData.x, y:konvaData.y});
+    //       const newLine =  createNewLine(index, konvaData.points, konvaData.stroke, konvaData.penStyle)
+    //       newLine.visible(false)
+    //       stageRef.current.getLayers()[0].add(newLine);
+    //       newLine.move({x:konvaData.x, y:konvaData.y});
   
-          newLine.scaleX(konvaData.scaleX)
-          newLine.scaleY(konvaData.scaleY)
-          newLine.rotation(konvaData.rotation)
-          newLine.visible(true);
-        } else {
+    //       newLine.scaleX(konvaData.scaleX)
+    //       newLine.scaleY(konvaData.scaleY)
+    //       newLine.rotation(konvaData.rotation)
+    //       newLine.visible(true);
+    //     } else {
           
-          if(konvaData.type == Shape.Rect){
-            const newShape = createNewRect(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
-            newShape.visible(false)
-            stageRef.current.getLayers()[0].add(newShape);
-            newShape.scaleX(konvaData.scaleX)
-            newShape.scaleY(konvaData.scaleY)
-            newShape.rotation(konvaData.rotation)
-            newShape.visible(true);
-          }
-          else if(konvaData.type == Shape.Circle){
-            const newShape = createNewCir(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
-            newShape.visible(false)
-            stageRef.current.getLayers()[0].add(newShape);
-            newShape.scaleX(konvaData.scaleX)
-            newShape.scaleY(konvaData.scaleY)
-            newShape.rotation(konvaData.rotation)
-            newShape.visible(true);
-          } 
-          else if(konvaData.type == Shape.RegularPolygon){
-            const newShape = createNewTri(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
-            newShape.visible(false)
-            stageRef.current.getLayers()[0].add(newShape);
-            newShape.scaleX(konvaData.scaleX)
-            newShape.scaleY(konvaData.scaleY)
-            newShape.rotation(konvaData.rotation)
-            newShape.visible(true);
-          }
-          else if(konvaData.type == Shape.Stamp){
-            let stampImg = new window.Image();
+    //       if(konvaData.type == Shape.Rect){
+    //         const newShape = createNewRect(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+    //         newShape.visible(false)
+    //         stageRef.current.getLayers()[0].add(newShape);
+    //         newShape.scaleX(konvaData.scaleX)
+    //         newShape.scaleY(konvaData.scaleY)
+    //         newShape.rotation(konvaData.rotation)
+    //         newShape.visible(true);
+    //       }
+    //       else if(konvaData.type == Shape.Circle){
+    //         const newShape = createNewCir(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+    //         newShape.visible(false)
+    //         stageRef.current.getLayers()[0].add(newShape);
+    //         newShape.scaleX(konvaData.scaleX)
+    //         newShape.scaleY(konvaData.scaleY)
+    //         newShape.rotation(konvaData.rotation)
+    //         newShape.visible(true);
+    //       } 
+    //       else if(konvaData.type == Shape.RegularPolygon){
+    //         const newShape = createNewTri(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+    //         newShape.visible(false)
+    //         stageRef.current.getLayers()[0].add(newShape);
+    //         newShape.scaleX(konvaData.scaleX)
+    //         newShape.scaleY(konvaData.scaleY)
+    //         newShape.rotation(konvaData.rotation)
+    //         newShape.visible(true);
+    //       }
+    //       else if(konvaData.type == Shape.Stamp){
+    //         let stampImg = new window.Image();
             
-            stampImg.src = konvaData.image === 'thumbUp' ? thumbUpImg : thumbDownImg;
+    //         stampImg.src = konvaData.image === 'thumbUp' ? thumbUpImg : thumbDownImg;
       
-            stampImg.onload = () => {
+    //         stampImg.onload = () => {
               
-              const newStamp = createNewStamp(index, {x: konvaData.x, y: konvaData.y}, stampImg)
-              newStamp.name(konvaData.image)
-              newStamp.visible(false)
-              stageRef.current.getLayers()[0].add(newStamp);
-              newStamp.scaleX(konvaData.scaleX)
-              newStamp.scaleY(konvaData.scaleY)
-              newStamp.rotation(konvaData.rotation)
-              newStamp.visible(true);
-            }           
-          } 
-          else if(konvaData.type == Shape.Group) { 
-            const newShape = createNewPostIt(index, {x:konvaData.Group.x, y:konvaData.Group.y}, konvaData.Text.text);
-            newShape.visible(false)
-            stageRef.current.getLayers()[0].add(newShape);
-            newShape.scaleX(konvaData.Group.scaleX)
-            newShape.scaleY(konvaData.Group.scaleY)
-            newShape.rotation(konvaData.Group.rotation)
-            newShape.visible(true);
-          } 
-          else if(konvaData.type == Shape.Text){
-            const newShape = createNewText(index, {x: konvaData.x, y: konvaData.y}, konvaData.text)
-            newShape.visible(false)
-            stageRef.current.getLayers()[0].add(newShape);
-            newShape.scaleX(konvaData.scaleX)
-            newShape.scaleY(konvaData.scaleY)
-            newShape.rotation(konvaData.rotation)
-            newShape.visible(true);
-          }
-        } 
-      });
-    };
+    //           const newStamp = createNewStamp(index, {x: konvaData.x, y: konvaData.y}, stampImg)
+    //           newStamp.name(konvaData.image)
+    //           newStamp.visible(false)
+    //           stageRef.current.getLayers()[0].add(newStamp);
+    //           newStamp.scaleX(konvaData.scaleX)
+    //           newStamp.scaleY(konvaData.scaleY)
+    //           newStamp.rotation(konvaData.rotation)
+    //           newStamp.visible(true);
+    //         }           
+    //       } 
+    //       else if(konvaData.type == Shape.Group) { 
+    //         const newShape = createNewPostIt(index, {x:konvaData.Group.x, y:konvaData.Group.y}, konvaData.Text.text);
+    //         newShape.visible(false)
+    //         stageRef.current.getLayers()[0].add(newShape);
+    //         newShape.scaleX(konvaData.Group.scaleX)
+    //         newShape.scaleY(konvaData.Group.scaleY)
+    //         newShape.rotation(konvaData.Group.rotation)
+    //         newShape.visible(true);
+    //       } 
+    //       else if(konvaData.type == Shape.Text){
+    //         const newShape = createNewText(index, {x: konvaData.x, y: konvaData.y}, konvaData.text)
+    //         newShape.visible(false)
+    //         stageRef.current.getLayers()[0].add(newShape);
+    //         newShape.scaleX(konvaData.scaleX)
+    //         newShape.scaleY(konvaData.scaleY)
+    //         newShape.rotation(konvaData.rotation)
+    //         newShape.visible(true);
+    //       }
+    //     } 
+    //   });
+    // };
     
     // const handleDataLoaded = () => {
       
@@ -550,42 +550,51 @@ const App:FC = () => {
     const updateNodeFromKonvaData2 = (index: string, konvaData: any) => {
       const node = stageRef.current.children[0].findOne("#" + index);
       if (!node) return;
-    
-      switch (konvaData.type) {
-        case 'Line':
-          const lineNode = node as Konva.Line;
-          lineNode.points(konvaData.points);
-          lineNode.stroke(konvaData.stroke);
-          lineNode.strokeWidth(konvaData.strokeWidth);
-          lineNode.lineCap(konvaData.lineCap);
-          lineNode.lineJoin(konvaData.lineJoin);
-          lineNode.tension(konvaData.tension);
-          lineNode.opacity(konvaData.opacity);
-          
-          break;
-        case 'Rect':
-        case 'Circle':
-        case 'RegularPolygon':
-          break;
-        case 'Stamp':
-          break;
-        case 'Group':
-          break;
-        case 'Text':
-          const textNode = node as Konva.Text;
-          textNode.text(konvaData.text);
-          //textNode.fontSize(konvaData.fontSize);
-          break;
-        default:
+
+      if(konvaData.type == Shape.Group){
+        node.scaleX(konvaData.Group.scaleX)
+        node.scaleY(konvaData.Group.scaleY)
+        node.rotation(konvaData.Group.rotation)
+
+      }
+      else{
+        switch (konvaData.type) {
+          case 'Line':
+            const lineNode = node as Konva.Line;
+            lineNode.points(konvaData.points);
+            lineNode.stroke(konvaData.stroke);
+            lineNode.strokeWidth(konvaData.strokeWidth);
+            lineNode.lineCap(konvaData.lineCap);
+            lineNode.lineJoin(konvaData.lineJoin);
+            lineNode.tension(konvaData.tension);
+            lineNode.opacity(konvaData.opacity);
+            
+            break;
+          case 'Rect':
+          case 'Circle':
+          case 'RegularPolygon':
+            break;
+          case 'Stamp':
+            break;
+          case 'Text':
+            const textNode = node as Konva.Text;
+            textNode.text(konvaData.text);
+            //textNode.fontSize(konvaData.fontSize);
+            break;
+          default:
+        }
+      
+        // Common properties update
+        node.x(konvaData.x);
+        node.y(konvaData.y);
+        node.scaleX(konvaData.scaleX);
+        node.scaleY(konvaData.scaleY);
+        node.rotation(konvaData.rotation);
+        node.visible(true);
+
       }
     
-      // Common properties update
-      node.x(konvaData.x);
-      node.y(konvaData.y);
-      node.scaleX(konvaData.scaleX);
-      node.scaleY(konvaData.scaleY);
-      node.rotation(konvaData.rotation);
-      node.visible(true);
+    
     };
     
 
@@ -594,7 +603,7 @@ const App:FC = () => {
 
     const updateCanvas = () => {
       setIsLoading(false);
-      initializeCanvas();
+      //initializeCanvas();
       yObjects.observe((event) => {
 
         event.keysChanged.forEach(id => {
