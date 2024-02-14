@@ -1,60 +1,34 @@
 import React, {useRef, useEffect} from 'react';
 import Konva from 'konva';
 import { Tools } from './Tools';
-
+import {Target} from './Target'
+// import {Connector} from './Connector'
 
 import * as Y from "yjs";
 // import { layer } from '@fortawesome/fontawesome-svg-core';
 // import { now } from 'lodash';
 
-type Target = {
-    id: string;
-    x: number;
-    y: number;
-    value: string,
-    childIds: string[],
-  };
-  
-  type Connector = {
-    id: string;
-    from: string;
-    to: string;
-  };
 
-  type SummaryNode = {
-    id: string;
-    value: string;
-    priority: number;
-  }
+type SummaryNode = {
+  id: string;
+  value: string;
+  priority: number;
+}
   
 
-//  export const undoManagerMindMapRef = useRef<Y.UndoManager | null>(null);
-//  export const undoManagerMindMap = undoManagerMindMapRef.current;
+//  export const undoManagerObjRef = useRef<Y.UndoManager | null>(null);
+//  export const undoManagerObj = undoManagerObjRef.current;
 
 //const MindMap = forwardRef((ref: RefObject<Konva.Stage>) => {
-export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefObject<Konva.Stage>, toolRef: any
-, yDocRef: React.MutableRefObject<Y.Doc>}) => {
+export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, undoManagerObj}: { stageRef: React.RefObject<Konva.Stage>, toolRef: any
+, yDocRef: React.MutableRefObject<Y.Doc>, yTargets:any , yConnectors:any, undoManagerObj:any}) => {
     //console.log(yDocRef)
     // const [nodeTargets, setNodeTargets] = useState<Target[]>([]);
     // const [connectors, setConnectors] = useState<Connector[]>([]);
     //const toolRef.current = toolRef.current;
    //console.log(toolRef.current, Tools.MINDMAP);
 
-
-
-   const undoManagerMindMapRef = useRef<Y.UndoManager | null>(null);
-   const undoManagerMindMap = undoManagerMindMapRef.current;
-   useEffect(() => {
-    undoManagerMindMapRef.current = new Y.UndoManager([yTargets, yConnectors]);
-   }, []);
-  
-
-
-
     const layerRef = useRef<Konva.Layer>();
-
-    const yTargets: Y.Map<Target> = yDocRef.current.getMap('targets');
-    const yConnectors: Y.Map<Connector> = yDocRef.current.getMap('connectors');
 
     useEffect(() => {
       if (stageRef.current && !layerRef.current) {
@@ -88,7 +62,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
                       };
                       yDocRef.current.transact(() => {
                         yTargets.set(newNodeId, newNode);
-                      }, undoManagerMindMap);
+                      }, undoManagerObj);
                   }
               }
           });
@@ -117,7 +91,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
                 yDocRef.current.transact(() => {
                   yTargets.set(newNodeId, newNode);
 
-                }, undoManagerMindMap);
+                }, undoManagerObj);
             }
         }
     };
@@ -156,7 +130,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
       yDocRef.current.transact(() => {
 
         yTargets.set(newTargetId, newTarget);
-      }, undoManagerMindMap);
+      }, undoManagerObj);
 
       //child target id 추가하는 부분
       const updatedTarget = {
@@ -167,7 +141,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
       yDocRef.current.transact(() => {
 
         yTargets.set(targetId, updatedTarget);
-      }, undoManagerMindMap);
+      }, undoManagerObj);
 
   
       const newConnectorId = generateRandomId(`connector-${yConnectors.size}`);
@@ -230,7 +204,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
               yDocRef.current.transact(()=>{
                 yTargets.set(targetId, { ...nowTarget, value: textArea.value });
 
-              }, undoManagerMindMap);
+              }, undoManagerObj);
             }
             textArea.parentNode?.removeChild(textArea);
             targetText?.show();
@@ -280,7 +254,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
       const nowTarget = yTargets.get(targetId);
       if(!nowTarget) return;
       summaryNodes.set(targetId, {id: targetId, value: nowTarget.value, priority: depth});
-      nowTarget?.childIds.forEach(childId => dfs(childId, depth+1));
+      nowTarget?.childIds.forEach((childId:any) => dfs(childId, depth+1));
     }
 
     dfs('target-0', 0);   //target id set target-0 should revise this if set many mindmap
@@ -339,9 +313,9 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
     yDocRef.current.transact(() => {
 
       yTargets.delete(targetId);
-    }, undoManagerMindMap)
+    }, undoManagerObj)
 
-    yConnectors.forEach((connector, connectorId) => {
+    yConnectors.forEach((connector:any, connectorId:any) => {
       if (connector.from === targetId || connector.to === targetId) {
         const line = layerRef.current?.findOne('#' + connectorId);
         line?.destroy();
@@ -356,7 +330,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
 
   const updateConnectors = (targetId:string) => {
 
-    yConnectors.forEach((connector, connectorId) => {
+    yConnectors.forEach((connector:any, connectorId:any) => {
       if (connector.from === targetId || connector.to === targetId) {
         const fromNode = yTargets.get(connector.from);
         const toNode = yTargets.get(connector.to);
@@ -482,7 +456,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
       }
     });
     
-    yConnectors.forEach((connector, id) => {
+    yConnectors.forEach((connector:any, id:any) => {
       const foundLine = layerRef.current?.findOne(`#${id}`);
       let line: Konva.Arrow | null = null;
       if (foundLine instanceof Konva.Arrow) {
@@ -516,7 +490,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
     });
 
       
-      yTargets.forEach((target, id) => {
+      yTargets.forEach((target:any, id:any) => {
         let node = layerRef.current?.findOne(`#${id}`);
         let textNode = layerRef.current?.findOne(`#text-${id}`) as Konva.Text;
 
@@ -568,7 +542,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
               }
               yDocRef.current.transact(() => {
                 yTargets.set(id, updatedTarget);
-              }, undoManagerMindMap);
+              }, undoManagerObj);
               //layerRef.current?.add(target);
         
             
@@ -649,7 +623,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
             }
             yDocRef.current.transact(() => {
               yTargets.set(id, updatedTarget);
-            }, undoManagerMindMap);
+            }, undoManagerObj);
             updateConnectors(id);
           }
         });
@@ -723,22 +697,22 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
 
     // const handleUndo = () => {
     //   console.log("before, mindmap UNDO")
-    //   console.log(undoManagerMindMap?.undoStack.length, "undostack length");
-    //   console.log(undoManagerMindMap?.redoStack.length, "redostack length");
-    //   undoManagerMindMap?.undo();
+    //   console.log(undoManagerObj?.undoStack.length, "undostack length");
+    //   console.log(undoManagerObj?.redoStack.length, "redostack length");
+    //   undoManagerObj?.undo();
     //   console.log("after, mindmap UNDO")
-    //   console.log(undoManagerMindMap?.undoStack.length, "undostack length");
-    //   console.log(undoManagerMindMap?.redoStack.length, "redostack length");
+    //   console.log(undoManagerObj?.undoStack.length, "undostack length");
+    //   console.log(undoManagerObj?.redoStack.length, "redostack length");
     // }
 
     // const handleRedo = () => {
     //   console.log("before, mindmap REDO")
-    //   console.log(undoManagerMindMap?.undoStack.length, "undostack length");
-    //   console.log(undoManagerMindMap?.redoStack.length, "redostack length");
-    //   undoManagerMindMap?.redo();
+    //   console.log(undoManagerObj?.undoStack.length, "undostack length");
+    //   console.log(undoManagerObj?.redoStack.length, "redostack length");
+    //   undoManagerObj?.redo();
     //   console.log("before, mindmap REDO")
-    //   console.log(undoManagerMindMap?.undoStack.length, "undostack length");
-    //   console.log(undoManagerMindMap?.redoStack.length, "redostack length");
+    //   console.log(undoManagerObj?.undoStack.length, "undostack length");
+    //   console.log(undoManagerObj?.redoStack.length, "redostack length");
      
     // }
 
@@ -747,23 +721,23 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
 
     // const handleUndo2 = useCallback(() => {
     //   console.log("before, mindmap UNDO")
-    //   console.log(undoManagerMindMap?.undoStack.length, "undostack length");
-    //   console.log(undoManagerMindMap?.redoStack.length, "redostack length");
-    //   undoManagerMindMap?.undo();
+    //   console.log(undoManagerObj?.undoStack.length, "undostack length");
+    //   console.log(undoManagerObj?.redoStack.length, "redostack length");
+    //   undoManagerObj?.undo();
     //   console.log("after, mindmap UNDO")
-    //   console.log(undoManagerMindMap?.undoStack.length, "undostack length");
-    //   console.log(undoManagerMindMap?.redoStack.length, "redostack length");
-    // }, [undoManagerMindMap]);
+    //   console.log(undoManagerObj?.undoStack.length, "undostack length");
+    //   console.log(undoManagerObj?.redoStack.length, "redostack length");
+    // }, [undoManagerObj]);
 
     // const handleRedo2 = useCallback(() => {
     //   console.log("before, mindmap UNDO")
-    //   console.log(undoManagerMindMap?.undoStack.length, "undostack length");
-    //   console.log(undoManagerMindMap?.redoStack.length, "redostack length");
-    //   undoManagerMindMap?.redo();
+    //   console.log(undoManagerObj?.undoStack.length, "undostack length");
+    //   console.log(undoManagerObj?.redoStack.length, "redostack length");
+    //   undoManagerObj?.redo();
     //   console.log("after, mindmap UNDO")
-    //   console.log(undoManagerMindMap?.undoStack.length, "undostack length");
-    //   console.log(undoManagerMindMap?.redoStack.length, "redostack length");
-    // }, [undoManagerMindMap]);
+    //   console.log(undoManagerObj?.undoStack.length, "undostack length");
+    //   console.log(undoManagerObj?.redoStack.length, "redostack length");
+    // }, [undoManagerObj]);
   
   
 

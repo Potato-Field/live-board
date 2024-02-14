@@ -29,6 +29,8 @@ import {TextInputProps} from './component/TextEditor';
 import { Shape } from './component/UserShape';
 // import MindMap, {undoManagerMindMap} from './component/MindMap';
 import MindMap from './component/MindMap';
+import {Target} from './component/Target';
+import {Connector} from './component/Connector';
 
 /* 블록 하는 좌표 */
 let multiSelectBlocker = {
@@ -93,13 +95,16 @@ const App:FC = () => {
   // 객체 Lock 저장
   const yLockNodes = yDocRef.current.getMap('lockNodes');
   
+  const yTargets: Y.Map<Target> = yDocRef.current.getMap('targets');
+  const yConnectors: Y.Map<Connector> = yDocRef.current.getMap('connectors');
+
   const yTextRef = useRef<Y.Array<TextInputProps>>(yDocRef.current.getArray<TextInputProps>('texts'));
 
   const undoManagerObjRef = useRef<Y.UndoManager | null>(null);
   const undoManagerObj = undoManagerObjRef.current;
 
   useEffect(() => {
-    undoManagerObjRef.current = new Y.UndoManager([yObjects]);
+    undoManagerObjRef.current = new Y.UndoManager([yObjects, yConnectors, yTargets]);
   }, []);
 
 
@@ -609,7 +614,11 @@ const App:FC = () => {
         event.keysChanged.forEach(id => {
           const konvaData = yObjects.get(id);
           let node = stageRef.current.findOne(`#${id}`);
-          if (!konvaData && node) { 
+          if (!konvaData && node) {
+            if(groupTr){
+              groupTr.nodes([])
+              //groupTr == null
+            }
             node?.destroy();
           }
           else if(konvaData && !node){
@@ -2420,7 +2429,7 @@ const App:FC = () => {
   const handleUndo = () => {
     undoManagerObj?.undo();
   }
-
+  
   const handleRedo = () => {
     undoManagerObj?.redo();
   }
@@ -2459,7 +2468,7 @@ const App:FC = () => {
         <Layer></Layer>
 
         <>
-          <MindMap stageRef = {stageRef} toolRef={toolRef} yDocRef = {yDocRef}/>
+          <MindMap stageRef = {stageRef} toolRef={toolRef} yDocRef = {yDocRef} yTargets={yTargets} yConnectors={yConnectors} undoManagerObj={undoManagerObj}/>
         </>
 
       </Stage>
