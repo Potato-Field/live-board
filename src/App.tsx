@@ -50,16 +50,9 @@ const App:FC = () => {
   const POSTIT_MIN_WIDTH = 250;  // init size
   const POSTIT_MIN_HEIGHT = 300; // init size
 
-  /*
-   * [CRDT] 
-   * 2024.01.22
-   * 드로잉 동기화 구현
-   * 김병철
-   */
   const [, setIsLoading] = useState(true);
-  //const navigate = useNavigate();
+  
   //text 상태 저장
-  // const [textInputs, setTextInputs] = useState<TextData[]>([]);
   const [, setTextInputs] = useState<TextInputProps[]>([]);
 
   const stageRef = useRef<Konva.Stage>(null as any);
@@ -101,18 +94,6 @@ const App:FC = () => {
   const yLockNodes = yDocRef.current.getMap('lockNodes');
   
   const yTextRef = useRef<Y.Array<TextInputProps>>(yDocRef.current.getArray<TextInputProps>('texts'));
-  
-  //const undoManagerObj = new Y.UndoManager([yObjects, yText, yPens, yShape, yTrans, yMove]);
- 
-  ////////version1
-  //const undoManagerObj = new Y.UndoManager([yObjects]);
-  
-  // ///version2
-  // let undoManagerObjRef = useRef<Y.UndoManager | null>(null);
-  // if(!undoManagerObjRef)
-  //   undoManagerObjRef = new Y.UndoManager([yObjects]);
-  // const undoManagerObj = undoManagerObjRef.current;
-
 
   const undoManagerObjRef = useRef<Y.UndoManager | null>(null);
   const undoManagerObj = undoManagerObjRef.current;
@@ -214,10 +195,6 @@ const App:FC = () => {
            
            
         }
-        // yDocRef.current.transact(() => {
-
-        //   yPens.delete(index);
-        // }, undoManagerObj);
       });  
     })
     
@@ -331,9 +308,9 @@ const App:FC = () => {
             newStamp.name(konvaData.image)
             stageRef.current.getLayers()[0].add(newStamp);
           }
-          // yDocRef.current.transact(() => {
-             yShape.delete(index); 
-          // }, undoManagerObj);
+          
+          yShape.delete(index); 
+          
         }
         else {
           if(konvaData.type === Shape.Rect){
@@ -349,10 +326,8 @@ const App:FC = () => {
           }
           stageRef.current.getLayers()[0].add(newShape);
 
-          // yDocRef.current.transact(() => {
-             yShape.delete(index); 
-          // }, undoManagerObj);
-          //yShape.delete(index);   
+          yShape.delete(index); 
+             
         }
       });  
     })
@@ -482,18 +457,12 @@ const App:FC = () => {
         event.keysChanged.forEach(id => {
           const konvaData = yObjects.get(id);
           let node = stageRef.current.findOne(`#${id}`);
-          //console.log(konvaData,  node, event.keysChanged, "changed event konvaData, node !!!!!!!!!");
-
-          //node?.destroy();
+          
           if (!konvaData || node) { 
             node?.destroy();
           }
 
           if(konvaData){
-            // const newNode = createNodeFromKonvaData(id, konvaData);
-            // if(newNode){
-            //   stageRef.current.getLayers()[0].add(newNode);
-            // }
             createNodeFromKonvaData2(id, konvaData);
           }
         });
@@ -1275,7 +1244,6 @@ const App:FC = () => {
       
       if(textarea){
         stageRef.current.on('mouseup', handleOutsideClick);
-        // PostItText.show();
       }
     });
 
@@ -1334,17 +1302,6 @@ const App:FC = () => {
     });
     tr.on('dragmove', function(e:any) {
       //마우스 동기화
-      //const mousePosition = { x: e.evt.clientX, y: e.evt.clientY, selectTool : toolRef.current };
-      
-      // const mousePosition = { 
-      //   x: (e.evt.clientX - stageRef.current.x()) / stageRef.current.scaleX(), 
-      //   y: (e.evt.clientY - stageRef.current.y()) / stageRef.current.scaleX(), 
-      //   selectTool : toolRef.current,
-      //   scale: stageRef.current.scaleX()
-      // };
-      // if(userId.current){
-      //   yMousePositions.set(userId.current, mousePosition);
-      // }
       const stage = e.target.getStage();
     
       const pos = stage.getPointerPosition();
@@ -1375,9 +1332,9 @@ const App:FC = () => {
           y   : node.y(),
           userId : userId.current
         }
-        // yDocRef.current.transact(() => {
-          yMove.set(node.id(), changeInfo);
-        // }, undoManagerObj);
+        
+        yMove.set(node.id(), changeInfo);
+        
       });
       
       const selectionRect = tr.getClientRect();
@@ -1419,10 +1376,6 @@ const App:FC = () => {
                 rotation  : node.rotation(),
                 scaleX    : node.scaleX(),
                 scaleY    : node.scaleY(),
-                // offsetX   : node.id(),
-                // offsetY   : node.id(),
-                // skewX     : node.skewX(),
-                // skewY     : node.skewY(),
               }
             }
             childList.forEach((childNode:any)=>{
@@ -1540,10 +1493,6 @@ const App:FC = () => {
         yDocRef.current.transact(() => { 
           yObjects.set(node.id(), konvaData);
         }, undoManagerObj);
-        // console.log("createline in drag end");
-        // console.log("undoStack.length",undoManagerObj.undoStack.length);
-        // console.log("redoStack.length", undoManagerObj.redoStack.length);
-
 
       });
 
@@ -1770,7 +1719,6 @@ const App:FC = () => {
     } else if (tool === Tools.CURSOR){
       if(e.target === stage){
 
-        //e.evt.preventDefault();
         //블록(다중 선택하는 영역) 기능
         if(groupTr != null){
           const oldSelected = groupTr.getNodes();
@@ -1819,12 +1767,9 @@ const App:FC = () => {
         stroke : newLine.stroke(),
         penStyle: toolRef.current
       };
-      //yDocRef.current.transact(() => {
-        yPens.set(idx, changeInfo);
-        //yObjects.set(idx, changeInfo);    //my add code 
-      //}, undoManagerObj);
-      //console.log("create", undoManagerObj, undoManagerObj.undoStack);
-
+     
+      yPens.set(idx, changeInfo);
+     
     }
     else if(tool === Tools.ERASER){
       isDrawing.current = true;
@@ -1966,17 +1911,12 @@ const App:FC = () => {
         penStyle    : tool,
         draggable   : true
       }
-      // console.log("handlemouseup 1090, before");
-      // console.log(newLine, idx, konvaData, "data check 1930");
-      //   console.log("undoStack.length",undoManagerObj.undoStack.length);
-      //   console.log("redoStack.length", undoManagerObj.redoStack.length);
+      
       yDocRef.current.transact(() => {
         yObjects.set(idx, konvaData)
-        //console.log("mouse down set line", yObjects, undoManagerObj.undoStack);
+      
       }, undoManagerObj); 
-      // console.log("handlemouseup 1090, after");
-      //   console.log("undoStack.length",undoManagerObj.undoStack.length);
-      //   console.log("redoStack.length", undoManagerObj.redoStack.length);
+      
       
       newLine = null;
       id = uuidv4();
@@ -2116,20 +2056,9 @@ const App:FC = () => {
         
         yShape.set(idx, konvaData);
 
-        // console.log("handlemouseclick 2074, before");
-        // console.log("undoStack.length",undoManagerObj.undoStack.length);
-        // console.log("redoStack.length", undoManagerObj.redoStack.length);
-
         yDocRef.current.transact(() => {
           yObjects.set(idx, konvaData);
         }, undoManagerObj);
-        //console.log(undoManagerObj.undoStack, "2000, ");
-
-        // console.log("handlemouseclick 2083, before");
-        // console.log("undoStack.length",undoManagerObj.undoStack.length);
-        // console.log("redoStack.length", undoManagerObj.redoStack.length);
-        
-        
         
       }
       
@@ -2187,23 +2116,12 @@ const App:FC = () => {
       layer.add(newShape);
       yShape.set(idx, konvaData);
 
-      // console.log("handlemouseclick 2135, before");
-      //   console.log("undoStack.length",undoManagerObj.undoStack.length);
-      //   console.log("redoStack.length", undoManagerObj.redoStack.length);
-
       yDocRef.current.transact(() => {
         yObjects.set(idx, konvaData);
       }, undoManagerObj);
-        //console.log(undoManagerObj.undoStack, yObjects);    //TEST
-        // console.log("handlemouseclick 2143, after");
-        // console.log("undoStack.length",undoManagerObj.undoStack.length);
-        // console.log("redoStack.length", undoManagerObj.redoStack.length);
     
-    
-    
-
       id = uuidv4();
-       setTool(Tools.CURSOR);
+      setTool(Tools.CURSOR);
     } 
     else if (tool === Tools.TEXT) {
       
@@ -2314,44 +2232,13 @@ const App:FC = () => {
 
   }
 
-
-  // const handleUndo = useCallback(() => {
-  //    undoManagerObj?.undo();
-  //    undoManagerMindMap?.undo();
- 
-  // }, [undoManagerObj, undoManagerMindMap]);
-  
   const handleUndo = () => {
-    //console.log(yObjects);
-    // console.log("before undo", undoManagerObj, undoManagerObj?.undoStack, undoManagerObj?.undoStack.length, yObjects);
-    // console.log(undoManagerObj?.undoStack.length, "undostack length");
-    // console.log(undoManagerObj?.redoStack.length, "redostack length");
-    // console.log(yObjects, "yObject before!!!!");
+    
     undoManagerObj?.undo();
-    //undoManagerMindMap?.undo();
-
-
-    // yObjects.observe((event) => {
-    //   console.log("undo then change event", event);
-    // })
-    // console.log("after undo", undoManagerObj, undoManagerObj?.undoStack, undoManagerObj?.undoStack.length, yObjects);
-    // console.log(undoManagerObj?.undoStack.length, "undostack length");
-    // console.log(undoManagerObj?.redoStack.length, "redostack length");
-    // console.log(yObjects, "yObject after!!!!");
   }
 
   const handleRedo = () => {
-    // console.log("before redo", undoManagerObj, undoManagerObj?.redoStack, undoManagerObj?.undoStack.length);
-    // console.log(undoManagerObj?.undoStack.length, "undostack length");
-    // console.log(undoManagerObj?.redoStack.length, "redostack length");
-    // console.log(yObjects, "yObject before!!!!");
     undoManagerObj?.redo();
-    //undoManagerMindMap?.redo();
-
-    // console.log("after redo", undoManagerObj, undoManagerObj?.redoStack, undoManagerObj?.undoStack.length);
-    // console.log(undoManagerObj?.undoStack.length, "undostack length");
-    // console.log(undoManagerObj?.redoStack.length, "redostack length");
-    // console.log(yObjects, "yObject after!!!!");
   }
 
   
