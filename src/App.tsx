@@ -576,7 +576,9 @@ const App:FC = () => {
             
             break;
           case 'Rect':
+            break;
           case 'Circle':
+            break;
           case 'RegularPolygon':
             break;
           case 'Stamp':
@@ -587,6 +589,7 @@ const App:FC = () => {
             //textNode.fontSize(konvaData.fontSize);
             break;
           default:
+            break;
         }
       
         // Common properties update
@@ -596,16 +599,9 @@ const App:FC = () => {
         node.scaleY(konvaData.scaleY);
         node.rotation(konvaData.rotation);
         node.visible(true);
-
       }
-    
-    
     };
     
-
-    
-
-
     const updateCanvas = () => {
       setIsLoading(false);
       //initializeCanvas();
@@ -616,8 +612,7 @@ const App:FC = () => {
           let node = stageRef.current.findOne(`#${id}`);
           if (!konvaData && node) {
             if(groupTr){
-              groupTr.nodes([])
-              //groupTr == null
+              groupTr.nodes([]);
             }
             node?.destroy();
           }
@@ -627,12 +622,10 @@ const App:FC = () => {
           else if(konvaData && node){
             updateNodeFromKonvaData2(id, konvaData);
           }
-
-
         });
       });
     };
-    // updateCanvas();
+    updateCanvas();
 
 
 
@@ -1002,7 +995,7 @@ const App:FC = () => {
           y: stageRef.current.container().offsetTop + textPosition.y,
         };
 
-        console.log(textPosition)
+        //console.log(textPosition)
         
         textarea = createNewTextArea(textNode, areaPosition);
         textarea.value = yTextData.toString();
@@ -1107,8 +1100,8 @@ const App:FC = () => {
         textarea.addEventListener('keydown', function () {
           let scale = textNode.getAbsoluteScale().x;
           setTextareaWidth(textNode.width() * scale);
-          textarea.style.height = 'auto';
-          textarea.style.height = textarea.scrollHeight + textNode.fontSize() + 'px';
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + textNode.fontSize() + 'px';
       });
 
       function handleOutsideClick(e:any) {
@@ -1931,7 +1924,7 @@ const App:FC = () => {
         selectionRectangle.height(1);
         isSelected.current = true;
         layer.add(selectionRectangle)
-      }
+      } 
       // else {
       //   if(e.target.name() === 'postItInitText' || e.target.name() === 'postItText'){
       //     console.log("ss")
@@ -2036,7 +2029,7 @@ const App:FC = () => {
       const pos = stageRef.current.getPointerPosition();
       if (!pos) return;
     
-      const areaSize = 30; 
+      const areaSize = 30;
       const area = {
         x: pos.x - areaSize / 2,
         y: pos.y - areaSize / 2,
@@ -2044,46 +2037,20 @@ const App:FC = () => {
         height: areaSize
       };
     
-      const shapes = stageRef.current.getLayers()[0].getChildren((node) => {
-        const classNames = ['Line', 'Circle', 'Rect', 'RegularPolygon', 'Image', 'Text', 'Group'];
-        return classNames.includes(node.getClassName());
+      const shapes = stageRef.current.getLayers()[0].getChildren().filter(node => {
+        return typeof node.getClientRect === 'function';
       });
     
       const targetErase = shapes.find(node => {
-        if (node.getType() === 'Group') {
-          const group = node as Konva.Group; 
-          return group.getChildren().some((child: Konva.Node) => {
-            if (typeof child.getClientRect === 'function') {
-              const childRect = child.getClientRect();
-              return Konva.Util.haveIntersection(area, childRect);
-            }
-            return false;
-          });
-        } else if (node.getType() === 'Shape') {
-          const shape = node as Konva.Shape; 
-          const shapeRect = shape.getClientRect();
-          return Konva.Util.haveIntersection(area, shapeRect);
-        }
-        return false;
+        const shapeRect = node.getClientRect();
+        return Konva.Util.haveIntersection(area, shapeRect);
       });
-      
+    
       if (targetErase) {
         const targetEraseId = targetErase.id();
-        const changeInfo = { type: "delete" };
-        if(targetErase.getClassName() === 'Line'){
-          //yDocRef.current.transact(() => {
-            yPens.set(targetEraseId, changeInfo);
-          //}, undoManagerObj);
-        }
-        else if(targetErase.getClassName() === 'Circle' || targetErase.getClassName() === 'Rect' 
-        ||targetErase.getClassName() === 'RegularPolygon'){
-          //yDocRef.current.transact(() => {
-            yShape.set(targetEraseId, changeInfo);
-          //}, undoManagerObj);
-        }
         
         yDocRef.current.transact(() => {
-          yObjects.set(targetEraseId, changeInfo);
+          yObjects.delete(targetEraseId);
         }, undoManagerObj);
       }
     }
@@ -2116,7 +2083,6 @@ const App:FC = () => {
       
       yDocRef.current.transact(() => {
         yObjects.set(idx, konvaData)
-      
       }, undoManagerObj); 
       
       
@@ -2192,9 +2158,9 @@ const App:FC = () => {
         if(groupTr == null){
           createNewTr();
         } 
-        
         if(groupTr){
           if(groupTr.nodes().length < 2){
+            
             groupTr.nodes([selected]);
           }
         }
