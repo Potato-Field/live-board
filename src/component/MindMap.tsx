@@ -1,4 +1,4 @@
-import React, {useRef, useEffect} from 'react';
+import React, {useRef, useEffect, useCallback} from 'react';
 import Konva from 'konva';
 import { Tools } from './Tools';
 
@@ -283,7 +283,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
       nowTarget?.childIds.forEach(childId => dfs(childId, depth+1));
     }
 
-    dfs('target-0', 0);
+    dfs('target-0', 0);   //target id set target-0 should revise this if set many mindmap
 
     const baseFontSize = 40;
     const decrement = 6;
@@ -423,6 +423,28 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
             cancelButton.onclick = function (){
               menu.style.display = 'none';
             }
+            /****************************************************************/
+            // const undoButton = document.createElement('button');
+            // undoButton.innerHTML = 'Undo';
+            // undoButton.onclick = function() {
+            //   handleUndo2();
+            //   menu.style.display = 'none';
+            // } 
+          
+            // const redoButton = document.createElement('button');
+            // redoButton.innerHTML = 'Redo';
+            // redoButton.onclick = function()  {
+            //   handleRedo2();
+            //   menu.style.display = 'none';
+            // } 
+            // menu.appendChild(undoButton);
+            // menu.appendChild(redoButton);
+
+           
+
+            /****************************************************************/
+
+
 
             
             
@@ -430,6 +452,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
             menu.appendChild(deleteButton);
             menu.appendChild(sortButton);
             menu.appendChild(cancelButton);
+
           }
 
           if(menu){
@@ -604,7 +627,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
 
 
         //텍스트 우클릭 이벤트
-        textNode.off('contextmenu').on('contextmenu', (event) => {
+        textNode.off('contextmenu').on('contextmenu', (event:any) => {
           event.evt.preventDefault();
           if(toolRef.current === Tools.MINDMAP){
             showContextMenu(event, id);
@@ -668,6 +691,8 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
     // console.log("!!!!!!!!!!!!!!!!!!!!!!come out");//TEST
     
 
+
+    /**************해결 될 때 까지 주석 유지************************************************** */
     // const setTmpButtoninStage = () => {
     //   const menu = document.createElement('div');
     //   document.body.appendChild(menu);
@@ -693,7 +718,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
     // };
     
 
-    //setTmpButtoninStage();
+    // setTmpButtoninStage();
 
 
     // const handleUndo = () => {
@@ -716,6 +741,29 @@ export const MindMap = (({ stageRef, toolRef, yDocRef }: { stageRef: React.RefOb
     //   console.log(undoManagerMindMap?.redoStack.length, "redostack length");
      
     // }
+
+    
+    /**************해결 될 때 까지 주석 유지************************************************** */
+
+    // const handleUndo2 = useCallback(() => {
+    //   console.log("before, mindmap UNDO")
+    //   console.log(undoManagerMindMap?.undoStack.length, "undostack length");
+    //   console.log(undoManagerMindMap?.redoStack.length, "redostack length");
+    //   undoManagerMindMap?.undo();
+    //   console.log("after, mindmap UNDO")
+    //   console.log(undoManagerMindMap?.undoStack.length, "undostack length");
+    //   console.log(undoManagerMindMap?.redoStack.length, "redostack length");
+    // }, [undoManagerMindMap]);
+
+    // const handleRedo2 = useCallback(() => {
+    //   console.log("before, mindmap UNDO")
+    //   console.log(undoManagerMindMap?.undoStack.length, "undostack length");
+    //   console.log(undoManagerMindMap?.redoStack.length, "redostack length");
+    //   undoManagerMindMap?.redo();
+    //   console.log("after, mindmap UNDO")
+    //   console.log(undoManagerMindMap?.undoStack.length, "undostack length");
+    //   console.log(undoManagerMindMap?.redoStack.length, "redostack length");
+    // }, [undoManagerMindMap]);
   
   
 
