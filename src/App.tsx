@@ -1233,7 +1233,7 @@ const App:FC = () => {
       textarea.style.height = postItText.height() * scale + 'px';
       textarea.style.fontSize = postItText.fontSize() * scale + 'px';
       textarea.style.border = 'none';
-      textarea.style.padding = '15px';
+      textarea.style.padding = `${15*scale}px`;
       textarea.style.margin = '0px';
       textarea.style.overflow = 'hidden';
       textarea.style.background = 'none';
@@ -1333,15 +1333,14 @@ const App:FC = () => {
         const text = postItGroup.findOne('.postItText')
         const rect = postItGroup.findOne('.postItRect')
 
-        setTextareaWidth(postItText.width());
+        setTextareaWidth(postItText.width() * scale);
         textarea.style.height = 'auto';
-        textarea.style.height = textarea.scrollHeight + postItText.fontSize() + 'px';
-
+        textarea.style.height = textarea.scrollHeight + postItText.fontSize()* scale + 'px';
         let textareaHeight = (parseInt(textarea.style.height.slice(0, -2)) as any); // 'px' 제거
-        
+
         if (text && rect) {
           text.setAttrs({
-            height: Math.max(textareaHeight, POSTIT_MIN_HEIGHT),
+            height: Math.max(textareaHeight / scale, POSTIT_MIN_HEIGHT),
           });
 
           rect.setAttrs({

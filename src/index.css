@@ -140,21 +140,28 @@ body {
 
 /* 영역 구분 위해 색상 임의로 지정해놓음. 곧 수정할거임. */
 
-/* #BtnGroupContained {
-  background-color: #d6a6a6;
-} */
-
-#btnGroupCursor {
-  background-color: rgba(218, 215, 215, 0.571);
+#btnGroupContained {
+  background-color: #EAE8E8;
+  position: fixed;
+  bottom: 1%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  max-width: 100%;
+  padding: 0 1rem;
+  border-radius: 30px;
 }
+
+/* #btnGroupCursor {
+  background-color: #EAE8E8;
+} */
 
 #btnGroupTools {
   background-color: #727272;
 }
 
-#btnGroupColors {
-  background-color: rgba(160, 160, 160, 0.979);
-}
+/* #btnGroupColors {
+  background-color: #EAE8E8;
+} */
 
 /* 아이콘 */
 #btnGroupTools svg {
