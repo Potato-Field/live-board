@@ -576,7 +576,9 @@ const App:FC = () => {
             
             break;
           case 'Rect':
+            break;
           case 'Circle':
+            break;
           case 'RegularPolygon':
             break;
           case 'Stamp':
@@ -587,6 +589,7 @@ const App:FC = () => {
             //textNode.fontSize(konvaData.fontSize);
             break;
           default:
+            break;
         }
       
         // Common properties update
@@ -596,16 +599,9 @@ const App:FC = () => {
         node.scaleY(konvaData.scaleY);
         node.rotation(konvaData.rotation);
         node.visible(true);
-
       }
-    
-    
     };
     
-
-    
-
-
     const updateCanvas = () => {
       setIsLoading(false);
       //initializeCanvas();
@@ -616,8 +612,7 @@ const App:FC = () => {
           let node = stageRef.current.findOne(`#${id}`);
           if (!konvaData && node) {
             if(groupTr){
-              groupTr.nodes([])
-              //groupTr == null
+              groupTr.nodes([]);
             }
             node?.destroy();
           }
@@ -2020,14 +2015,13 @@ const App:FC = () => {
         yPens.set(idx, changeInfo);
       //}, undoManagerObj);
     }
-
     else if (tool === Tools.ERASER) {
       if (!isDrawing.current || !stageRef.current) return;
     
       const pos = stageRef.current.getPointerPosition();
       if (!pos) return;
     
-      const areaSize = 30; 
+      const areaSize = 30;
       const area = {
         x: pos.x - areaSize / 2,
         y: pos.y - areaSize / 2,
@@ -2035,49 +2029,24 @@ const App:FC = () => {
         height: areaSize
       };
     
-      const shapes = stageRef.current.getLayers()[0].getChildren((node) => {
-        const classNames = ['Line', 'Circle', 'Rect', 'RegularPolygon', 'Image', 'Text', 'Group'];
-        return classNames.includes(node.getClassName());
+      const shapes = stageRef.current.getLayers()[0].getChildren().filter(node => {
+        return typeof node.getClientRect === 'function';
       });
     
       const targetErase = shapes.find(node => {
-        if (node.getType() === 'Group') {
-          const group = node as Konva.Group; 
-          return group.getChildren().some((child: Konva.Node) => {
-            if (typeof child.getClientRect === 'function') {
-              const childRect = child.getClientRect();
-              return Konva.Util.haveIntersection(area, childRect);
-            }
-            return false;
-          });
-        } else if (node.getType() === 'Shape') {
-          const shape = node as Konva.Shape; 
-          const shapeRect = shape.getClientRect();
-          return Konva.Util.haveIntersection(area, shapeRect);
-        }
-        return false;
+        const shapeRect = node.getClientRect();
+        return Konva.Util.haveIntersection(area, shapeRect);
       });
-      
+    
       if (targetErase) {
         const targetEraseId = targetErase.id();
-        const changeInfo = { type: "delete" };
-        if(targetErase.getClassName() === 'Line'){
-          //yDocRef.current.transact(() => {
-            yPens.set(targetEraseId, changeInfo);
-          //}, undoManagerObj);
-        }
-        else if(targetErase.getClassName() === 'Circle' || targetErase.getClassName() === 'Rect' 
-        ||targetErase.getClassName() === 'RegularPolygon'){
-          //yDocRef.current.transact(() => {
-            yShape.set(targetEraseId, changeInfo);
-          //}, undoManagerObj);
-        }
         
         yDocRef.current.transact(() => {
-          yObjects.set(targetEraseId, changeInfo);
+          yObjects.delete(targetEraseId);
         }, undoManagerObj);
       }
     }
+    
   };
 
   const handleMouseUp = (e:any) => {
@@ -2107,7 +2076,6 @@ const App:FC = () => {
       
       yDocRef.current.transact(() => {
         yObjects.set(idx, konvaData)
-      
       }, undoManagerObj); 
       
       
