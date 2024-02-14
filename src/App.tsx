@@ -32,6 +32,8 @@ import MindMap from './component/MindMap';
 import {Target} from './component/Target';
 import {Connector} from './component/Connector';
 
+import { throttle } from 'lodash';
+
 /* 블록 하는 좌표 */
 let multiSelectBlocker = {
   x1:0,
@@ -53,9 +55,6 @@ const App:FC = () => {
   const POSTIT_MIN_HEIGHT = 300; // init size
 
   const [, setIsLoading] = useState(true);
-  
-  //text 상태 저장
-  const [, setTextInputs] = useState<TextInputProps[]>([]);
 
   const stageRef = useRef<Konva.Stage>(null as any);
   const isDrawing = useRef(false);
@@ -97,8 +96,6 @@ const App:FC = () => {
   
   const yTargets: Y.Map<Target> = yDocRef.current.getMap('targets');
   const yConnectors: Y.Map<Connector> = yDocRef.current.getMap('connectors');
-
-  const yTextRef = useRef<Y.Array<TextInputProps>>(yDocRef.current.getArray<TextInputProps>('texts'));
 
   const undoManagerObjRef = useRef<Y.UndoManager | null>(null);
   const undoManagerObj = undoManagerObjRef.current;
@@ -337,20 +334,55 @@ const App:FC = () => {
       });  
     })
 
-    yMove.observe(() => {
-      yMove.forEach((konvaData:any, index:string)=>{
-        const paramUserId = konvaData.userId;
-        if(paramUserId === userId.current || !userId.current) return;
-        const node:Konva.Node | undefined | null = stageRef.current.children[0].findOne("#"+index)
-        if(!node) return;
-        node.x(konvaData.x)
-        node.y(konvaData.y)
-         yMove.delete(index);
-      });
+    yMove.observe((e) => {
+      if(e.keysChanged.has('groupChange')){
+        yMove.forEach((konvaData:any)=>{
+          const paramUserId = konvaData.userId;
+          if(paramUserId === userId.current || !userId.current) return;
+          const dataList:Array<any> = konvaData.positions;
+          
+          dataList.forEach((data:any)=>{
+            const node:Konva.Node | undefined | null = stageRef.current.children[0].findOne("#"+data.id)
+            if(!node) return;
+            node.x(data.x)
+            node.y(data.y)
+          });
+
+        });
+      } else {
+        yMove.forEach((konvaData:any, index:string)=>{
+          const paramUserId = konvaData.userId;
+          if(paramUserId === userId.current || !userId.current) return;
+          const node:Konva.Node | undefined | null = stageRef.current.children[0].findOne("#"+index)
+          if(!node) return;
+          node.x(konvaData.x)
+          node.y(konvaData.y)
+          yMove.delete(index);
+        });
+      }
     })
 
-    yTrans.observe(() => {
-      yTrans.forEach((konvaData:any, index:string)=>{
+    yTrans.observe((e) => {
+      if(e.keysChanged.has('groupChange')){
+        yTrans.forEach((konvaData:any)=>{
+          const paramUserId = konvaData.userId;
+          if(paramUserId === userId.current || !userId.current) return;
+          const dataList:Array<any> = konvaData.transformations;
+
+          dataList.forEach((data:any)=>{
+            const node:Konva.Node | undefined | null = stageRef.current.children[0].findOne("#"+data.id)
+            if(!node) return;
+            node.x(data.x)
+            node.y(data.y)
+            node.scaleX(data.scaleX)
+            node.scaleY(data.scaleY)
+            node.rotation(data.rotation)
+          });
+
+        });
+      } else {
+        yTrans.forEach((konvaData:any, index:string)=>{
+          
         const paramUserId = konvaData.userId;
         if(paramUserId === userId.current || !userId.current) return;
         const node:Konva.Node | undefined | null = stageRef.current.children[0].findOne("#"+index)
@@ -360,16 +392,12 @@ const App:FC = () => {
         node.scaleX(konvaData.scaleX)
         node.scaleY(konvaData.scaleY)
         node.rotation(konvaData.rotation)
-        yDocRef.current.transact(() => {
-          yTrans.delete(index);
-        }, undoManagerObj);
+        
+        yTrans.delete(index);
+        
       });
+    }
     })
-
-    
-    yTextRef.current.observe(() => {
-      setTextInputs(yTextRef.current.toArray());
-    });
 
 
     // const initializeCanvas = () => {
@@ -603,9 +631,6 @@ const App:FC = () => {
     };
     
 
-    
-
-
     const updateCanvas = () => {
       setIsLoading(false);
       //initializeCanvas();
@@ -633,12 +658,6 @@ const App:FC = () => {
       });
     };
     updateCanvas();
-
-
-
-
-
-
 
     return () => {      
       yMousePositions.delete(userId.current);
@@ -989,9 +1008,7 @@ const App:FC = () => {
       
       textNode.text(yTextData.toString());
     });
-    // if (textarea !== document.activeElement) {
-      //   textarea.value = yTextData.toString();
-      // }
+
       
       textNode.on('dblclick dbltap', () => {
         var textPosition = textNode.absolutePosition();
@@ -1001,8 +1018,6 @@ const App:FC = () => {
           x: stageRef.current.container().offsetLeft + textPosition.x,
           y: stageRef.current.container().offsetTop + textPosition.y,
         };
-
-        console.log(textPosition)
         
         textarea = createNewTextArea(textNode, areaPosition);
         textarea.value = yTextData.toString();
@@ -1479,7 +1494,7 @@ const App:FC = () => {
     tr.on('dragmove', function(e:any) {
       //마우스 동기화
       const stage = e.target.getStage();
-    
+      
       const pos = stage.getPointerPosition();
       const scale = stage.scaleX(); // 현재 스케일
       const position = stage.position(); // 현재 위치
@@ -1488,30 +1503,34 @@ const App:FC = () => {
         x: (pos.x - position.x) / stage.scaleX(),
         y: (pos.y - position.y) / stage.scaleY(),
       };
-  
+      
       const mousePosition = { 
         x: realPointerPosition.x, 
         y: realPointerPosition.y, 
         selectTool : toolRef.current,
         scale: scale
       };
-  
+      
       if(userId.current){
         yMousePositions.set(userId.current, mousePosition);
       }
       
       
-      tr.getNodes().forEach((node:any)=>{    
-        const changeInfo = {
-          idx : node.id(),
-          x   : node.x(),
-          y   : node.y(),
-          userId : userId.current
-        }
-        
-        yMove.set(node.id(), changeInfo);
-        
-      });
+      if(tr.getNodes().length < 30){
+        tr.getNodes().forEach((node:any)=>{    
+          const changeInfo = {
+            idx : node.id(),
+            x   : node.x(),
+            y   : node.y(),
+            userId : userId.current
+          }
+          
+          yMove.set(node.id(), changeInfo);
+          
+        });
+      } else {
+        updateGroupPosition(tr.getNodes());
+      }
       
       const selectionRect = tr.getClientRect();
 
@@ -1681,20 +1700,25 @@ const App:FC = () => {
 
     });
     tr.on('transform', function() {
-      tr.getNodes().forEach((node:any)=>{        
-        const changeInfo = {
-          idx      : node.id(),
-          x        : node.x(),
-          y        : node.y(),
-          scaleX   : node.scaleX(),
-          scaleY   : node.scaleY(),
-          rotation : node.rotation(),
-          userId : userId.current
-        }
+      if(tr.getNodes().length < 30){
 
-        
+        tr.getNodes().forEach((node:any)=>{        
+          const changeInfo = {
+            idx      : node.id(),
+            x        : node.x(),
+            y        : node.y(),
+            scaleX   : node.scaleX(),
+            scaleY   : node.scaleY(),
+            rotation : node.rotation(),
+            userId : userId.current
+          }
+          
+          
           yTrans.set(node.id(), changeInfo); 
-      });
+        });
+      } else {
+        updateGroupTransformation(tr.getNodes());
+      }
       const selectionRect = tr.getClientRect();
       const scale = stageRef.current.scaleX(); // 현재 스케일
       const position = stageRef.current.position(); // 현재 위치 
@@ -1865,7 +1889,37 @@ const App:FC = () => {
     stageRef.current.getLayers()[0].add(groupTr)
   }
 
-  
+  // Throttled function for updating group position
+  const updateGroupPosition = throttle((nodes) => {
+    const groupChangeInfo = {
+      positions: nodes.map((node:any) => ({
+        id: node.id(),
+        x: node.x(),
+        y: node.y(),
+      })),
+      userId: userId.current
+    };
+
+    yMove.set('groupChange', groupChangeInfo);
+  }, 80);
+
+  // Throttled function for updating group transformations
+  const updateGroupTransformation = throttle((nodes) => {
+    const groupChangeInfo = {
+      transformations: nodes.map((node:any) => ({
+        id: node.id(),
+        x: node.x(),
+        y: node.y(),
+        scaleX: node.scaleX(),
+        scaleY: node.scaleY(),
+        rotation: node.rotation(),
+      })),
+      userId: userId.current
+    };
+
+    yTrans.set('groupChange', groupChangeInfo);
+  }, 80);
+
   /* stamp, shape에만 사용 */
   const handleIconBtnClick = (id: string) => {
     setClickedIconBtn(id);  // 어떤 IconBtn 클릭했는지 변수 clickIconBtn에 저장
