@@ -29,6 +29,8 @@ import {TextInputProps} from './component/TextEditor';
 import { Shape } from './component/UserShape';
 // import MindMap, {undoManagerMindMap} from './component/MindMap';
 import MindMap from './component/MindMap';
+import {Target} from './component/Target';
+import {Connector} from './component/Connector';
 
 /* 블록 하는 좌표 */
 let multiSelectBlocker = {
@@ -93,13 +95,16 @@ const App:FC = () => {
   // 객체 Lock 저장
   const yLockNodes = yDocRef.current.getMap('lockNodes');
   
+  const yTargets: Y.Map<Target> = yDocRef.current.getMap('targets');
+  const yConnectors: Y.Map<Connector> = yDocRef.current.getMap('connectors');
+
   const yTextRef = useRef<Y.Array<TextInputProps>>(yDocRef.current.getArray<TextInputProps>('texts'));
 
   const undoManagerObjRef = useRef<Y.UndoManager | null>(null);
   const undoManagerObj = undoManagerObjRef.current;
 
   useEffect(() => {
-    undoManagerObjRef.current = new Y.UndoManager([yObjects]);
+    undoManagerObjRef.current = new Y.UndoManager([yObjects, yConnectors, yTargets]);
   }, []);
 
 
@@ -195,6 +200,9 @@ const App:FC = () => {
            
            
         }
+         //yDocRef.current.transact(() => {
+           yPens.delete(index);
+         //}, undoManagerObj);
       });  
     })
     
@@ -308,9 +316,7 @@ const App:FC = () => {
             newStamp.name(konvaData.image)
             stageRef.current.getLayers()[0].add(newStamp);
           }
-          
-          yShape.delete(index); 
-          
+             yShape.delete(index); 
         }
         else {
           if(konvaData.type === Shape.Rect){
@@ -326,8 +332,7 @@ const App:FC = () => {
           }
           stageRef.current.getLayers()[0].add(newShape);
 
-          yShape.delete(index); 
-             
+             yShape.delete(index); 
         }
       });  
     })
@@ -355,7 +360,9 @@ const App:FC = () => {
         node.scaleX(konvaData.scaleX)
         node.scaleY(konvaData.scaleY)
         node.rotation(konvaData.rotation)
-         yTrans.delete(index);
+        yDocRef.current.transact(() => {
+          yTrans.delete(index);
+        }, undoManagerObj);
       });
     })
 
@@ -364,6 +371,102 @@ const App:FC = () => {
       setTextInputs(yTextRef.current.toArray());
     });
 
+
+    // const initializeCanvas = () => {
+    //   yObjects.forEach((konvaData:any, index:string) => {
+        
+    //     const node = stageRef.current.children[0].findOne("#"+index)
+    //     if(node) return;
+    //     if(konvaData == null) return;
+    //     if(konvaData.type == Shape.Line){
+          
+    //       const newLine =  createNewLine(index, konvaData.points, konvaData.stroke, konvaData.penStyle)
+    //       newLine.visible(false)
+    //       stageRef.current.getLayers()[0].add(newLine);
+    //       newLine.move({x:konvaData.x, y:konvaData.y});
+  
+    //       newLine.scaleX(konvaData.scaleX)
+    //       newLine.scaleY(konvaData.scaleY)
+    //       newLine.rotation(konvaData.rotation)
+    //       newLine.visible(true);
+    //     } else {
+          
+    //       if(konvaData.type == Shape.Rect){
+    //         const newShape = createNewRect(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+    //         newShape.visible(false)
+    //         stageRef.current.getLayers()[0].add(newShape);
+    //         newShape.scaleX(konvaData.scaleX)
+    //         newShape.scaleY(konvaData.scaleY)
+    //         newShape.rotation(konvaData.rotation)
+    //         newShape.visible(true);
+    //       }
+    //       else if(konvaData.type == Shape.Circle){
+    //         const newShape = createNewCir(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+    //         newShape.visible(false)
+    //         stageRef.current.getLayers()[0].add(newShape);
+    //         newShape.scaleX(konvaData.scaleX)
+    //         newShape.scaleY(konvaData.scaleY)
+    //         newShape.rotation(konvaData.rotation)
+    //         newShape.visible(true);
+    //       } 
+    //       else if(konvaData.type == Shape.RegularPolygon){
+    //         const newShape = createNewTri(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+    //         newShape.visible(false)
+    //         stageRef.current.getLayers()[0].add(newShape);
+    //         newShape.scaleX(konvaData.scaleX)
+    //         newShape.scaleY(konvaData.scaleY)
+    //         newShape.rotation(konvaData.rotation)
+    //         newShape.visible(true);
+    //       }
+    //       else if(konvaData.type == Shape.Stamp){
+    //         let stampImg = new window.Image();
+            
+    //         stampImg.src = konvaData.image === 'thumbUp' ? thumbUpImg : thumbDownImg;
+      
+    //         stampImg.onload = () => {
+              
+    //           const newStamp = createNewStamp(index, {x: konvaData.x, y: konvaData.y}, stampImg)
+    //           newStamp.name(konvaData.image)
+    //           newStamp.visible(false)
+    //           stageRef.current.getLayers()[0].add(newStamp);
+    //           newStamp.scaleX(konvaData.scaleX)
+    //           newStamp.scaleY(konvaData.scaleY)
+    //           newStamp.rotation(konvaData.rotation)
+    //           newStamp.visible(true);
+    //         }           
+    //       } 
+    //       else if(konvaData.type == Shape.Group) { 
+    //         const newShape = createNewPostIt(index, {x:konvaData.Group.x, y:konvaData.Group.y}, konvaData.Text.text);
+    //         newShape.visible(false)
+    //         stageRef.current.getLayers()[0].add(newShape);
+    //         newShape.scaleX(konvaData.Group.scaleX)
+    //         newShape.scaleY(konvaData.Group.scaleY)
+    //         newShape.rotation(konvaData.Group.rotation)
+    //         newShape.visible(true);
+    //       } 
+    //       else if(konvaData.type == Shape.Text){
+    //         const newShape = createNewText(index, {x: konvaData.x, y: konvaData.y}, konvaData.text)
+    //         newShape.visible(false)
+    //         stageRef.current.getLayers()[0].add(newShape);
+    //         newShape.scaleX(konvaData.scaleX)
+    //         newShape.scaleY(konvaData.scaleY)
+    //         newShape.rotation(konvaData.rotation)
+    //         newShape.visible(true);
+    //       }
+    //     } 
+    //   });
+    // };
+    
+    // const handleDataLoaded = () => {
+      
+    //   setIsLoading(false);
+    //   initializeCanvas();
+    //   yObjects.unobserve(handleDataLoaded);
+    // };
+
+    // yObjects.observe(handleDataLoaded);
+
+    
 
     const createNodeFromKonvaData2 = (index: string, konvaData: any) => {
       const node = stageRef.current.children[0].findOne("#"+index)
@@ -449,28 +552,84 @@ const App:FC = () => {
 
     }
 
+    const updateNodeFromKonvaData2 = (index: string, konvaData: any) => {
+      const node = stageRef.current.children[0].findOne("#" + index);
+      if (!node) return;
+
+      if(konvaData.type == Shape.Group){
+        node.scaleX(konvaData.Group.scaleX)
+        node.scaleY(konvaData.Group.scaleY)
+        node.rotation(konvaData.Group.rotation)
+
+      }
+      else{
+        switch (konvaData.type) {
+          case 'Line':
+            const lineNode = node as Konva.Line;
+            lineNode.points(konvaData.points);
+            lineNode.stroke(konvaData.stroke);
+            lineNode.strokeWidth(konvaData.strokeWidth);
+            lineNode.lineCap(konvaData.lineCap);
+            lineNode.lineJoin(konvaData.lineJoin);
+            lineNode.tension(konvaData.tension);
+            lineNode.opacity(konvaData.opacity);
+            
+            break;
+          case 'Rect':
+          case 'Circle':
+          case 'RegularPolygon':
+            break;
+          case 'Stamp':
+            break;
+          case 'Text':
+            const textNode = node as Konva.Text;
+            textNode.text(konvaData.text);
+            //textNode.fontSize(konvaData.fontSize);
+            break;
+          default:
+        }
+      
+        // Common properties update
+        node.x(konvaData.x);
+        node.y(konvaData.y);
+        node.scaleX(konvaData.scaleX);
+        node.scaleY(konvaData.scaleY);
+        node.rotation(konvaData.rotation);
+        node.visible(true);
+
+      }
+    
+    
+    };
+    
+
     
 
 
     const updateCanvas = () => {
       setIsLoading(false);
+      //initializeCanvas();
       yObjects.observe((event) => {
 
         event.keysChanged.forEach(id => {
           const konvaData = yObjects.get(id);
           let node = stageRef.current.findOne(`#${id}`);
-          
-          if (!konvaData || node) { 
+          if (!konvaData && node) {
+            if(groupTr){
+              groupTr.nodes([])
+              //groupTr == null
+            }
             node?.destroy();
           }
-
-          if(konvaData){
+          else if(konvaData && !node){
             createNodeFromKonvaData2(id, konvaData);
           }
+          else if(konvaData && node){
+            updateNodeFromKonvaData2(id, konvaData);
+          }
+
+
         });
-        
-
-
       });
     };
     // updateCanvas();
@@ -886,7 +1045,6 @@ const App:FC = () => {
           }
         }
         
-     
       function removeTextarea() {
         if (!textarea.parentNode) return;
         textarea.parentNode.removeChild(textarea);
@@ -966,6 +1124,16 @@ const App:FC = () => {
       });
     });
 
+    textNode.on('transform', () => {
+      const scaleX = textNode.scaleX();
+      const scaleY = textNode.scaleY();
+
+      textNode.width(textNode.width() * scaleX);
+      textNode.scaleX(1);
+      textNode.height(textNode.height() * scaleY);
+      textNode.scaleY(1);
+
+    });
     return textNode
   }
 
@@ -1353,8 +1521,8 @@ const App:FC = () => {
         height: selectionRect.height / stageRef.current.scaleY(),
       };
       
+        ySelectedNodes.set(userId.current, absoluteSelectionInfo);
 
-      ySelectedNodes.set(userId.current, absoluteSelectionInfo);
     });
 
    
@@ -1523,7 +1691,7 @@ const App:FC = () => {
         }
 
         
-        yTrans.set(node.id(), changeInfo); 
+          yTrans.set(node.id(), changeInfo); 
       });
       const selectionRect = tr.getClientRect();
       const scale = stageRef.current.scaleX(); // 현재 스케일
@@ -1537,8 +1705,10 @@ const App:FC = () => {
         height: selectionRect.height / stageRef.current.scaleY(),
         
       };
-      
-      ySelectedNodes.set(userId.current, absoluteSelectionInfo);
+      yDocRef.current.transact(() => {
+
+        ySelectedNodes.set(userId.current, absoluteSelectionInfo);
+      }, undoManagerObj);
 
     });
     tr.on('transformend', function() {
@@ -1688,6 +1858,7 @@ const App:FC = () => {
       e.cancelBubble = true;
     });
 
+
     groupTr = tr;
     stageRef.current.getLayers()[0].add(groupTr)
   }
@@ -1734,7 +1905,10 @@ const App:FC = () => {
               node.removeName("locked")
             }
           });
-          ySelectedNodes.delete(userId.current);
+          yDocRef.current.transact(() => {
+
+            ySelectedNodes.delete(userId.current);
+          }, undoManagerObj);
           yLockNodes.delete(userId.current);
           groupTr.nodes([]);
         }
@@ -1853,8 +2027,8 @@ const App:FC = () => {
         penStyle : tool
       };
       //yDocRef.current.transact(() => {
-      yPens.set(idx, changeInfo);
-    //}, undoManagerObj);
+        yPens.set(idx, changeInfo);
+      //}, undoManagerObj);
     }
 
     else if (tool === Tools.ERASER) {
@@ -1897,6 +2071,17 @@ const App:FC = () => {
       if (targetErase) {
         const targetEraseId = targetErase.id();
         const changeInfo = { type: "delete" };
+        if(targetErase.getClassName() === 'Line'){
+          //yDocRef.current.transact(() => {
+            yPens.set(targetEraseId, changeInfo);
+          //}, undoManagerObj);
+        }
+        else if(targetErase.getClassName() === 'Circle' || targetErase.getClassName() === 'Rect' 
+        ||targetErase.getClassName() === 'RegularPolygon'){
+          //yDocRef.current.transact(() => {
+            yShape.set(targetEraseId, changeInfo);
+          //}, undoManagerObj);
+        }
         
         yDocRef.current.transact(() => {
           yObjects.set(targetEraseId, changeInfo);
@@ -1992,8 +2177,9 @@ const App:FC = () => {
               width : selectionRect.width / stageRef.current.scaleX(),
               height: selectionRect.height / stageRef.current.scaleY(),
             };
-            
-            ySelectedNodes.set(userId.current, absoluteSelectionInfo);
+            yDocRef.current.transact(() => {
+              ySelectedNodes.set(userId.current, absoluteSelectionInfo);
+            }, undoManagerObj);
             yLockNodes.set(userId.current, JSON.stringify(locksData));
           }
         }
@@ -2251,10 +2437,9 @@ const App:FC = () => {
   }
 
   const handleUndo = () => {
-    
     undoManagerObj?.undo();
   }
-
+  
   const handleRedo = () => {
     undoManagerObj?.redo();
   }
@@ -2293,7 +2478,7 @@ const App:FC = () => {
         <Layer></Layer>
 
         <>
-          <MindMap stageRef = {stageRef} toolRef={toolRef} yDocRef = {yDocRef}/>
+          <MindMap stageRef = {stageRef} toolRef={toolRef} yDocRef = {yDocRef} yTargets={yTargets} yConnectors={yConnectors} undoManagerObj={undoManagerObj}/>
         </>
 
       </Stage>
