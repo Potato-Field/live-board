@@ -55,7 +55,7 @@ export const ButtonCustomGroup = ({handleIconBtnClick, handleUndo, handleRedo}: 
 
     return(
         <>
-            <ButtonGroup id='btnGroupContained' variant="contained" style={{position: "fixed", bottom: "1%", left: "50%", transform: "translate(-50%, 0)", maxWidth: "100%"}}>
+            <ButtonGroup id='btnGroupContained' variant="contained">
                 <ButtonGroup id='btnGroupCursor'>
                     <Tooltip arrow placement="top" title="Undo">
                         <IconButton onClick={handleUndo} className={styles.BtnGroupContainer}><UndoRoundedIcon /></IconButton>
