@@ -449,6 +449,8 @@ const App:FC = () => {
 
     }
 
+    
+
 
     const updateCanvas = () => {
       setIsLoading(false);
@@ -739,14 +741,15 @@ const App:FC = () => {
   const createNewTextArea:any = (textNode:any, areaPosition:{x:number, y:number})=>{
     const textarea = document.createElement('textarea');
     document.body.appendChild(textarea);
+    const scale = stageRef.current.scaleX();
 
     textarea.value = textNode.text();
     textarea.style.position = 'absolute';
     textarea.style.top = areaPosition.y + 'px';
     textarea.style.left = areaPosition.x + 'px';
-    textarea.style.width = textNode.width() - textNode.padding() * 2 + 'px';
-    textarea.style.height = textNode.height() - textNode.padding() * 2 + 1 + 'px';
-    textarea.style.fontSize = textNode.fontSize() + 'px';
+    textarea.style.width = (textNode.width() - textNode.padding() * 2)*scale + 'px';
+    textarea.style.height = (textNode.height() - textNode.padding() * 2 + 1)*scale + 'px';
+    textarea.style.fontSize = (textNode.fontSize()*scale) + 'px';
     textarea.style.border = 'none';
     textarea.style.padding = '0px';
     textarea.style.margin = '0px';
@@ -820,7 +823,7 @@ const App:FC = () => {
       }
     });
     
-    var textPosition = textNode.absolutePosition();
+    
     let textarea:HTMLTextAreaElement;
     
     yTextData.observe(() => {
@@ -832,12 +835,15 @@ const App:FC = () => {
       // }
       
       textNode.on('dblclick dbltap', () => {
+        var textPosition = textNode.absolutePosition();
         textNode.hide();
-        
+
         var areaPosition = {
           x: stageRef.current.container().offsetLeft + textPosition.x,
           y: stageRef.current.container().offsetTop + textPosition.y,
         };
+
+        console.log(textPosition)
         
         textarea = createNewTextArea(textNode, areaPosition);
         textarea.value = yTextData.toString();
@@ -1051,13 +1057,15 @@ const App:FC = () => {
       //createNewTextArea 유사한 부분---------------------------
       var textarea = document.createElement('textarea');
       document.body.appendChild(textarea);
-      
+      const scale = stageRef.current.scaleX();
+
+
       textarea.style.position = 'absolute';
       textarea.style.top = areaPosition.y + 'px';
       textarea.style.left = areaPosition.x + 'px';
-      textarea.style.width = postItText.width() + 'px';
-      textarea.style.height = postItText.height() + 'px';
-      textarea.style.fontSize = postItText.fontSize() + 'px';
+      textarea.style.width = postItText.width()*scale + 'px';
+      textarea.style.height = postItText.height()*scale + 'px';
+      textarea.style.fontSize = postItText.fontSize()*scale + 'px';
       textarea.style.border = 'none';
       textarea.style.padding = '15px';
       textarea.style.margin = '0px';
