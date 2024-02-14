@@ -41,11 +41,19 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
         }
     };
 
-    const [open, setOpen] = useState(false);
+    const [isAllStamp, setIsAllStamp] = useState<boolean>(false);
+    function toggleStamp() {
+        setIsAllStamp((isAllStamp) => !isAllStamp);
+    }
+
+    const [isAllShape, setIsAllShape] = useState<boolean>(false);
+    function toggleShape() {
+        setIsAllShape((isAllShape) => !isAllShape);
+    }
 
     return(
         <>
-            <ButtonGroup id='btnGroupContained' variant="contained" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", maxWidth: "100%"}}>
+            <ButtonGroup id='btnGroupContained' variant="contained" style={{position: "fixed", bottom: "1%", left: "50%", transform: "translate(-50%, 0)", maxWidth: "100%"}}>
                 <ButtonGroup id='btnGroupCursor'>
                     <Tooltip arrow placement="top" title="Undo">
                         <IconButton className={styles.BtnGroupContainer}><UndoRoundedIcon /></IconButton>
@@ -67,17 +75,29 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
                     <Eraser props = {Tools.ERASER} />
                     <PostIt props={Tools.POSTIT}/>
 
-                    <Tooltip arrow placement="top" title="Stamp">
-                        <IconButton>
+                    <IconButton id='btnStamp' style={{position: "relative"}} onClick={() => { toggleStamp(); setIsAllShape(false); }}>
+                        <Tooltip arrow placement="top" title="Stamp">
                             <FontAwesomeIcon icon={faStamp} size='xl'/>
-                        </IconButton>
-                    </Tooltip>
+                        </Tooltip>
 
-                    <Tooltip arrow placement="top" title="Shape">
-                        <IconButton>
+                        {isAllStamp && 
+                        <ButtonGroup id='btnAllStamp' variant="contained" style={{position: "absolute", top: "-43px"}}>
+                            <Stamp handleIconBtnClick={handleIconBtnClick} props={Tools.STAMP}/>
+                        </ButtonGroup>
+                        }
+                    </IconButton>
+
+                    <IconButton id='btnShape' style={{position: "relative"}} onClick={() => { toggleShape(); setIsAllStamp(false); }}>
+                        <Tooltip arrow placement="top" title="Shape">
                             <FontAwesomeIcon icon={faShapes} size='xl'/>
-                        </IconButton>
-                    </Tooltip>
+                        </Tooltip>
+                        
+                        {isAllShape && 
+                        <ButtonGroup id='btnAllShape' variant="contained" style={{position: "absolute", top: "-43px"}}>
+                            <Shape handleIconBtnClick={handleIconBtnClick} props={Tools.SHAPE}/>
+                        </ButtonGroup>
+                        }
+                    </IconButton>
 
                     <MindMap props = {Tools.MINDMAP}/>
                 </ButtonGroup>
@@ -110,15 +130,6 @@ export const ButtonCustomGroup = ({handleIconBtnClick}: ButtonCustomGroupProps) 
                     </ButtonGroup>
                 </ButtonGroup>
             </ButtonGroup>
-
-            <ButtonGroup id='allStamp' variant="contained" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", maxWidth: "100%"}}>
-                <Stamp handleIconBtnClick={handleIconBtnClick} props={Tools.STAMP}/>
-            </ButtonGroup>
-
-            {/* <ButtonGroup id='BtnGroupContained' variant="contained" style={{position: "absolute", bottom: "10%", left: "50%", transform: "translate(-50%, 0)", maxWidth: "100%"}}>
-                <Shape handleIconBtnClick={handleIconBtnClick} props={Tools.SHAPE}/>
-            </ButtonGroup> */}
-
         </>
     );
 }

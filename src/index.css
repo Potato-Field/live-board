@@ -152,15 +152,19 @@ body {
   background-color: #727272;
 }
 
-#btnGroupColors{
+#btnGroupColors {
   background-color: rgba(160, 160, 160, 0.979);
 }
 
 /* 아이콘 */
-#btnGroupTools svg{
+#btnGroupTools svg {
   color: white;
 }
 
-/* #BtnGroupContained button:focus{
+/* btnGroupContained button:focus{
   background-color: rgb(0, 0, 0);
 } */
+
+#btnAllStamp, #btnAllShape {
+  background-color: #727272;  /* #btnGroupTools와 동일 색상 */
+}
