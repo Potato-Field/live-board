@@ -355,6 +355,7 @@ const App:FC = () => {
           if(paramUserId === userId.current || !userId.current) return;
           const node:Konva.Node | undefined | null = stageRef.current.children[0].findOne("#"+index)
           if(!node) return;
+          
           node.x(konvaData.x)
           node.y(konvaData.y)
           yMove.delete(index);
@@ -382,21 +383,28 @@ const App:FC = () => {
         });
       } else {
         yTrans.forEach((konvaData:any, index:string)=>{
-          
-        const paramUserId = konvaData.userId;
-        if(paramUserId === userId.current || !userId.current) return;
-        const node:Konva.Node | undefined | null = stageRef.current.children[0].findOne("#"+index)
-        if(!node) return;
-        node.x(konvaData.x)
-        node.y(konvaData.y)
-        node.scaleX(konvaData.scaleX)
-        node.scaleY(konvaData.scaleY)
-        node.rotation(konvaData.rotation)
-        
-        yTrans.delete(index);
-        
-      });
-    }
+          const paramUserId = konvaData.userId;
+          if(paramUserId === userId.current || !userId.current) return;
+          if(e.keysChanged.has('postItTextShape')){
+             const nodeText:Konva.Node | undefined | null = stageRef.current.children[0].findOne("#"+konvaData.id+'_pit');
+             const nodeRect:Konva.Node | undefined | null = stageRef.current.children[0].findOne("#"+konvaData.id+'_pir');
+             if(!nodeText || !nodeRect) return;
+             nodeText?.height(konvaData.textHeight);
+             nodeRect?.height(konvaData.textHeight);
+          } else{
+
+            const node:Konva.Node | undefined | null = stageRef.current.children[0].findOne("#"+index)
+            if(!node) return;
+            node.x(konvaData.x)
+            node.y(konvaData.y)
+            node.scaleX(konvaData.scaleX)
+            node.scaleY(konvaData.scaleY)
+            node.rotation(konvaData.rotation)
+            
+            yTrans.delete(index); 
+          }
+        });
+      }
     })
 
 
@@ -642,6 +650,7 @@ const App:FC = () => {
           if (!konvaData && node) {
             if(groupTr){
               groupTr.nodes([]);
+              groupTr.rotateEnabled(true);
             }
             node?.destroy();
           }
@@ -757,6 +766,7 @@ const App:FC = () => {
       if(groupTr){
         if(groupTr.nodes().length == 0){
           groupTr.nodes([selected]);
+          groupTr.rotateEnabled(true);
         }
       }
       
@@ -791,6 +801,7 @@ const App:FC = () => {
       if(groupTr){
         if(groupTr.nodes().length == 0){
           groupTr.nodes([selected]);
+          groupTr.rotateEnabled(true);
         }
       }
     })
@@ -825,6 +836,7 @@ const App:FC = () => {
       if(groupTr){
         if(groupTr.nodes().length == 0){
           groupTr.nodes([selected]);
+          groupTr.rotateEnabled(true);
         }
       }
     })
@@ -858,6 +870,7 @@ const App:FC = () => {
       if(groupTr){
         if(groupTr.nodes().length == 0){
           groupTr.nodes([selected]);
+          groupTr.rotateEnabled(true);
         }
       }
     })
@@ -891,6 +904,7 @@ const App:FC = () => {
       if(groupTr){
         if(groupTr.nodes().length == 0){
           groupTr.nodes([selected]);
+          groupTr.rotateEnabled(true);
         }
       }
     })
@@ -995,6 +1009,7 @@ const App:FC = () => {
       }
       if(groupTr && groupTr.nodes().length == 0){
         groupTr.nodes([selected]);
+        groupTr.rotateEnabled(true);
       }
     });
     
@@ -1360,6 +1375,13 @@ const App:FC = () => {
           });
         }
 
+        const konvaData = {
+          id : postItGroup.id(),
+          textHeight : text?.height(),
+          userId: userId.current
+        }
+        yTrans.set('postItTextShape', konvaData)
+
         const key = e.key.toLowerCase();
         if (key == 'esc' || key == 'escape') {
           postItText.text(textarea.value);
@@ -1432,9 +1454,10 @@ const App:FC = () => {
       }
     });
 
-    postItGroup.on('mousedown', (e:any)=>{  // e.target: Text, e.currentTarget: Group 
-          //그룹 Transfomer
-      
+    postItGroup.on("mousedown", (e:any)=>{
+      const text = postItGroup.findOne('.postItText')
+      const rect = postItGroup.findOne('.postItRect')
+      const init = postItGroup.findOne('.postItInitText')
       if(toolRef.current !== Tools.CURSOR){
         postItGroup.draggable(false)
         return;
@@ -1442,11 +1465,20 @@ const App:FC = () => {
         postItGroup.draggable(true)
       }
 
-      if (groupTr === null) {
+      //const selected = e.target
+      const current = e.currentTarget
+      if(groupTr == null){
         createNewTr();
-      } else {          
-        groupTr.nodes([e.target]);  // e.target: PostItText
       }
+      if(groupTr){
+        if(groupTr.nodes().length == 0){
+          groupTr.nodes([current, text, rect, init]);
+          groupTr.rotateEnabled(false);
+        }
+      }
+    })
+
+    postItGroup.on('click', ()=>{  // e.target: Text, e.currentTarget: Group 
       
       const text = postItGroup.findOne('.postItText')
       const rect = postItGroup.findOne('.postItRect')
@@ -1487,6 +1519,7 @@ const App:FC = () => {
     });
     tr.on('dragmove', function(e:any) {
       //마우스 동기화
+      console.log(tr.nodes())
       const stage = e.target.getStage();
       
       const pos = stage.getPointerPosition();
@@ -1961,6 +1994,7 @@ const App:FC = () => {
           }, undoManagerObj);
           yLockNodes.delete(userId.current);
           groupTr.nodes([]);
+          groupTr.rotateEnabled(true);
         }
 
         selectionRectangle= new Konva.Rect({
@@ -2019,7 +2053,6 @@ const App:FC = () => {
   };
 
   const handleMouseMove = (e: any) => {
-    
     const stage = e.target.getStage();
     
     const pos = stage.getPointerPosition();
