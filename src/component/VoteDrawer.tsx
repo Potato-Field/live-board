@@ -125,7 +125,7 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
         <HowToVoteIcon fontSize='large' />
       </IconButton>
 
-      <Drawer open={open} onClose={()=>{setOpen(false)}} >
+      <Drawer open={open} onClose={()=>{setOpen(false)}} PaperProps={{ sx: { width: '20%' } }} >
         <h2 style={{padding:'1rem', margin: 0}}>Vote results with postit</h2>
         <Divider />
         <Box role="presentation"> 
@@ -165,7 +165,6 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
                         onClick={() => {
                           viewPostIt(postItData.id, stageRef);
                           setOpen(false);
-                           // 작동 안함
                         }}
                         onTouchStart={() => {
                           viewPostIt(postItData.id, stageRef);
