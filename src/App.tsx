@@ -173,6 +173,7 @@ const App:FC = () => {
 
     /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://localhost:1235'] });
 
     /* 배포시 사용 */
     const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
@@ -767,6 +768,7 @@ const App:FC = () => {
         if(groupTr.nodes().length == 0){
           groupTr.nodes([selected]);
           groupTr.rotateEnabled(true);
+          groupTr.zIndex(30);
         }
       }
       
@@ -802,6 +804,7 @@ const App:FC = () => {
         if(groupTr.nodes().length == 0){
           groupTr.nodes([selected]);
           groupTr.rotateEnabled(true);
+          groupTr.zIndex(30);
         }
       }
     })
@@ -837,6 +840,7 @@ const App:FC = () => {
         if(groupTr.nodes().length == 0){
           groupTr.nodes([selected]);
           groupTr.rotateEnabled(true);
+          groupTr.zIndex(30);
         }
       }
     })
@@ -871,6 +875,7 @@ const App:FC = () => {
         if(groupTr.nodes().length == 0){
           groupTr.nodes([selected]);
           groupTr.rotateEnabled(true);
+          groupTr.zIndex(30);
         }
       }
     })
@@ -905,6 +910,7 @@ const App:FC = () => {
         if(groupTr.nodes().length == 0){
           groupTr.nodes([selected]);
           groupTr.rotateEnabled(true);
+          groupTr.zIndex(30);
         }
       }
     })
@@ -1010,6 +1016,7 @@ const App:FC = () => {
       if(groupTr && groupTr.nodes().length == 0){
         groupTr.nodes([selected]);
         groupTr.rotateEnabled(true);
+        groupTr.zIndex(30);
       }
     });
     
@@ -1192,7 +1199,6 @@ const App:FC = () => {
       padding: 15,
       lineHeight: 1.2,
     });
-    
     let initText = new Konva.Text({
       id : id+"_piit",
       name: 'postItInitText',
@@ -1474,6 +1480,7 @@ const App:FC = () => {
         if(groupTr.nodes().length == 0){
           groupTr.nodes([current, text, rect, init]);
           groupTr.rotateEnabled(false);
+          groupTr.zIndex(30);
         }
       }
     })
@@ -1514,12 +1521,12 @@ const App:FC = () => {
   const createNewTr = ()=>{
     //if (groupTr != null) return;
     const tr = new Konva.Transformer({ flipEnabled: false });
+
     tr.on('dragstart', function() {
       isDrag.current = true;
     });
     tr.on('dragmove', function(e:any) {
       //마우스 동기화
-      console.log(tr.nodes())
       const stage = e.target.getStage();
       
       const pos = stage.getPointerPosition();
@@ -2223,6 +2230,7 @@ const App:FC = () => {
           if(selected.length > 0){
             groupTr.nodes(selected);
             groupTr.rotateEnabled(rotationFlag);
+            groupTr.zIndex(30);
             
             const selectionRect = groupTr.getClientRect();
 
@@ -2491,6 +2499,14 @@ const App:FC = () => {
     // }
 
   }
+  const handleMouseContextMenu = (e: any) => {
+    e.evt.preventDefault();
+    if (e.target === stageRef.current) return;
+    if (tool === Tools.CURSOR){
+      
+    }
+
+  }
 
   const handleUndo = () => {
     undoManagerObj?.undo();
@@ -2499,6 +2515,7 @@ const App:FC = () => {
   const handleRedo = () => {
     undoManagerObj?.redo();
   }
+
 
   
 
@@ -2527,6 +2544,7 @@ const App:FC = () => {
         onTouchEnd   = {handleMouseUp}
         onClick      = {handleMouseClick}
         onWheel      = {handleMouseWheel}
+        onContextMenu= {handleMouseContextMenu}
         draggable    = {false}
         ref          = {stageRef}
       >
@@ -2536,9 +2554,15 @@ const App:FC = () => {
         <>
           <MindMap stageRef = {stageRef} toolRef={toolRef} yDocRef = {yDocRef} yTargets={yTargets} yConnectors={yConnectors} undoManagerObj={undoManagerObj}/>
         </>
-
       </Stage>
+
       <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} handleUndo={handleUndo} handleRedo={handleRedo}/>
+      <div id="menu">
+        <div>
+          <button id="pulse-button">Pulse</button>
+          <button id="delete-button">Delete</button>
+        </div>
+      </div>
     </div>
     </>
   );
