@@ -1,35 +1,28 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import Login from './login.tsx'
-import './index.css'
 import { ToolProvider } from './component/ToolContext';
 import { ColorProvider } from './component/ColorContext';
-import App from './App';
+import './index.css'
+import Login from './login.tsx'
 import Lobby from './lobby';
-import { ThemeProvider } from '@mui/material/styles';
-import { createTheme } from '@mui/material/styles';
+import App from './App';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
 
 let theme = createTheme({
   palette: {
     primary: {
-      main: '#707070',
+      main: '#DBE0E6',  // 그레이
     },
     secondary: {
-      main: '#edf2ff',
+      main: '#E1E5EA',  // 라이트 그레이
     },
+    // info: {
+    //   main: 'FF7A50', // 포인트 컬러
+    // },
   },
 });
-
-theme = createTheme(theme, {
-  palette: {
-    info: {
-      main: theme.palette.secondary.main,
-    },
-  },
-});
-
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
