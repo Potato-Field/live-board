@@ -9,6 +9,7 @@ import Lobby from './lobby';
 import App from './App';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
+import SignUp from './signup.tsx';
 
 let theme = createTheme({
   palette: {
@@ -33,6 +34,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <ColorProvider>
             <Routes>
               <Route path="/" element={<Login />} /> {/* "/" 경로에는 로그인 페이지가 나오도록 설정 */}
+              <Route path="/signup" element={<SignUp />}/>
               <Route path='/lobby' element={<Lobby />} />
               <Route path="/app" element={<App />} />
             </Routes>

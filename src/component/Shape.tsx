@@ -1,6 +1,6 @@
 import { useTool } from './ToolContext';
 import { Tools } from './Tools';
-import CallMadeRoundedIcon from '@mui/icons-material/CallMadeRounded';
+// import CallMadeRoundedIcon from '@mui/icons-material/CallMadeRounded';
 import SquareRoundedIcon from '@mui/icons-material/SquareRounded';
 import ChangeHistoryRoundedIcon from '@mui/icons-material/ChangeHistoryRounded';
 import CircleIcon from '@mui/icons-material/Circle';
@@ -26,11 +26,11 @@ export default function Shape({ handleIconBtnClick, props }: ShapeProps){
 
     return(
         <>
-        <Tooltip arrow placement="top" title="Arrow">
+        {/* <Tooltip arrow placement="top" title="Arrow">
             <IconButton aria-label="arrow" id={componentElem.id} onClick={()=>{handleIconBtnClick("arrow"); setTool(props);}}>
                 <CallMadeRoundedIcon></CallMadeRoundedIcon>
             </IconButton>
-        </Tooltip>
+        </Tooltip> */}
         
         <Tooltip arrow placement="top" title="Square">
             <IconButton aria-label="rectangle" id={componentElem.id} onClick={()=>{handleIconBtnClick("rect"); setTool(props);}}>
