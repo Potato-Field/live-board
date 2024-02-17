@@ -19,9 +19,9 @@ let theme = createTheme({
     secondary: {
       main: '#E1E5EA',  // 라이트 그레이
     },
-    // info: {
-    //   main: 'FF7A50', // 포인트 컬러
-    // },
+    info: {
+      main: '#FF7A50', // 포인트 컬러
+    },
   },
 });
 
