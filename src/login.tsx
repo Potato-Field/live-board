@@ -3,17 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, TextField, Link, Box, Typography, Container } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-
-function Copyright(props: any) {
-    return (
-        <Typography variant="body2" color="text.secondary" align="center" {...props}>
-        Developed by Potato Field🥔
-        <Link color="inherit" href="https://github.com/Potato-Field/live-board.git">
-            Github
-        </Link>
-        </Typography>
-    );
-}
+import Copyright from './component/Copyright'
 
 interface User {
     nickname: string;
