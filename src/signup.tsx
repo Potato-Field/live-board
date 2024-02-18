@@ -3,17 +3,7 @@ import { Button, TextField, Link, Box, Typography, Container } from '@mui/materi
 import { useTheme } from '@mui/material/styles';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-function Copyright(props: any) {
-    return (
-        <Typography variant="body2" color="text.secondary" align="center" {...props}>
-            Developed by Potato Field🥔
-            <Link color="inherit" href="https://github.com/Potato-Field/live-board.git">
-                Github
-            </Link>
-        </Typography>
-    );
-}
+import Copyright from './component/Copyright'
 
 export default function SignUp() {
     const theme = useTheme();
