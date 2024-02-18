@@ -864,6 +864,10 @@ const App:FC = () => {
   useEffect(() => {
     toolRef.current = tool;
     currentColorRef.current = currentColor;
+    Array.from(document.getElementsByClassName('btn-active')).forEach((element:any) => {
+      element.classList.remove('btn-active')
+    });
+    document.getElementById(Tools[tool].toString())?.classList.add('btn-active')
   }, [tool, currentColor]);
 
   const createNewUserArea = (paramUserId:string, pos:{x:number, y:number, width:number, height:number})=>{
@@ -2818,8 +2822,8 @@ const App:FC = () => {
           <button id="foreFront" onClick={foreFrontClick}>맨 앞으로</button>
           <button id="moveTop" onClick={moveTopClick}>앞으로</button>
           <hr/>
-          <button id="atTheBack" onClick={atTheBackClick}>맨 뒤로</button>
           <button id="moveBack" onClick={moveBackClick}>뒤로</button>
+          <button id="atTheBack" onClick={atTheBackClick}>맨 뒤로</button>
           <hr/>
           <button id="deleteObj" onClick={deleteObjClick}>삭제</button>
         </div>
