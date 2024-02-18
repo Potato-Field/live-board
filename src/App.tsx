@@ -191,10 +191,10 @@ const App:FC = () => {
 
     /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://localhost:1235'] });
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://localhost:1235'] });
 
     /* 배포시 사용 */
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
     
       
 
@@ -2226,12 +2226,10 @@ const App:FC = () => {
       } 
       // else {
       //   if(e.target.name() === 'postItInitText' || e.target.name() === 'postItText'){
-      //     console.log("ss")
       //     // groupTr?.borderEnabled(false);
       //     groupTr?.rotateEnabled(false);
       //     // groupTr?.resizeEnabled(false);
       //   } else{
-      //     console.log(e.target.name())
       //   }
       // }
       
