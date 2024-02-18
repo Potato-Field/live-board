@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { Button, TextField, Link, Box, Typography, Container } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Copyright from './component/Copyright'
-import SignUp from './signup';
 
 export default function Login() {
 
