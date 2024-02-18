@@ -476,7 +476,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
                 points: points,
                 stroke: 'black',
                 fill: 'black',
-                strokeWidth: 2,
+                strokeWidth: 6,
             });
             layerRef.current?.add(line);
         } 
@@ -499,7 +499,8 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
                 id: id,
                 x: target.x,
                 y: target.y,
-                fill:'#f9f9f9',
+                // fill:'#f9f9f9',
+                fill:'#A9A9A9',
                 radius: 70,
                 draggable: true,
                 opacity: 1,

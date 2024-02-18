@@ -1769,9 +1769,12 @@ const App:FC = () => {
       let type:Shape;
       let konvaData:any;
       tr.getNodes().forEach((node:any)=>{
-        type = node.getClassName()
+        type = node.getClassName();
         if(node.name().includes("postIt")){
-          if(type === Shape.Group){
+          //if(type === Shape.Group){
+          if(type === Shape.Text){ 
+          
+            console.log("come to Group");     //TEST
             konvaData = {type : type}
             const childList:Konva.Node[] = node.children;
             if(node.getClassName() == Shape.Group){
@@ -2114,6 +2117,37 @@ const App:FC = () => {
       //}, undoManagerObj);
     }
 
+    // else if (tool === Tools.ERASER) {
+    //   if (!isDrawing.current || !stageRef.current) return;
+    
+    //   const pos = stageRef.current.getPointerPosition();
+    //   if (!pos) return;
+    
+    //   const areaSize = 30;
+    //   const area = {
+    //     x: pos.x - areaSize / 2,
+    //     y: pos.y - areaSize / 2,
+    //     width: areaSize,
+    //     height: areaSize
+    //   };
+    
+    //   const shapes = stageRef.current.getLayers()[0].getChildren().filter(node => {
+    //     return typeof node.getClientRect === 'function';
+    //   });
+    
+    //   const targetErase = shapes.find(node => {
+    //     const shapeRect = node.getClientRect();
+    //     return Konva.Util.haveIntersection(area, shapeRect);
+    //   });
+    
+    //   if (targetErase) {
+    //     const targetEraseId = targetErase.id();
+        
+    //     yDocRef.current.transact(() => {
+    //       yObjects.delete(targetEraseId);
+    //     }, undoManagerObj);
+    //   }
+    // }
     else if (tool === Tools.ERASER) {
       if (!isDrawing.current || !stageRef.current) return;
     
@@ -2127,14 +2161,17 @@ const App:FC = () => {
         width: areaSize,
         height: areaSize
       };
-    
-      const shapes = stageRef.current.getLayers()[0].getChildren().filter(node => {
-        return typeof node.getClientRect === 'function';
+
+      const shapes = stageRef.current.getLayers()[0].getChildren((node) => {
+        return node instanceof Konva.Shape && !node.hasName('locked');
+
       });
+    
+      
     
       const targetErase = shapes.find(node => {
         const shapeRect = node.getClientRect();
-        return Konva.Util.haveIntersection(area, shapeRect);
+        return Konva.Util.haveIntersection(area, shapeRect) && !node.hasName('locked');
       });
     
       if (targetErase) {
