@@ -1,10 +1,10 @@
 import { useTool } from './ToolContext';
 import { Tools } from './Tools';
-import CallMadeRoundedIcon from '@mui/icons-material/CallMadeRounded';
+// import CallMadeRoundedIcon from '@mui/icons-material/CallMadeRounded';
 import SquareRoundedIcon from '@mui/icons-material/SquareRounded';
-import ChangeHistoryRoundedIcon from '@mui/icons-material/ChangeHistoryRounded';
 import CircleIcon from '@mui/icons-material/Circle';
 import { IconButton, Tooltip } from '@mui/material';
+import { BsTriangleFill } from "react-icons/bs";
 
 interface ShapeProps {
     handleIconBtnClick: (e: any) => void;
@@ -26,27 +26,27 @@ export default function Shape({ handleIconBtnClick, props }: ShapeProps){
 
     return(
         <>
-        <Tooltip arrow placement="top" title="Arrow">
+        {/* <Tooltip arrow placement="top" title="Arrow">
             <IconButton aria-label="arrow" id={componentElem.id} onClick={()=>{handleIconBtnClick("arrow"); setTool(props);}}>
-                <CallMadeRoundedIcon></CallMadeRoundedIcon>
+                <CallMadeRoundedIcon />
             </IconButton>
-        </Tooltip>
+        </Tooltip> */}
         
-        <Tooltip arrow placement="top" title="Square">
+        <Tooltip arrow placement="top" title="Rectangle">
             <IconButton aria-label="rectangle" id={componentElem.id} onClick={()=>{handleIconBtnClick("rect"); setTool(props);}}>
-                <SquareRoundedIcon></SquareRoundedIcon>
+                <SquareRoundedIcon style={{height: "1.5rem"}} />
             </IconButton>
         </Tooltip>
 
-        <Tooltip arrow placement="top" title="Ellipse">
+        <Tooltip arrow placement="top" title="Circle">
             <IconButton aria-label="circle" id={componentElem.id} onClick={()=>{handleIconBtnClick("cir"); setTool(props);}}>
-                <CircleIcon></CircleIcon>
+                <CircleIcon style={{height: "1.5rem"}} />
             </IconButton>
         </Tooltip>
         
         <Tooltip arrow placement="top" title="Triangle">
             <IconButton aria-label="triangle" id={componentElem.id} onClick={()=>{handleIconBtnClick("tri"); setTool(props);}}>
-                <ChangeHistoryRoundedIcon></ChangeHistoryRoundedIcon>
+                <BsTriangleFill style={{height: "1.3rem"}} />
             </IconButton>
         </Tooltip>
         </>

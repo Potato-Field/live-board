@@ -94,9 +94,6 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
     
     if (!postIt) return;
 
-    // const scaleX = stageRef.current.scaleX();
-    // const scaleY = stageRef.current.scaleY();
-
     const postItWidth = postIt.find('.postItText')[0].attrs.width;
     const postItHeight = postIt.find('.postItText')[0].attrs.height;
     const postItX = postIt.attrs.x;
@@ -109,7 +106,7 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
     const stageWidth = stageRef.current.width();
     const stageHeight = stageRef.current.height();
     const stageCenterX = stageWidth / 2;
-    const stageCenterY = stageHeight / 2; // TODO: 네비바 높이 빼야함 (네비바 배치 수정 먼저 하기)
+    const stageCenterY = stageHeight / 2;
 
     const deltaX = stageCenterX - centerX;
     const deltaY = stageCenterY - centerY;
@@ -117,15 +114,22 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
     /* 포스트잇 중심으로 Stage 이동 */
     stageRef.current.x(deltaX);
     stageRef.current.y(deltaY);
+    stageRef.current.scaleX(1);
+    stageRef.current.scaleY(1);
   }
 
   return (
     <>
-      <IconButton size="large" aria-label="Postit vote" color="inherit" onClick={toggleDrawer(setOpen, true, stageRef, setPostItData)}>
+      <IconButton 
+        size="large"
+        aria-label="Postit vote" 
+        // color="inherit" 
+        onClick={toggleDrawer(setOpen, true, stageRef, setPostItData)}
+      >
         <HowToVoteIcon fontSize='large' />
       </IconButton>
 
-      <Drawer open={open} onClose={()=>{setOpen(false)}} >
+      <Drawer open={open} onClose={()=>{setOpen(false)}} PaperProps={{ sx: { width: '20%' } }} >
         <h2 style={{padding:'1rem', margin: 0}}>Vote results with postit</h2>
         <Divider />
         <Box role="presentation"> 
@@ -165,7 +169,6 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
                         onClick={() => {
                           viewPostIt(postItData.id, stageRef);
                           setOpen(false);
-                           // 작동 안함
                         }}
                         onTouchStart={() => {
                           viewPostIt(postItData.id, stageRef);

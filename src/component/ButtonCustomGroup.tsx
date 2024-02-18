@@ -77,25 +77,25 @@ export const ButtonCustomGroup = ({handleIconBtnClick, handleUndo, handleRedo}: 
                     <Eraser props = {Tools.ERASER} />
                     <PostIt props={Tools.POSTIT}/>
 
-                    <IconButton id='btnStamp' style={{position: "relative"}} onClick={() => { toggleStamp(); setIsAllShape(false); }}>
+                    <IconButton id='btnStamp'  onClick={() => { toggleStamp(); setIsAllShape(false); }}>
                         <Tooltip arrow placement="top" title="Stamp">
                             <FontAwesomeIcon icon={faStamp} size='xl'/>
                         </Tooltip>
 
                         {isAllStamp && 
-                        <ButtonGroup id='btnAllStamp' variant="contained" style={{position: "absolute", top: "-43px"}}>
+                        <ButtonGroup id='btnAllStamp' variant="contained">
                             <Stamp handleIconBtnClick={handleIconBtnClick} props={Tools.STAMP}/>
                         </ButtonGroup>
                         }
                     </IconButton>
 
-                    <IconButton id='btnShape' style={{position: "relative"}} onClick={() => { toggleShape(); setIsAllStamp(false); }}>
+                    <IconButton id='btnShape' onClick={() => { toggleShape(); setIsAllStamp(false); }}>
                         <Tooltip arrow placement="top" title="Shape">
                             <FontAwesomeIcon icon={faShapes} size='xl'/>
                         </Tooltip>
                         
                         {isAllShape && 
-                        <ButtonGroup id='btnAllShape' variant="contained" style={{position: "absolute", top: "-43px"}}>
+                        <ButtonGroup id='btnAllShape' variant="contained">
                             <Shape handleIconBtnClick={handleIconBtnClick} props={Tools.SHAPE}/>
                         </ButtonGroup>
                         }
@@ -125,7 +125,7 @@ export const ButtonCustomGroup = ({handleIconBtnClick, handleUndo, handleRedo}: 
                             <IconButton onClick={()=>{handleColorClick('#F7D054')}}><CircleIcon className={styles.circle} style={{color: 'F7D054'}}/></IconButton>
                         </Tooltip>
                         <Tooltip arrow placement="top" title="Custom">
-                            <IconButton id='customColorBtn'>
+                            <IconButton id='customColorBtn' style={{width: '40px'}}>
                                 <input type="color" id={styles.customColor} className={styles.circle} name="customColor" value={currentColor} onChange={handleColorClick}/>
                             </IconButton>
                         </Tooltip>

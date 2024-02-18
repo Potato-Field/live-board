@@ -44,6 +44,24 @@ let multiSelectBlocker = {
 
 let groupTr:Konva.Transformer | null = null;
 
+const ANK_ALL = [
+  'top-left'
+  , 'top-center'
+  , 'top-right'
+  , 'middle-right'
+  , 'middle-left'
+  , 'bottom-left'
+  , 'bottom-center'
+  , 'bottom-right'
+];
+
+const ANK_MEMO = [
+  'top-left'
+  , 'top-right'
+  , 'bottom-left'
+  , 'bottom-right'
+];
+
 //Container Components
 const App:FC = () => {
 
@@ -128,8 +146,7 @@ const App:FC = () => {
     return color;
   }
   
-  function updateMousePositionOnScreen(userId:string, mousePosition:any) {
-    let mouseIcon = document.getElementById(`mouse-${userId}`);
+  function updateMousePositionOnScreen(userId:string, mousePosition:any) {    let mouseIcon = document.getElementById(`mouse-${userId}`);
     if (!mouseIcon) {
       mouseIcon = document.createElement('div');
       mouseIcon.id = `mouse-${userId}`;
@@ -173,6 +190,7 @@ const App:FC = () => {
 
     /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://localhost:1235'] });
 
     /* 배포시 사용 */
     const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
@@ -303,17 +321,34 @@ const App:FC = () => {
         const node = stageRef.current.children[0].findOne("#"+index)
         let newShape:any;
         if(node) return;
-        if(konvaData.type === Shape.Stamp){
-          let stampImg = new window.Image();
-          stampImg.src = konvaData.image === 'thumbUp' ? thumbUpImg : thumbDownImg;
-    
-          stampImg.onload = () => {
+        if(konvaData.type === Shape.Stamp || konvaData.type === Shape.Image){
+          if(konvaData.image !== 'thumbUp' && konvaData.image !== 'thumbUp'){
+            const imageObj = new Image();
+            imageObj.onload = () => {
+              const newImage = new Konva.Image({
+                id: index,
+                image: imageObj,
+                x: konvaData.x,
+                y: konvaData.y,
+                width: konvaData.width,
+                height: konvaData.height,
+                draggable: true
+              });
+              stageRef.current.getLayers()[0].add(newImage);
+            };
+            imageObj.src = konvaData.image;
+          } else {
+            let stampImg = new window.Image();
+            stampImg.src = konvaData.image === 'thumbUp' ? thumbUpImg : thumbDownImg;
             
-            const newStamp = createNewStamp(index, {x: konvaData.x, y: konvaData.y}, stampImg)
-            newStamp.name(konvaData.image)
-            stageRef.current.getLayers()[0].add(newStamp);
+            stampImg.onload = () => {
+              
+              const newStamp = createNewStamp(index, {x: konvaData.x, y: konvaData.y}, stampImg)
+              newStamp.name(konvaData.image)
+              stageRef.current.getLayers()[0].add(newStamp);
+            }
+            yShape.delete(index); 
           }
-             yShape.delete(index); 
         }
         else {
           if(konvaData.type === Shape.Rect){
@@ -326,10 +361,11 @@ const App:FC = () => {
             newShape = createNewTri(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill)
           } else if(konvaData.type === Shape.Group){
             newShape = createNewPostIt(index, {x: konvaData.Group.x, y: konvaData.Group.y}, konvaData.Text.text)
+            newShape.moveToTop();
           }
           stageRef.current.getLayers()[0].add(newShape);
 
-             yShape.delete(index); 
+          yShape.delete(index); 
         }
       });  
     })
@@ -549,22 +585,45 @@ const App:FC = () => {
             newShape.rotation(konvaData.rotation)
             newShape.visible(true);
           }
-          else if(konvaData.type == Shape.Stamp){
-            let stampImg = new window.Image();
-            
-            stampImg.src = konvaData.image === 'thumbUp' ? thumbUpImg : thumbDownImg;
-      
-            stampImg.onload = () => {
+          else  if(konvaData.type === Shape.Stamp || konvaData.type === Shape.Image){
+            if(konvaData.image !== 'thumbUp' && konvaData.image !== 'thumbUp'){
+              const imageObj = new Image();
+              imageObj.onload = () => {
+                const newImage = new Konva.Image({
+                  id: index,
+                  image: imageObj,
+                  x: konvaData.x,
+                  y: konvaData.y,
+                  width: konvaData.width,
+                  height: konvaData.height,
+                  draggable: true
+                });
+                //newImage.name(konvaData.image)
+                newImage.visible(false)
+                stageRef.current.getLayers()[0].add(newImage);
+                newImage.scaleX(konvaData.scaleX)
+                newImage.scaleY(konvaData.scaleY)
+                newImage.rotation(konvaData.rotation)
+                newImage.visible(true);
+              };
+              imageObj.src = konvaData.image;
+            } else {
+              let stampImg = new window.Image();
               
-              const newStamp = createNewStamp(index, {x: konvaData.x, y: konvaData.y}, stampImg)
-              newStamp.name(konvaData.image)
-              newStamp.visible(false)
-              stageRef.current.getLayers()[0].add(newStamp);
-              newStamp.scaleX(konvaData.scaleX)
-              newStamp.scaleY(konvaData.scaleY)
-              newStamp.rotation(konvaData.rotation)
-              newStamp.visible(true);
-            }           
+              stampImg.src = konvaData.image === 'thumbUp' ? thumbUpImg : konvaData.image === 'thumbDown' ? thumbDownImg : konvaData.image;
+              
+              stampImg.onload = () => {
+                
+                const newStamp = createNewStamp(index, {x: konvaData.x, y: konvaData.y}, stampImg)
+                newStamp.name(konvaData.image)
+                newStamp.visible(false)
+                stageRef.current.getLayers()[0].add(newStamp);
+                newStamp.scaleX(konvaData.scaleX)
+                newStamp.scaleY(konvaData.scaleY)
+                newStamp.rotation(konvaData.rotation)
+                newStamp.visible(true);
+              }           
+            }
           } 
           else if(konvaData.type == Shape.Group) { 
             const newShape = createNewPostIt(index, {x:konvaData.Group.x, y:konvaData.Group.y}, konvaData.Text.text);
@@ -573,6 +632,7 @@ const App:FC = () => {
             newShape.scaleX(konvaData.Group.scaleX)
             newShape.scaleY(konvaData.Group.scaleY)
             newShape.rotation(konvaData.Group.rotation)
+            newShape.moveToTop();
             newShape.visible(true);
           } 
           else if(konvaData.type == Shape.Text){
@@ -582,6 +642,7 @@ const App:FC = () => {
             newShape.scaleX(konvaData.scaleX)
             newShape.scaleY(konvaData.scaleY)
             newShape.rotation(konvaData.rotation)
+            newShape.moveToTop();
             newShape.visible(true);
           }
         } 
@@ -651,6 +712,7 @@ const App:FC = () => {
             if(groupTr){
               groupTr.nodes([]);
               groupTr.rotateEnabled(true);
+              groupTr.enabledAnchors(ANK_ALL);
             }
             node?.destroy();
           }
@@ -665,13 +727,139 @@ const App:FC = () => {
     };
     updateCanvas();
 
+    // url image drop event--------------------------------------
+    const container = document.getElementById('mainContainer');
+
+    container!.addEventListener('dragover', (e) => {
+      //기존 이벤트 막아버림
+      e.preventDefault();
+    });
+
+    container!.addEventListener('drop', (e) => {
+      //기존 이벤트 막아버림
+      e.preventDefault();
+
+      const layer = stageRef.current.getLayers()[0];
+      // 드롭된 이미지의 URL을 추출
+      const data = e.dataTransfer!.getData('text/uri-list');
+      if (data) {
+        const img = new Image();
+        img.src = data;
+        img.onload = function() {
+          const konvaImage = new Konva.Image({
+            id : `obj_Id_${id}`,
+            x: e.clientX,
+            y: e.clientY,
+            image: img,
+            width: img.width, 
+            height: img.height,
+            draggable : true,
+          });
+    
+          layer.add(konvaImage);
+          layer.draw();
+
+          const konvaData = {
+            id        : konvaImage.id(),
+            type      : Shape.Image,
+            x         : konvaImage.x(),
+            y         : konvaImage.y(),
+            scaleX    : konvaImage.scaleX(),
+            scaleY    : konvaImage.scaleY(),
+            width     : konvaImage.width(),
+            height    : konvaImage.height(),
+            image     : img.src,
+            userId    : userId.current,
+            draggable : true
+          }
+          yDocRef.current.transact(() => {
+            yObjects.set(konvaData.id, konvaData);
+          }, undoManagerObj);
+          id = uuidv4();
+        };
+      }
+    });
+
+    //canvas paste event -------------------
+    document.addEventListener('paste', async (e) => {
+      const layer = stageRef.current.getLayers()[0];
+      let konvaImage:Konva.Image;
+
+      if (e.clipboardData) {
+        const items = e.clipboardData.items;
+        if (items) {
+          for (const item of items) {
+            if (item.type.indexOf('image') !== -1) {
+              const blob = item.getAsFile();
+              if (blob === null)  return ;
+
+              const imageObject = new Image();
+              const reader = new FileReader();
+              reader.onload = (event) => {
+                const result = event.target?.result;
+                if (typeof result === 'string') {
+                    imageObject.src = result;
+                }
+
+                const stage = stageRef.current;
+                const stageWidth = stage.width();
+                const stageHeight = stage.height();
+                const scaleX = stage.scaleX();
+                const scaleY = stage.scaleY();
+                const stageX = stage.x();
+                const stageY = stage.y();
+
+                imageObject.onload = () => {
+                  konvaImage = new Konva.Image({
+                    id : `obj_Id_${id}`,
+                    image: imageObject,
+                    width: imageObject.width,
+                    height: imageObject.height,
+                    draggable : true,
+                  });
+
+                  const centerX = (-stageX + stageWidth / 2) / scaleX - imageObject.width / 2;
+                  const centerY = (-stageY + stageHeight / 2) / scaleY - imageObject.height /2;
+
+                  konvaImage.x(centerX)
+                  konvaImage.y(centerY)
+
+                  layer.add(konvaImage);
+                  layer.draw();
+                  
+                  const konvaData = {
+                    id        : konvaImage.id(),
+                    type      : Shape.Image,
+                    x         : konvaImage.x(),
+                    y         : konvaImage.y(),
+                    scaleX    : konvaImage.scaleX(),
+                    scaleY    : konvaImage.scaleY(),
+                    width     : konvaImage.width(),
+                    height    : konvaImage.height(),
+                    image     : imageObject.src,
+                    userId    : userId.current,
+                    draggable : true
+                  }
+                  yDocRef.current.transact(() => {
+                    yObjects.set(konvaData.id, konvaData);
+                  }, undoManagerObj);
+                  id = uuidv4();
+                };
+              };
+              reader.readAsDataURL(blob);
+            }
+          }
+        }
+      }   
+    });
+
+
     return () => {      
       yMousePositions.delete(userId.current);
       provider.destroy();
       yDocRef.current.destroy();
     };
   }, []);
-
 
   useEffect(() => {
     toolRef.current = tool;
@@ -767,6 +955,8 @@ const App:FC = () => {
         if(groupTr.nodes().length == 0){
           groupTr.nodes([selected]);
           groupTr.rotateEnabled(true);
+          groupTr.enabledAnchors(ANK_ALL);
+          groupTr.moveToTop();
         }
       }
       
@@ -802,6 +992,8 @@ const App:FC = () => {
         if(groupTr.nodes().length == 0){
           groupTr.nodes([selected]);
           groupTr.rotateEnabled(true);
+          groupTr.enabledAnchors(ANK_ALL);
+          groupTr.moveToTop();
         }
       }
     })
@@ -837,6 +1029,8 @@ const App:FC = () => {
         if(groupTr.nodes().length == 0){
           groupTr.nodes([selected]);
           groupTr.rotateEnabled(true);
+          groupTr.enabledAnchors(ANK_ALL);
+          groupTr.moveToTop();
         }
       }
     })
@@ -871,6 +1065,9 @@ const App:FC = () => {
         if(groupTr.nodes().length == 0){
           groupTr.nodes([selected]);
           groupTr.rotateEnabled(true);
+          groupTr.enabledAnchors(ANK_ALL);
+          
+          groupTr.moveToTop();
         }
       }
     })
@@ -905,6 +1102,8 @@ const App:FC = () => {
         if(groupTr.nodes().length == 0){
           groupTr.nodes([selected]);
           groupTr.rotateEnabled(true);
+          groupTr.enabledAnchors(ANK_ALL);
+          groupTr.moveToTop();
         }
       }
     })
@@ -1010,6 +1209,9 @@ const App:FC = () => {
       if(groupTr && groupTr.nodes().length == 0){
         groupTr.nodes([selected]);
         groupTr.rotateEnabled(true);
+        groupTr.enabledAnchors(ANK_ALL);
+        
+        groupTr.moveToTop();
       }
     });
     
@@ -1192,7 +1394,6 @@ const App:FC = () => {
       padding: 15,
       lineHeight: 1.2,
     });
-    
     let initText = new Konva.Text({
       id : id+"_piit",
       name: 'postItInitText',
@@ -1474,6 +1675,8 @@ const App:FC = () => {
         if(groupTr.nodes().length == 0){
           groupTr.nodes([current, text, rect, init]);
           groupTr.rotateEnabled(false);
+          groupTr.enabledAnchors(ANK_MEMO);
+          groupTr.moveToTop();
         }
       }
     })
@@ -1514,12 +1717,12 @@ const App:FC = () => {
   const createNewTr = ()=>{
     //if (groupTr != null) return;
     const tr = new Konva.Transformer({ flipEnabled: false });
+
     tr.on('dragstart', function() {
       isDrag.current = true;
     });
     tr.on('dragmove', function(e:any) {
       //마우스 동기화
-      console.log(tr.nodes())
       const stage = e.target.getStage();
       
       const pos = stage.getPointerPosition();
@@ -1680,7 +1883,7 @@ const App:FC = () => {
               rotation  : node.rotation(),
               draggable : true,
             }
-          } else if(type === Shape.Stamp){
+          } else if(type === Shape.Stamp || type === Shape.Image){
             konvaData = {
               type      : type,
               id        : node.id(),
@@ -1688,7 +1891,7 @@ const App:FC = () => {
               y         : node.y(),
               width     : node.width(),
               height    : node.height(),
-              image     : node.getName(),
+              image     : node.hasName('thumbUp') || node.hasName('thumbDown') ? node.getName(): node.image().src,
               scaleX    : node.scaleX(),
               scaleY    : node.scaleY(),
               rotation  : node.rotation(),
@@ -1880,7 +2083,7 @@ const App:FC = () => {
               y         : node.y(),
               width     : node.width(),
               height    : node.height(),
-              image     : node.getName(), 
+              image     : node.hasName('thumbUp') || node.hasName('thumbDown') ? node.getName(): node.image().src, 
               scaleX    : node.scaleX(),
               scaleY    : node.scaleY(),
               rotation  : node.rotation(),
@@ -1982,7 +2185,9 @@ const App:FC = () => {
     } 
     else if (tool === Tools.CURSOR){
       if(e.target === stage){
-
+        const menuNode = document.getElementById('contextMenu')!;
+        menuNode.style.display = 'none';
+        
         //블록(다중 선택하는 영역) 기능
         if(groupTr != null){
           const oldSelected = groupTr.getNodes();
@@ -1998,6 +2203,7 @@ const App:FC = () => {
           yLockNodes.delete(userId.current);
           groupTr.nodes([]);
           groupTr.rotateEnabled(true);
+          groupTr.enabledAnchors(ANK_ALL);
         }
 
         selectionRectangle= new Konva.Rect({
@@ -2022,12 +2228,10 @@ const App:FC = () => {
       } 
       // else {
       //   if(e.target.name() === 'postItInitText' || e.target.name() === 'postItText'){
-      //     console.log("ss")
       //     // groupTr?.borderEnabled(false);
       //     groupTr?.rotateEnabled(false);
       //     // groupTr?.resizeEnabled(false);
       //   } else{
-      //     console.log(e.target.name())
       //   }
       // }
       
@@ -2260,6 +2464,12 @@ const App:FC = () => {
           if(selected.length > 0){
             groupTr.nodes(selected);
             groupTr.rotateEnabled(rotationFlag);
+            if(!rotationFlag){
+              groupTr.enabledAnchors(ANK_MEMO);
+            } else {
+              groupTr.enabledAnchors(ANK_ALL);
+            }
+            groupTr.moveToTop();
             
             const selectionRect = groupTr.getClientRect();
 
@@ -2346,12 +2556,12 @@ const App:FC = () => {
           width     : newStamp.width(),
           height    : newStamp.height(),
           image     : clickedIconBtn,
-          userId    : userId,
+          userId    : userId.current,
           draggable : true
         }
         layer.add(newStamp);
         
-        yShape.set(idx, konvaData);
+        //yShape.set(idx, konvaData);
 
         yDocRef.current.transact(() => {
           yObjects.set(idx, konvaData);
@@ -2377,7 +2587,7 @@ const App:FC = () => {
           width     : newShape.width(), 
           height    : newShape.height(),
           fill      : defaultColor,
-          userId    : userId,
+          userId    : userId.current,
           draggable : true,
         }
       }
@@ -2392,7 +2602,7 @@ const App:FC = () => {
           width     : newShape.width(), 
           height    : newShape.height(),
           fill      : defaultColor,
-          userId    : userId,
+          userId    : userId.current,
           draggable : true
         }
       }
@@ -2406,7 +2616,7 @@ const App:FC = () => {
           sides     : newShape.sides(),
           radius    : newShape.radius(),
           fill      : defaultColor,
-          userId    : userId,
+          userId    : userId.current,
           draggable : true
         }
       }
@@ -2433,7 +2643,7 @@ const App:FC = () => {
         fontSize: textNode.fontSize(),
         draggable: true,
         width: textNode.width(),
-        userId    : userId,
+        userId    : userId.current,
       }
       layer.add(textNode);
       
@@ -2459,7 +2669,7 @@ const App:FC = () => {
           width     : postItGroup.width(),
           height     : postItGroup.height(),
           draggable : true,
-          userId    : userId,
+          userId    : userId.current,
         },
         Rect  : {},
         Text  : {
@@ -2537,17 +2747,72 @@ const App:FC = () => {
     undoManagerObj?.redo();
   }
 
+  //--------------ContextMenu-------------------
+  let contextTarget:Konva.Node;
   
+  const handleMouseContextMenu = (e: any) => {
+    e.evt.preventDefault();
+    let menuNode = document.getElementById('contextMenu');
+    if (!menuNode) return;
+    if (e.target === stageRef.current) return;
+    if (tool === Tools.CURSOR){
+      contextTarget = e.target
+
+      menuNode.style.display = 'block';
+      menuNode.style.top = `${e.evt.clientY}px`;
+      menuNode.style.left = `${e.evt.clientX}px`;
+
+    }
+
+  }
+
+  const foreFrontClick = () => {
+    if(groupTr!.nodes().length > 0){
+      groupTr!.getNodes().forEach((node)=>{
+        node.moveToTop();
+      })
+    }
+    document.getElementById('contextMenu')!.style.display = 'none';
+  }
+
+  const moveTopClick = () => {
+    if(groupTr!.nodes().length > 0){
+      groupTr!.getNodes().forEach((node)=>{
+        node.moveUp();
+      })
+    }
+    document.getElementById('contextMenu')!.style.display = 'none';
+  }
+
+  const atTheBackClick = () => {
+    if(groupTr!.nodes().length > 0){
+      groupTr!.getNodes().forEach((node)=>{
+        node.moveToBottom();
+      })
+    }
+    document.getElementById('contextMenu')!.style.display = 'none';
+  }
+
+  const moveBackClick = () => {
+    if(groupTr!.nodes().length > 0){
+      groupTr!.getNodes().forEach((node)=>{
+        node.moveDown();
+      })
+    }
+    document.getElementById('contextMenu')!.style.display = 'none';
+  }
+
+  const deleteObjClick = () => {
+    yObjects.delete(contextTarget.id());
+    contextTarget.destroy();
+    groupTr?.nodes([]);
+    document.getElementById('contextMenu')!.style.display = 'none';
+  }
 
 
   return (
     <>
-    <div style={{position: "relative", width: "100%"}}>
-      {/* <NavBarLobby /> */}
-      {/* <button onClick={handleUndo}>Undo</button>
-      <button onClick={handleRedo}>Redo</button> */}
-
-      {/* <VoiceChat /> */}
+    <div id="mainContainer" style={{position: "relative", width: "100%"}}>
       
       <NavBarRoom stageRef = {stageRef} />
 
@@ -2564,6 +2829,7 @@ const App:FC = () => {
         onTouchEnd   = {handleMouseUp}
         onClick      = {handleMouseClick}
         onWheel      = {handleMouseWheel}
+        onContextMenu= {handleMouseContextMenu}
         draggable    = {false}
         ref          = {stageRef}
       >
@@ -2573,9 +2839,28 @@ const App:FC = () => {
         <>
           <MindMap stageRef = {stageRef} toolRef={toolRef} yDocRef = {yDocRef} yTargets={yTargets} yConnectors={yConnectors} undoManagerObj={undoManagerObj}/>
         </>
-
       </Stage>
+
       <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} handleUndo={handleUndo} handleRedo={handleRedo}/>
+      <div id="contextMenu" style={{
+        display: 'none'
+        , position: 'absolute'
+        , zIndex: 999
+        , width: '100px'
+        , backgroundColor : 'white'
+        , boxShadow: '0 0 5px grey'
+        , borderRadius: '3px'
+      }}>
+        <div>
+          <button id="foreFront" onClick={foreFrontClick}>맨 앞으로</button>
+          <button id="moveTop" onClick={moveTopClick}>앞으로</button>
+          <hr/>
+          <button id="atTheBack" onClick={atTheBackClick}>맨 뒤로</button>
+          <button id="moveBack" onClick={moveBackClick}>뒤로</button>
+          <hr/>
+          <button id="deleteObj" onClick={deleteObjClick}>삭제</button>
+        </div>
+      </div>
     </div>
     </>
   );
