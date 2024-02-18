@@ -171,3 +171,25 @@ body {
 #btnAllStamp, #btnAllShape {
   background-color: #727272;  /* #btnGroupTools와 동일 색상 */
 }
+
+#contextMenu {
+  display: none;
+  position: absolute;
+  width: 60px;
+  background-color: white;
+  box-shadow: 0 0 5px grey;
+  border-radius: 3px;
+}
+
+#contextMenu button {
+  width: 100%;
+  background-color: white;
+  border: none;
+  margin: 0;
+  padding: 10px;
+  text-align: left;
+}
+
+#contextMenu button:hover {
+  background-color: lightgray;
+}

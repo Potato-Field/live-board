@@ -26,7 +26,7 @@ let theme = createTheme({
 });
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <ThemeProvider theme={theme}>
     <CssBaseline/>
     <BrowserRouter>
@@ -42,5 +42,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </ToolProvider>
     </BrowserRouter>
     </ThemeProvider>
-  </React.StrictMode>,
+  // </React.StrictMode>,
 )
