@@ -5,7 +5,7 @@ import { ColorProvider } from './component/ColorContext';
 import './index.css'
 import Login from './login.tsx'
 import SignUp from './signup.tsx';
-import Lobby from './Lobby.tsx';
+import Lobby from './lobby.tsx';
 import App from './App';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
