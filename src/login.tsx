@@ -43,6 +43,10 @@ export default function Login() {
     
     };
 
+    const SignUpClick = ()=>{
+        navigate("/signup");
+    }
+
     return (
         <div style={{ height: '100vh', display: 'flex', alignItems: 'center', backgroundColor: theme.palette.secondary.main }}>
             <Container component="main" maxWidth="xs" style={{ backgroundColor: 'white', borderRadius: '20px'}}>
@@ -83,7 +87,7 @@ export default function Login() {
                     </Button>
                     <Typography component="h1" variant="body2" sx={{ mt: 1, mb: 1 }} >
                         아직 회원이 아니신가요?
-                        <Link href='javascript:navigate("/signup")' variant="body2" sx={{ ml: 1, color: theme.palette.info.main }}>회원가입</Link>
+                        <Link href='javascript:void(0)' onClick={SignUpClick} variant="body2" sx={{ ml: 1, color: theme.palette.info.main }}>회원가입</Link>
                     </Typography>
                 </Box>
                 <Copyright sx={{ mt: 4, mb: 4 }} />
