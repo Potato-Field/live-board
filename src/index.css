@@ -134,10 +134,8 @@ body {
   pointer-events: none; /* 이 div가 마우스 이벤트를 방해하지 않도록 설정 */
 }
 
-/* 영역 구분 위해 색상 임의로 지정해놓음. 곧 수정할거임. */
-
 #btnGroupContained {
-  background-color: #EAE8E8;
+  background-color: #EFF1F4;
   position: fixed;
   bottom: 1%;
   left: 50%;
@@ -152,7 +150,7 @@ body {
 } */
 
 #btnGroupTools {
-  background-color: #727272;
+  background-color: #E1E5EA;
 }
 
 /* #btnGroupColors {
@@ -160,16 +158,24 @@ body {
 } */
 
 /* 아이콘 */
-#btnGroupTools svg {
+/* #btnGroupTools svg {
   color: white;
-}
+} */
 
 /* btnGroupContained button:focus{
   background-color: rgb(0, 0, 0);
 } */
 
+#btnStamp, #btnShape {
+  position: relative;
+}
+
 #btnAllStamp, #btnAllShape {
-  background-color: #727272;  /* #btnGroupTools와 동일 색상 */
+  background-color: #E1E5EA;  /* #btnGroupTools와 동일 색상 */
+  position: absolute;
+  top: -45px;
+  padding: 0 0.5rem;
+  border-radius: 30px;
 }
 
 #contextMenu {

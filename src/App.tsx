@@ -173,7 +173,6 @@ const App:FC = () => {
     mouseIcon.setAttribute("class", `tool-${userCurrentTool}`);
     mouseIcon.style.left = `${mousePosition.x}px`;
     mouseIcon.style.top = `${mousePosition.y}px`;
-
   }
 
   const location = useLocation();
