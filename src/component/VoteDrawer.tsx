@@ -94,9 +94,6 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
     
     if (!postIt) return;
 
-    // const scaleX = stageRef.current.scaleX();
-    // const scaleY = stageRef.current.scaleY();
-
     const postItWidth = postIt.find('.postItText')[0].attrs.width;
     const postItHeight = postIt.find('.postItText')[0].attrs.height;
     const postItX = postIt.attrs.x;
@@ -109,7 +106,7 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
     const stageWidth = stageRef.current.width();
     const stageHeight = stageRef.current.height();
     const stageCenterX = stageWidth / 2;
-    const stageCenterY = stageHeight / 2; // TODO: 네비바 높이 빼야함 (네비바 배치 수정 먼저 하기)
+    const stageCenterY = stageHeight / 2;
 
     const deltaX = stageCenterX - centerX;
     const deltaY = stageCenterY - centerY;
@@ -117,6 +114,8 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
     /* 포스트잇 중심으로 Stage 이동 */
     stageRef.current.x(deltaX);
     stageRef.current.y(deltaY);
+    stageRef.current.scaleX(1);
+    stageRef.current.scaleY(1);
   }
 
   return (

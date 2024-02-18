@@ -76,8 +76,8 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
   );
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
+    <Box sx={{ flexGrow: 1 }} position="relative">
+      <AppBar position="absolute" style={{zIndex: "999"}}>
         <Toolbar>
           <VoteDrawer stageRef = {stageRef}/>
 
