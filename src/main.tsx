@@ -4,12 +4,12 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { ToolProvider } from './component/ToolContext';
 import { ColorProvider } from './component/ColorContext';
 import './index.css'
-import Login from './Login.tsx';
+import Login from './login.tsx';
 import Lobby from './Lobby.tsx';
 import App from './App';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
-import SignUp from './SignUp.tsx';
+import SignUp from './signup.tsx';
 
 let theme = createTheme({
   palette: {
