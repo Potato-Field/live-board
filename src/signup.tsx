@@ -80,8 +80,8 @@ export default function SignUp() {
 
     return (
         <div style={{ height: '100vh', display: 'flex', alignItems: 'center', backgroundColor: theme.palette.secondary.main }}>
-            <Container component="main" maxWidth="xs" style={{ backgroundColor: 'white', borderRadius: '10px' }}>
-                <Typography component="h1" variant="h5" sx={{ mt: 6, mb: 4, color: theme.palette.info.main, fontWeight: "bolder" }} >
+            <Container component="main" maxWidth="xs" style={{ backgroundColor: 'white', borderRadius: '20px'}}>
+                <Typography component="h1" variant="h5"  sx={{ mt: 6, mb: 4, color: theme.palette.info.main, fontWeight: "bolder" }} >
                     회원가입
                 </Typography>
                 <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
