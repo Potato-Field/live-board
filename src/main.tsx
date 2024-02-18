@@ -1,15 +1,14 @@
-import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { ToolProvider } from './component/ToolContext';
 import { ColorProvider } from './component/ColorContext';
 import './index.css'
-import Login from './login.tsx';
-import Lobby from './Lobby.tsx';
+import Login from './login.tsx'
+import SignUp from './signup.tsx';
+import Lobby from './lobby';
 import App from './App';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
-import SignUp from './signup.tsx';
 
 let theme = createTheme({
   palette: {
@@ -20,13 +19,14 @@ let theme = createTheme({
       main: '#E1E5EA',  // 라이트 그레이
     },
     info: {
-      main: '#FF7A50', // 포인트 컬러
+      main: '#FF7A50', // 주황
+      // main: '#5061ff', // 파랑
     },
   },
 });
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <ThemeProvider theme={theme}>
     <CssBaseline/>
     <BrowserRouter>
@@ -42,5 +42,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </ToolProvider>
     </BrowserRouter>
     </ThemeProvider>
-  </React.StrictMode>,
+  // </React.StrictMode>,
 )
