@@ -199,3 +199,12 @@ body {
 #contextMenu button:hover {
   background-color: lightgray;
 }
+
+.btn-active {
+  box-shadow: inset 0px 9px 4px 6px dimgrey;
+  border-radius: 10%;
+}
+
+.btn-active svg{
+  color: black !important;
+}
