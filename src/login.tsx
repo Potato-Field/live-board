@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button, TextField, Link, Box, Typography, Container } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Copyright from './component/Copyright'
+import SignUp from './signup';
 
 export default function Login() {
 
@@ -42,6 +43,10 @@ export default function Login() {
 
     
     };
+
+    const SignUpClick = ()=>{
+        navigate("/signup");
+    }
 
     return (
         <div style={{ height: '100vh', display: 'flex', alignItems: 'center', backgroundColor: theme.palette.secondary.main }}>
@@ -83,7 +88,7 @@ export default function Login() {
                     </Button>
                     <Typography component="h1" variant="body2" sx={{ mt: 1, mb: 1 }} >
                         아직 회원이 아니신가요?
-                        <Link href='javascript:navigate("/signup")' variant="body2" sx={{ ml: 1, color: theme.palette.info.main }}>회원가입</Link>
+                        <Link href='javascript:void(0)' onClick={SignUpClick} variant="body2" sx={{ ml: 1, color: theme.palette.info.main }}>회원가입</Link>
                     </Typography>
                 </Box>
                 <Copyright sx={{ mt: 4, mb: 4 }} />
