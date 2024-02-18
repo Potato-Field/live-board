@@ -18,7 +18,7 @@ function Copyright(props: any) {
 
 export default function Login() {
 
-    const baseUrl = "http://localhost:8080";
+    const baseUrl = "https://www.jungleweb.duckdns.org";
     const theme = useTheme();
     const [nickname, setUsername] = useState('');
     const [password, setPassword] = useState('');
