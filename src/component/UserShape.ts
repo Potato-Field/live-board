@@ -6,4 +6,5 @@ export enum Shape{
   , "Stamp"          = "Image"
   , "Group"          = "Group"
   , "Text"           = "Text"
+  , "Image"          = "Image"
 }
