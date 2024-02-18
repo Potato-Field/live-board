@@ -83,7 +83,7 @@ export default function Login() {
                     </Button>
                     <Typography component="h1" variant="body2" sx={{ mt: 1, mb: 1 }} >
                         아직 회원이 아니신가요?
-                        <Link href="/signup" variant="body2" sx={{ ml: 1, color: theme.palette.info.main }}>회원가입</Link>
+                        <Link href='javascript:navigate("/signup")' variant="body2" sx={{ ml: 1, color: theme.palette.info.main }}>회원가입</Link>
                     </Typography>
                 </Box>
                 <Copyright sx={{ mt: 4, mb: 4 }} />
