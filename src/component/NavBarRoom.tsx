@@ -1,12 +1,7 @@
 import * as React from 'react';
 import Konva from 'konva';
 
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import MenuItem from '@mui/material/MenuItem';
-import Menu from '@mui/material/Menu';
+import { AppBar, Box, Toolbar, IconButton, MenuItem, Menu } from '@mui/material';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
@@ -95,7 +90,7 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
               aria-label="Invite new user"
               aria-controls="primary-search-account-menu"
               aria-haspopup="true"
-              color="inherit"
+              // color="inherit"
             >
               <PersonAddIcon fontSize='large' />
               {/* TODO: 클릭시 방번호 popover 뜨도록 */}
@@ -110,13 +105,17 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
               aria-controls={mobileMenuId}
               aria-haspopup="true"
               onClick={handleMobileMenuOpen}
-              color="inherit"
+              // color="inherit"
             >
               <PeopleAltIcon fontSize='large' />
             </IconButton>
           </Box>
 
-          <IconButton size="large" aria-label="Export" color="inherit">
+          <IconButton
+            size="large" 
+            aria-label="Export" 
+            // color="inherit"
+          >
               <FileDownloadIcon fontSize='large' />
           </IconButton>
         </Toolbar>

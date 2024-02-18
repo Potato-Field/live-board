@@ -120,7 +120,12 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
 
   return (
     <>
-      <IconButton size="large" aria-label="Postit vote" color="inherit" onClick={toggleDrawer(setOpen, true, stageRef, setPostItData)}>
+      <IconButton 
+        size="large"
+        aria-label="Postit vote" 
+        // color="inherit" 
+        onClick={toggleDrawer(setOpen, true, stageRef, setPostItData)}
+      >
         <HowToVoteIcon fontSize='large' />
       </IconButton>
 
