@@ -7,7 +7,7 @@ import Copyright from './component/Copyright'
 
 export default function Login() {
 
-    //const baseUrl = "https://www.jungleweb.duckdns.org";
+    const baseUrl = "https://www.jungleweb.duckdns.org";
     const theme = useTheme();
     const [nickname, setUsername] = useState('');
     const [password, setPassword] = useState('');
