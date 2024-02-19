@@ -186,14 +186,14 @@ const App:FC = () => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current);
 
     /* 본인 로컬에서 작동 */
-     const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://localhost:1235'] });
 
     /* 배포시 사용 */
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
     
       
 
@@ -1686,36 +1686,37 @@ const App:FC = () => {
       }
     })
 
-    postItGroup.on('click', ()=>{  // e.target: Text, e.currentTarget: Group 
+    // postItGroup.on('click', ()=>{  // e.target: Text, e.currentTarget: Group 
       
-      const text = postItGroup.findOne('.postItText')
-      const rect = postItGroup.findOne('.postItRect')
-      const init = postItGroup.findOne('.postItInitText')
+    //   const text = postItGroup.findOne('.postItText')
+    //   const rect = postItGroup.findOne('.postItRect')
+    //   const init = postItGroup.findOne('.postItInitText')
       
-      if (text && rect) {
-        text.on('transform', () => {
-          text.setAttrs({
-            width: Math.max(text.width() * text.scaleX(), POSTIT_MIN_WIDTH),
-            height : Math.max(text.height() * text.scaleY(), POSTIT_MIN_HEIGHT),
-            scaleX: 1,
-            scaleY: 1,
-          });
+    //   if (text && rect) {
+    //     text.on('transform', () => {
+    //       text.setAttrs({
+    //         width: Math.max(text.width() * text.scaleX(), POSTIT_MIN_WIDTH),
+    //         height : Math.max(text.height() * text.scaleY(), POSTIT_MIN_HEIGHT),
+    //         scaleX: 1,
+    //         scaleY: 1,
+    //       });
     
-          // text의 크기가 변경될 때 rect의 크기도 업데이트
-          rect.setAttrs({
-            width: text.width(),
-            height: text.height(),
-          });
+    //       // text의 크기가 변경될 때 rect의 크기도 업데이트
+    //       rect.setAttrs({
+    //         width: text.width(),
+    //         height: text.height(),
+    //       });
 
-          // text의 너비가 변경될 때 initText의 너비도 업데이트
-          if (init) {
-            init.setAttrs({
-              width: text.width(),
-            })
-          }
-        });
-      }
-    })
+    //       // text의 너비가 변경될 때 initText의 너비도 업데이트
+    //       if (init) {
+    //         init.setAttrs({
+    //           width: text.width(),
+    //         })
+    //       }
+    //     });
+    //   }
+    // })
+    
     return postItGroup
   }
 

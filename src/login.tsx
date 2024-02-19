@@ -16,7 +16,7 @@ export default function Login() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-       
+        //navigate('/lobby', { state: { nickname: nickname}});
         try {
             const response = await fetch(baseUrl + '/api/login', {
                 method: 'POST',
@@ -43,7 +43,7 @@ export default function Login() {
     
     };
 
-    const SignUpClick = ()=>{
+    const signUpClick = ()=>{
         navigate("/signup");
     }
 
@@ -87,7 +87,7 @@ export default function Login() {
                     </Button>
                     <Typography component="h1" variant="body2" sx={{ mt: 1, mb: 1 }} >
                         아직 회원이 아니신가요?
-                        <Link href='javascript:void(0)' onClick={SignUpClick} variant="body2" sx={{ ml: 1, color: theme.palette.info.main }}>회원가입</Link>
+                        <Link href='' onClick={signUpClick} variant="body2" sx={{ ml: 1, color: theme.palette.info.main }}>회원가입</Link>
                     </Typography>
                 </Box>
                 <Copyright sx={{ mt: 4, mb: 4 }} />
