@@ -33,6 +33,7 @@ import {Target} from './component/Target';
 import {Connector} from './component/Connector';
 
 import { throttle } from 'lodash';
+import { ShapeOrder } from './component/ShapeOrder';
 
 /* 블록 하는 좌표 */
 let multiSelectBlocker = {
@@ -108,6 +109,9 @@ const App:FC = () => {
   
   // 선택 영역 데이터 구조 정의
   const ySelectedNodes = yDocRef.current.getMap('selectedNodes');
+
+  // 객체 순서 저장
+  const yOrders = yDocRef.current.getMap('objectOrders');
 
   // 객체 Lock 저장
   const yLockNodes = yDocRef.current.getMap('lockNodes');
@@ -442,9 +446,31 @@ const App:FC = () => {
         });
       }
     })
+    yOrders.observe(() => {
+      yOrders.forEach((konvaData:any, index:string)=>{
+        const paramUserId = konvaData.userId;
+        if(paramUserId === userId.current || !userId.current) return;
+        const node = stageRef.current.children[0].findOne("#"+index)
+        if(!node) return;
+        
+        switch(konvaData.evt) {
+          case ShapeOrder.moveToTop:
+          node.moveToTop();
+          break;
+        case ShapeOrder.moveUp:
+          node.moveUp();
+          break;
+        case ShapeOrder.moveToBottom:
+          node.moveToBottom();
+          break;
+          case ShapeOrder.moveDown:
+            node.moveDown();
+            break;
+        }
+      });
+    });
 
-
-    // const initializeCanvas = () => {
+        // const initializeCanvas = () => {
     //   yObjects.forEach((konvaData:any, index:string) => {
         
     //     const node = stageRef.current.children[0].findOne("#"+index)
@@ -1187,7 +1213,7 @@ const App:FC = () => {
 
     const textNode:any = new Konva.Text({
       id : id,
-      text: text == ""?'Some text here':text,
+      text: text == ""?'텍스트를 입력하세요':text,
       x: pos.x,
       y: pos.y,
       fontSize: 20,
@@ -2743,7 +2769,7 @@ const App:FC = () => {
     if (tool === Tools.CURSOR){
       if (e.target.hasName('mindmap')) {
         return;
-    }
+      }
       contextTarget = e.target
 
       menuNode.style.display = 'block';
@@ -2757,7 +2783,16 @@ const App:FC = () => {
   const foreFrontClick = () => {
     if(groupTr!.nodes().length > 0){
       groupTr!.getNodes().forEach((node)=>{
+        if(node.hasName('postItText')||node.hasName('postItInitText')||node.hasName('postItRect')) return;
+        
         node.moveToTop();
+        const konvaData = {
+          id : node.id(),
+          evt : ShapeOrder.moveToTop,
+          userId : userId.current
+        }
+        
+        yOrders.set(konvaData.id, konvaData);
       })
     }
     document.getElementById('contextMenu')!.style.display = 'none';
@@ -2766,25 +2801,49 @@ const App:FC = () => {
   const moveTopClick = () => {
     if(groupTr!.nodes().length > 0){
       groupTr!.getNodes().forEach((node)=>{
+        if(node.hasName('postItText')||node.hasName('postItInitText')||node.hasName('postItRect')) return;
         node.moveUp();
+        const konvaData = {
+          id : node.id(),
+          evt : ShapeOrder.moveUp,
+          userId : userId.current
+        }
+        
+        yOrders.set(konvaData.id, konvaData);
       })
     }
     document.getElementById('contextMenu')!.style.display = 'none';
   }
-
+  
   const atTheBackClick = () => {
     if(groupTr!.nodes().length > 0){
       groupTr!.getNodes().forEach((node)=>{
+        if(node.hasName('postItText')||node.hasName('postItInitText')||node.hasName('postItRect')) return;
         node.moveToBottom();
+        const konvaData = {
+          id : node.id(),
+          evt : ShapeOrder.moveToBottom,
+          userId : userId.current
+        }
+        
+        yOrders.set(konvaData.id, konvaData);
       })
     }
     document.getElementById('contextMenu')!.style.display = 'none';
   }
-
+  
   const moveBackClick = () => {
     if(groupTr!.nodes().length > 0){
       groupTr!.getNodes().forEach((node)=>{
+        if(node.hasName('postItText')||node.hasName('postItInitText')||node.hasName('postItRect')) return;
         node.moveDown();
+        const konvaData = {
+          id : node.id(),
+          evt : ShapeOrder.moveDown,
+          userId : userId.current
+        }
+      
+        yOrders.set(konvaData.id, konvaData);
       })
     }
     document.getElementById('contextMenu')!.style.display = 'none';
