@@ -356,13 +356,13 @@ const App:FC = () => {
         }
         else {
           if(konvaData.type === Shape.Rect){
-            newShape = createNewRect(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill)
+            newShape = createNewRect(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill, konvaData.stroke)
 
           } else if(konvaData.type === Shape.Circle){
-            newShape = createNewCir(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill)
+            newShape = createNewCir(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill, konvaData.stroke)
             
           } else if(konvaData.type === Shape.RegularPolygon){
-            newShape = createNewTri(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill)
+            newShape = createNewTri(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill, konvaData.stroke)
           } else if(konvaData.type === Shape.Group){
             newShape = createNewPostIt(index, {x: konvaData.Group.x, y: konvaData.Group.y}, konvaData.Text.text)
             newShape.moveToTop();
@@ -584,8 +584,9 @@ const App:FC = () => {
         } 
         else {
           
+          console.log(konvaData)
           if(konvaData.type == Shape.Rect){
-            const newShape = createNewRect(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+            const newShape = createNewRect(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill, konvaData.stroke);
             newShape.visible(false)
             stageRef.current.getLayers()[0].add(newShape);
             newShape.scaleX(konvaData.scaleX)
@@ -594,7 +595,7 @@ const App:FC = () => {
             newShape.visible(true);
           }
           else if(konvaData.type == Shape.Circle){
-            const newShape = createNewCir(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+            const newShape = createNewCir(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill, konvaData.stroke);
             newShape.visible(false)
             stageRef.current.getLayers()[0].add(newShape);
             newShape.scaleX(konvaData.scaleX)
@@ -603,7 +604,7 @@ const App:FC = () => {
             newShape.visible(true);
           } 
           else if(konvaData.type == Shape.RegularPolygon){
-            const newShape = createNewTri(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+            const newShape = createNewTri(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill, konvaData.stroke);
             newShape.visible(false)
             stageRef.current.getLayers()[0].add(newShape);
             newShape.scaleX(konvaData.scaleX)
@@ -676,7 +677,7 @@ const App:FC = () => {
     }
 
     const updateNodeFromKonvaData2 = (index: string, konvaData: any) => {
-      const node = stageRef.current.children[0].findOne("#" + index);
+      const node:any = stageRef.current.children[0].findOne("#" + index);
       if (!node) return;
       if(node.hasName('mindmap'))return;
 
@@ -700,10 +701,10 @@ const App:FC = () => {
             
             break;
           case 'Rect':
-            break;
           case 'Circle':
-            break;
           case 'RegularPolygon':
+            node.stroke(konvaData.stroke),
+            node.fill(konvaData.fill);
             break;
           case 'Stamp':
             break;
@@ -738,6 +739,8 @@ const App:FC = () => {
           if (!konvaData && node) {
             if(groupTr){
               groupTr.nodes([]);
+              ySelectedNodes.delete(userId.current);
+              yLockNodes.delete(userId.current);
               groupTr.rotateEnabled(true);
               groupTr.enabledAnchors(ANK_ALL);
             }
@@ -1032,16 +1035,18 @@ const App:FC = () => {
     return newStamp;
   }
   
-  const createNewRect = (id:string, pos:{x:number, y:number}, color:any)=>{
+  const createNewRect = (id:string, pos:{x:number, y:number}, color:any, strokeColor:any)=>{
 
     const newShape = new Konva.Rect({
-      id        : id,
-      x         : pos.x,
-      y         : pos.y,
-      width     : 150, 
-      height    : 150,
-      fill      : color,
-      draggable : true
+      id          : id,
+      x           : pos.x,
+      y           : pos.y,
+      width       : 150, 
+      height      : 150,
+      fill        : color,
+      stroke      : strokeColor,
+      strokeWidth : 4,
+      draggable   : true
     });
     newShape.on("mousedown", (e:any)=>{
       
@@ -1068,15 +1073,17 @@ const App:FC = () => {
     return newShape
   }
 
-  const createNewCir = (id:string, pos:{x:number, y:number}, color:any)=>{
+  const createNewCir = (id:string, pos:{x:number, y:number}, color:any, strokeColor:any)=>{
     const newShape = new Konva.Circle({
-      id        : id,
-      x         : pos.x,
-      y         : pos.y,
-      width     : 150, 
-      height    : 150,
-      fill      : color,
-      draggable : true
+      id          : id,
+      x           : pos.x,
+      y           : pos.y,
+      width       : 150, 
+      height      : 150,
+      fill        : color,
+      stroke      : strokeColor,
+      strokeWidth : 4,
+      draggable   : true
     });
 
     newShape.on("mousedown", (e:any)=>{
@@ -1105,15 +1112,17 @@ const App:FC = () => {
     return newShape
   }
   
-  const createNewTri = (id:string, pos:{x:number, y:number}, color:any)=>{
+  const createNewTri = (id:string, pos:{x:number, y:number}, color:any, strokeColor:any)=>{
     const newShape = new Konva.RegularPolygon({
-      id        : id,
-      x         : pos.x,
-      y         : pos.y,
-      sides     : 3,
-      radius    : 100,
-      fill      : color,
-      draggable : true
+      id          : id,
+      x           : pos.x,
+      y           : pos.y,
+      sides       : 3,
+      radius      : 100,
+      fill        : color,
+      stroke      : strokeColor,
+      strokeWidth : 4,
+      draggable   : true
     });
     
     newShape.on("mousedown", (e:any)=>{
@@ -1888,31 +1897,35 @@ const App:FC = () => {
             }
           } else if(type === Shape.RegularPolygon){
             konvaData = {
-              type      : type, 
-              id        : node.id(),
-              x         : node.x(),
-              y         : node.y(),
-              sides     : node.sides(),
-              radius    : node.radius(),
-              fill      : node.fill(),
-              scaleX    : node.scaleX(),
-              scaleY    : node.scaleY(),
-              rotation  : node.rotation(),
-              draggable : true,
+              type        : type, 
+              id          : node.id(),
+              x           : node.x(),
+              y           : node.y(),
+              stroke      : node.stroke(),
+              strokeWidth : node.strokeWidth(),
+              sides       : node.sides(),
+              radius      : node.radius(),
+              fill        : node.fill(),
+              scaleX      : node.scaleX(),
+              scaleY      : node.scaleY(),
+              rotation    : node.rotation(),
+              draggable   : true,
             }
           } else if (type === Shape.Circle || type === Shape.Rect){
             konvaData = {
-              type      : type, 
-              id        : node.id(),
-              x         : node.x(),
-              y         : node.y(),
-              width     : node.width(),
-              height    : node.height(),
-              fill      : node.fill(),
-              scaleX    : node.scaleX(),
-              scaleY    : node.scaleY(),
-              rotation  : node.rotation(),
-              draggable : true,
+              type        : type, 
+              id          : node.id(),
+              x           : node.x(),
+              y           : node.y(),
+              stroke      : node.stroke(),
+              strokeWidth : node.strokeWidth(),
+              width       : node.width(),
+              height      : node.height(),
+              fill        : node.fill(),
+              scaleX      : node.scaleX(),
+              scaleY      : node.scaleY(),
+              rotation    : node.rotation(),
+              draggable   : true,
             }
           } else if(type === Shape.Stamp || type === Shape.Image){
             konvaData = {
@@ -2079,31 +2092,35 @@ const App:FC = () => {
             }
           } else if(type === Shape.RegularPolygon){
             konvaData = { 
-              type      : type,
-              id        : node.id(),
-              x         : node.x(),
-              y         : node.y(),
-              sides     : node.sides(),
-              radius    : node.radius(),
-              fill      : node.fill(),
-              scaleX    : node.scaleX(),
-              scaleY    : node.scaleY(),
-              rotation  : node.rotation(),
-              draggable : true,
+              type        : type,
+              id          : node.id(),
+              x           : node.x(),
+              y           : node.y(),
+              stroke      : node.stroke(),
+              strokeWidth : node.strokeWidth(),
+              sides       : node.sides(),
+              radius      : node.radius(),
+              fill        : node.fill(),
+              scaleX      : node.scaleX(),
+              scaleY      : node.scaleY(),
+              rotation    : node.rotation(),
+              draggable   : true,
             }
           } else if (type === Shape.Circle || type === Shape.Rect){
             konvaData = { 
-              type      : type,
-              id        : node.id(),
-              x         : node.x(),
-              y         : node.y(),
-              width     : node.width(),
-              height    : node.height(),
-              fill      : node.fill(),
-              scaleX    : node.scaleX(),
-              scaleY    : node.scaleY(),
-              rotation  : node.rotation(),
-              draggable : true,
+              type        : type,
+              id          : node.id(),
+              x           : node.x(),
+              y           : node.y(),
+              stroke      : node.stroke(),
+              strokeWidth : node.strokeWidth(),
+              width       : node.width(),
+              height      : node.height(),
+              fill        : node.fill(),
+              scaleX      : node.scaleX(),
+              scaleY      : node.scaleY(),
+              rotation    : node.rotation(),
+              draggable   : true,
             } 
           } else if(type === Shape.Stamp){
             konvaData = {
@@ -2227,7 +2244,6 @@ const App:FC = () => {
             }
           });
           yDocRef.current.transact(() => {
-
             ySelectedNodes.delete(userId.current);
           }, undoManagerObj);
           yLockNodes.delete(userId.current);
@@ -2588,51 +2604,57 @@ const App:FC = () => {
       let konvaData : any;
       
       if (clickedIconBtn === 'rect'){
-        newShape = createNewRect(idx, shapeOptions, defaultColor)
+        newShape = createNewRect(idx, shapeOptions, defaultColor, defaultColor)
 
         konvaData = {
-          id        : newShape.id(),
-          type      : Shape.Rect,
-          x         : newShape.x(),
-          y         : newShape.y(),
-          width     : newShape.width(), 
-          height    : newShape.height(),
-          fill      : defaultColor,
-          userId    : userId.current,
-          draggable : true,
+          id          : newShape.id(),
+          type        : Shape.Rect,
+          x           : newShape.x(),
+          y           : newShape.y(),
+          stroke      : newShape.stroke(),
+          strokeWidth : newShape.strokeWidth(),
+          width       : newShape.width(), 
+          height      : newShape.height(),
+          fill        : defaultColor,
+          userId      : userId.current,
+          draggable   : true,
         }
       }
       else if (clickedIconBtn === 'cir') {
-        newShape = createNewCir(idx, shapeOptions, defaultColor)
+        newShape = createNewCir(idx, shapeOptions, defaultColor, defaultColor)
 
         konvaData = {
-          id        : newShape.id(),
-          type      : Shape.Circle,
-          x         : newShape.x(),
-          y         : newShape.y(),
-          width     : newShape.width(), 
-          height    : newShape.height(),
-          fill      : defaultColor,
-          userId    : userId.current,
-          draggable : true
+          id          : newShape.id(),
+          type        : Shape.Circle,
+          x           : newShape.x(),
+          y           : newShape.y(),
+          stroke      : newShape.stroke(),
+          strokeWidth : newShape.strokeWidth(),
+          width       : newShape.width(), 
+          height      : newShape.height(),
+          fill        : defaultColor,
+          userId      : userId.current,
+          draggable   : true
         }
       }
       else if (clickedIconBtn === 'tri') {
-        newShape = createNewTri(idx, shapeOptions, defaultColor)
+        newShape = createNewTri(idx, shapeOptions, defaultColor, defaultColor)
         konvaData = {
-          id        : newShape.id(),
-          type      : Shape.RegularPolygon,
-          x         : newShape.x(),
-          y         : newShape.y(),
-          sides     : newShape.sides(),
-          radius    : newShape.radius(),
-          fill      : defaultColor,
-          userId    : userId.current,
-          draggable : true
+          id          : newShape.id(),
+          type        : Shape.RegularPolygon,
+          x           : newShape.x(),
+          y           : newShape.y(),
+          stroke      : newShape.stroke(),
+          strokeWidth : newShape.strokeWidth(),
+          sides       : newShape.sides(),
+          radius      : newShape.radius(),
+          fill        : defaultColor,
+          userId      : userId.current,
+          draggable   : true
         }
       }
       layer.add(newShape);
-      yShape.set(idx, konvaData);
+      //yShape.set(idx, konvaData);
 
       yDocRef.current.transact(() => {
         yObjects.set(idx, konvaData);
@@ -2689,7 +2711,7 @@ const App:FC = () => {
       }
 
       layer.add(postItGroup);
-      yShape.set(idx, konvaData);
+      //yShape.set(idx, konvaData);
 
       yDocRef.current.transact(() => {
       
@@ -2759,7 +2781,7 @@ const App:FC = () => {
   }
 
   //--------------ContextMenu-------------------
-  let contextTarget:Konva.Node;
+  //let contextTarget:Konva.Node;
   
   const handleMouseContextMenu = (e: any) => {
     e.evt.preventDefault();
@@ -2770,11 +2792,45 @@ const App:FC = () => {
       if (e.target.hasName('mindmap')) {
         return;
       }
-      contextTarget = e.target
-
+      //contextTarget = e.target
+      let fillFlag = false;
+      let noFillFlag = false;
       menuNode.style.display = 'block';
       menuNode.style.top = `${e.evt.clientY}px`;
       menuNode.style.left = `${e.evt.clientX}px`;
+
+      if(groupTr){
+        if(groupTr.nodes().length > 0){
+          groupTr.nodes().forEach((node:any) =>{
+            console.log(node.fill())
+            if(node.getClassName() == Shape.Rect || node.getClassName() == Shape.Circle || node.getClassName() == Shape.RegularPolygon){
+              if(node.fill()){
+                noFillFlag = true;
+              } else {
+                fillFlag = true;
+              }
+            }
+          });
+        }
+        console.log(fillFlag)
+        console.log(noFillFlag)
+        if(fillFlag){
+          // document.getElementById('fill')!.style.display = 'initial'
+          document.getElementById('fill')!.removeAttribute('disabled')
+        } else {
+          // document.getElementById('fill')!.style.display = 'none'
+          document.getElementById('fill')!.setAttribute('disabled', 'true')
+        }
+        
+        if(noFillFlag){
+          // document.getElementById('noFill')!.style.display = 'initial'
+          document.getElementById('noFill')!.removeAttribute('disabled')
+        } else {
+          // document.getElementById('noFill')!.style.display = 'none'
+          document.getElementById('noFill')!.setAttribute('disabled', 'true')
+        }
+
+      }
 
     }
 
@@ -2850,9 +2906,136 @@ const App:FC = () => {
   }
 
   const deleteObjClick = () => {
-    yObjects.delete(contextTarget.id());
-    contextTarget.destroy();
-    groupTr?.nodes([]);
+    if(groupTr!.nodes().length > 0){
+      groupTr!.getNodes().forEach((node)=>{
+        node.destroy();
+        yObjects.delete(node.id());
+      });
+      groupTr?.nodes([]);
+      ySelectedNodes.delete(userId.current);
+      yLockNodes.delete(userId.current);
+    }
+    document.getElementById('contextMenu')!.style.display = 'none';
+  }
+
+  const noFillClick = () => {
+    if(groupTr!.nodes().length > 0){
+      groupTr!.getNodes().forEach((node:any)=>{
+        let konvaData = {};
+        if(node.getClassName() == Shape.Circle){
+          node.fill(null);
+          konvaData = {
+            id          : node.id(),
+            type        : Shape.Circle,
+            x           : node.x(),
+            y           : node.y(),
+            stroke      : node.stroke(),
+            strokeWidth : node.strokeWidth(),
+            width       : node.width(), 
+            height      : node.height(),
+            fill        : null,
+            userId      : userId.current,
+            draggable   : true,
+          }
+          yObjects.set(node.id(), konvaData);
+        }
+        else if( node.getClassName() == Shape.Rect){
+          node.fill(null);
+          konvaData = {
+            id          : node.id(),
+            type        : Shape.Rect,
+            x           : node.x(),
+            y           : node.y(),
+            stroke      : node.stroke(),
+            strokeWidth : node.strokeWidth(),
+            width       : node.width(), 
+            height      : node.height(),
+            fill        : null,
+            userId      : userId.current,
+            draggable   : true
+          }
+          yObjects.set(node.id(), konvaData);
+        }
+        else if(node.getClassName() == Shape.RegularPolygon){
+          node.fill(null);
+          konvaData = {
+            id          : node.id(),
+            type        : Shape.RegularPolygon,
+            x           : node.x(),
+            y           : node.y(),
+            stroke      : node.stroke(),
+            strokeWidth : node.strokeWidth(),
+            sides       : node.sides(),
+            radius      : node.radius(),
+            fill        : null,
+            userId      : userId.current,
+            draggable   : true
+          }
+          yObjects.set(node.id(), konvaData);
+        }
+      });
+    }
+    
+    document.getElementById('contextMenu')!.style.display = 'none';
+  }
+  const fillClick = () => {
+    if(groupTr!.nodes().length > 0){
+      groupTr!.getNodes().forEach((node:any)=>{
+        let konvaData = {};
+        if(node.getClassName() == Shape.Circle){
+          node.fill(node.stroke());
+          konvaData = {
+            id          : node.id(),
+            type        : Shape.Circle,
+            x           : node.x(),
+            y           : node.y(),
+            stroke      : node.stroke(),
+            strokeWidth : node.strokeWidth(),
+            width       : node.width(), 
+            height      : node.height(),
+            fill        : node.stroke(),
+            userId      : userId.current,
+            draggable   : true,
+          }
+          yObjects.set(node.id(), konvaData);
+        }
+        else if( node.getClassName() == Shape.Rect){
+          node.fill(null);
+          konvaData = {
+            id          : node.id(),
+            type        : Shape.Rect,
+            x           : node.x(),
+            y           : node.y(),
+            stroke      : node.stroke(),
+            strokeWidth : node.strokeWidth(),
+            width       : node.width(), 
+            height      : node.height(),
+            fill        : node.stroke(),
+            userId      : userId.current,
+            draggable   : true
+          }
+          yObjects.set(node.id(), konvaData);
+        }
+        else if(node.getClassName() == Shape.RegularPolygon){
+          node.fill(null);
+          konvaData = {
+            id          : node.id(),
+            type        : Shape.RegularPolygon,
+            x           : node.x(),
+            y           : node.y(),
+            stroke      : node.stroke(),
+            strokeWidth : node.strokeWidth(),
+            sides       : node.sides(),
+            radius      : node.radius(),
+            fill        : node.stroke(),
+            userId      : userId.current,
+            draggable   : true
+          }
+          yObjects.set(node.id(), konvaData);
+        }
+      });
+    }
+    
     document.getElementById('contextMenu')!.style.display = 'none';
   }
 
@@ -2889,16 +3072,11 @@ const App:FC = () => {
       </Stage>
 
       <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} handleUndo={handleUndo} handleRedo={handleRedo}/>
-      <div id="contextMenu" style={{
-        display: 'none'
-        , position: 'absolute'
-        , zIndex: 999
-        , width: '100px'
-        , backgroundColor : 'white'
-        , boxShadow: '0 0 5px grey'
-        , borderRadius: '3px'
-      }}>
+      <div id="contextMenu">
         <div>
+          <button id="noFill" onClick={noFillClick}>채우기 없음</button>
+          <button id="fill" onClick={fillClick}>색 채우기</button>
+          <hr/>
           <button id="foreFront" onClick={foreFrontClick}>맨 앞으로</button>
           <button id="moveTop" onClick={moveTopClick}>앞으로</button>
           <hr/>
