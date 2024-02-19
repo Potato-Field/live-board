@@ -1751,7 +1751,6 @@ const App:FC = () => {
         yMousePositions.set(userId.current, mousePosition);
       }
       
-      
       if(tr.getNodes().length < 30){
         tr.getNodes().forEach((node:any)=>{    
           const changeInfo = {
@@ -1778,7 +1777,7 @@ const App:FC = () => {
         height: selectionRect.height / stageRef.current.scaleY(),
       };
       
-        ySelectedNodes.set(userId.current, absoluteSelectionInfo);
+      ySelectedNodes.set(userId.current, absoluteSelectionInfo);
 
     });
 
@@ -1980,10 +1979,9 @@ const App:FC = () => {
       tr.getNodes().forEach((node:any)=>{
         type = node.getClassName();
         if(node.name().includes("postIt")){
-          //if(type === Shape.Group){
-          if(type === Shape.Text){ 
+          if(type === Shape.Group){
+          //if(type === Shape.Text){ 
           
-            console.log("come to Group");     //TEST
             konvaData = {type : type}
             const childList:Konva.Node[] = node.children;
             if(node.getClassName() == Shape.Group){
