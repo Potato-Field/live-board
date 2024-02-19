@@ -205,6 +205,9 @@ body {
   color : white;
   cursor: pointer;
 }
+#contextMenu .disabled{
+  color : rgb(141, 141, 141);
+}
 
 #contextMenu button:hover {
   background-color: lightgray;

@@ -2802,12 +2802,16 @@ const App:FC = () => {
       if(groupTr){
         if(groupTr.nodes().length > 0){
           groupTr.nodes().forEach((node:any) =>{
-            console.log(node.fill())
+            if(node.hasName('postItRect')){
+              console.log(node)
+            }
             if(node.getClassName() == Shape.Rect || node.getClassName() == Shape.Circle || node.getClassName() == Shape.RegularPolygon){
-              if(node.fill()){
-                noFillFlag = true;
-              } else {
-                fillFlag = true;
+              if(!node.hasName('postItRect')){
+                if(node.fill()){
+                  noFillFlag = true;
+                } else {
+                  fillFlag = true;
+                }
               }
             }
           });
@@ -2817,17 +2821,21 @@ const App:FC = () => {
         if(fillFlag){
           // document.getElementById('fill')!.style.display = 'initial'
           document.getElementById('fill')!.removeAttribute('disabled')
+          document.getElementById('fill')!.classList.remove('disabled')
         } else {
           // document.getElementById('fill')!.style.display = 'none'
           document.getElementById('fill')!.setAttribute('disabled', 'true')
+          document.getElementById('fill')!.classList.add('disabled')
         }
         
         if(noFillFlag){
           // document.getElementById('noFill')!.style.display = 'initial'
           document.getElementById('noFill')!.removeAttribute('disabled')
+          document.getElementById('noFill')!.classList.remove('disabled')
         } else {
           // document.getElementById('noFill')!.style.display = 'none'
           document.getElementById('noFill')!.setAttribute('disabled', 'true')
+          document.getElementById('noFill')!.classList.add('disabled')
         }
 
       }
@@ -2939,7 +2947,7 @@ const App:FC = () => {
           }
           yObjects.set(node.id(), konvaData);
         }
-        else if( node.getClassName() == Shape.Rect){
+        else if( node.getClassName() == Shape.Rect && !node.hasName('postItRect')){
           node.fill(null);
           konvaData = {
             id          : node.id(),
@@ -2999,8 +3007,8 @@ const App:FC = () => {
           }
           yObjects.set(node.id(), konvaData);
         }
-        else if( node.getClassName() == Shape.Rect){
-          node.fill(null);
+        else if( node.getClassName() == Shape.Rect && !node.hasName('postItRect')){
+          node.fill(node.stroke());
           konvaData = {
             id          : node.id(),
             type        : Shape.Rect,
@@ -3017,7 +3025,7 @@ const App:FC = () => {
           yObjects.set(node.id(), konvaData);
         }
         else if(node.getClassName() == Shape.RegularPolygon){
-          node.fill(null);
+          node.fill(node.stroke());
           konvaData = {
             id          : node.id(),
             type        : Shape.RegularPolygon,
