@@ -5,6 +5,7 @@ export enum Shape{
   , "Rect"           = "Rect"
   , "Stamp"          = "Image"
   , "Group"          = "Group"
+  , "PostIt"         = "PostIt"
   , "Text"           = "Text"
   , "Image"          = "Image"
 }
