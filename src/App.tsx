@@ -186,14 +186,14 @@ const App:FC = () => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current);
 
     /* 본인 로컬에서 작동 */
-    // const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+     const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://localhost:1235'] });
 
     /* 배포시 사용 */
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
     
       
 
@@ -2382,6 +2382,11 @@ const App:FC = () => {
         const targetEraseId = targetErase.id();
         
         yDocRef.current.transact(() => {
+          if(groupTr != null){
+            groupTr.destroy();
+            groupTr = null;
+          }
+          //yselect set 추가해야 할 듯
           yObjects.delete(targetEraseId);
         }, undoManagerObj);
       }
@@ -2437,8 +2442,11 @@ const App:FC = () => {
         var shapes = stageRef.current.find('Shape, Line, Text, Group');
         var box = selectionRectangle.getClientRect();
         
+        // const rowSelected:Konva.Node[] = shapes.filter((shape:any) =>
+        //   Konva.Util.haveIntersection(box, shape.getClientRect())
+        // );
         const rowSelected:Konva.Node[] = shapes.filter((shape:any) =>
-          Konva.Util.haveIntersection(box, shape.getClientRect())
+          Konva.Util.haveIntersection(box, shape.getClientRect()) && (!shape.hasName('mindmap'))
         );
 
         let selected:any[] = [];
@@ -2756,6 +2764,9 @@ const App:FC = () => {
     if (!menuNode) return;
     if (e.target === stageRef.current) return;
     if (tool === Tools.CURSOR){
+      if (e.target.hasName('mindmap')) {
+        return;
+    }
       contextTarget = e.target
 
       menuNode.style.display = 'block';
