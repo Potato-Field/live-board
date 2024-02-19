@@ -7,6 +7,7 @@ import {Target} from './Target'
 import * as Y from "yjs";
 // import { layer } from '@fortawesome/fontawesome-svg-core';
 // import { now } from 'lodash';
+import "./contextMenu.css";
 
 
 type SummaryNode = {
@@ -68,6 +69,27 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
           });
       }
     });
+
+    useEffect(() => {
+      const stage = stageRef.current; 
+      if (stage) {
+        const clickHandler = (e:any) => {
+          if (e.target === stage) {
+            document.querySelectorAll('.context-menu').forEach(menu => {
+              if(menu){
+                (menu as HTMLElement).style.display = 'none';
+              }
+            });
+          }
+        };
+
+        stage.on('mousedown', clickHandler);
+        return () => {
+          stage.off('mousedown', clickHandler);
+        };
+      }
+    }, [stageRef]); 
+    
 
 
     const handleClick = (event:any) => {
@@ -180,13 +202,14 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
     
         // 드래그 했을 경우 textarea 위치 변경
         const updateTextAreaPosition = () => {
-          const target = stage.findOne(`#${targetId}`);
-          if (target) {
-            const targetPosition = target.absolutePosition();
-            textArea.style.left = stage.container().offsetLeft + targetPosition.x + 'px';
-            textArea.style.top = stage.container().offsetTop + targetPosition.y + 'px';
+          const targetText = layerRef.current?.findOne("#text-"+targetId);
+          if (targetText) {
+            const targetPosition = targetText.absolutePosition();
+            textArea.style.left = (stage.container().offsetLeft + targetPosition.x) + 'px';
+            textArea.style.top = (stage.container().offsetTop + targetPosition.y) + 'px';
           }
         };
+        
     
         updateTextAreaPosition()
         stage.on('dragmove', updateTextAreaPosition);
@@ -221,11 +244,13 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
     
       const targetText = layerRef.current?.findOne("#text-"+targetId);
       targetText?.hide();
+
       const targetTextPosition = targetText?.absolutePosition();
       const areaPos = {
         x: stage.container().offsetLeft + (targetTextPosition?.x ?? 0),
         y: stage.container().offsetTop + (targetTextPosition?.y ?? 0),
       };
+      console.log(targetText?.x(), targetText?.y(), areaPos);     //TEST
 
       setupTextArea(textArea, target.value, areaPos);
     
@@ -348,101 +373,43 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
   }
 
 
-  //우클릭 메뉴 구현
-  const showContextMenu = (event:any, id:string) =>  {
-          //console.log("show context menu", event);
-          let node = layerRef.current?.findOne(`#${id}`);
-          let menu = document.getElementById('contextMenu'+ node?.id());
-       
-        
-          if(!menu){
-            const menu = document.createElement('div');
-            menu.id = 'contextMenu' + node?.id();
-            document.body.appendChild(menu);
-            
-            const createButton = document.createElement('button');
-            createButton.innerHTML = 'Create';
-            createButton.id = 'create' + menu.id;
-            createButton.onclick = function (){
-              addNewCircleAndConnector(id);
-              menu.style.display = 'none';
-            }
-            
-            const deleteButton = document.createElement('button');
-            deleteButton.innerHTML = 'Delete';
-            deleteButton.id = 'delete' + menu.id;
-            deleteButton.onclick = function (){
-              deleteTargetDfs(id);
-              let summaryGroup = layerRef.current?.findOne('#summaryGroup');
-              if(summaryGroup){
-                summaryGroup.destroy();
-              }
-              // let container = document.getElementById('textTravelContainer');
-              // if(container){
-              //   document.body.removeChild(container);
-              // }
-              menu.style.display = 'none';
-            }
+  const createMenuItem = (text:any, onClick:any, id:any) => {
+    const button = document.createElement('button');
+    button.textContent = text;
+    button.classList.add('context-menu-item'); 
+    button.addEventListener('click', () => {
+      onClick();
+      const menu = document.getElementById('contextMenu' + id);
+      console.log(menu);
+      if (menu) {
+        menu.style.display = 'none';
+      }
+    });
+    return button;
+  };
 
-            const sortButton = document.createElement('button');
-            sortButton.innerHTML = 'Summary';
-            sortButton.onclick = function () {
-              makeTextTravel();
-              menu.style.display = 'none';
-            }
+  const showContextMenu = (event:any, id:any) => {
+    event.evt.preventDefault();
+    let menu = document.getElementById('contextMenu' + id);
 
-            const cancelButton = document.createElement('button');
-            cancelButton.innerHTML = 'Cancel';
-            //id 필요없지 않나..
-            cancelButton.onclick = function (){
-              menu.style.display = 'none';
-            }
-            /****************************************************************/
-            // const undoButton = document.createElement('button');
-            // undoButton.innerHTML = 'Undo';
-            // undoButton.onclick = function() {
-            //   handleUndo2();
-            //   menu.style.display = 'none';
-            // } 
-          
-            // const redoButton = document.createElement('button');
-            // redoButton.innerHTML = 'Redo';
-            // redoButton.onclick = function()  {
-            //   handleRedo2();
-            //   menu.style.display = 'none';
-            // } 
-            // menu.appendChild(undoButton);
-            // menu.appendChild(redoButton);
+    if (!menu) {
+      menu = document.createElement('div');
+      menu.id = 'contextMenu' + id;
+      menu.classList.add('context-menu');
+      
 
-           
+      menu.appendChild(createMenuItem('생성', () => {addNewCircleAndConnector(id);}, id));
+      menu.appendChild(createMenuItem('삭제', () => deleteTargetDfs(id), id));
+      menu.appendChild(createMenuItem('요약', () => makeTextTravel(), id));
+      menu.appendChild(createMenuItem('취소', () => menu!.style.display = 'none', id));
 
-            /****************************************************************/
+      document.body.appendChild(menu);
+    }
 
-
-
-            
-            
-            menu.appendChild(createButton);
-            menu.appendChild(deleteButton);
-            menu.appendChild(sortButton);
-            menu.appendChild(cancelButton);
-
-          }
-
-          if(menu){
-            menu.style.display = 'block';
-            menu.style.position = 'absolute';
-            menu.style.left = `${event.evt.clientX}px`;
-            menu.style.top = `${event.evt.clientY}px`;
-            menu.style.backgroundColor = '#f9f9f9';
-            menu.style.boxShadow = '0px 8px 16px 0px rgba(0,0,0,0.2)';
-            menu.style.zIndex = '1000';
-            menu.style.padding = '10px';
-            
-          }
-    
-  }
-
+    menu.style.display = 'block';
+    menu.style.left = `${event.evt.clientX}px`;
+    menu.style.top = `${event.evt.clientY}px`;
+  };
   
   
     
@@ -476,8 +443,9 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
                 points: points,
                 stroke: 'black',
                 fill: 'black',
-                strokeWidth: 2,
+                strokeWidth: 6,
             });
+            line.addName('mindmap');
             layerRef.current?.add(line);
         } 
         else {
@@ -493,63 +461,82 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
       yTargets.forEach((target:any, id:any) => {
         let node = layerRef.current?.findOne(`#${id}`);
         let textNode = layerRef.current?.findOne(`#text-${id}`) as Konva.Text;
+        node?.addName('mindmap');
+        textNode?.addName('mindmap');
 
         if (!node) {
             node = new Konva.Circle({
                 id: id,
                 x: target.x,
                 y: target.y,
-                fill:'#f9f9f9',
+                // fill:'#f9f9f9',
+                fill:'#A9A9A9',
                 radius: 70,
-                draggable: true,
+                draggable: false,
                 opacity: 1,
                 //stroke: 'black',
                 //strokeWidth: 2,
             });
+            node.addName('mindmap');
+            node.on('mousedown', ()=>{
+              if(toolRef.current == Tools.CURSOR || toolRef.current == Tools.MINDMAP){
+                node?.draggable(true)
+              }
+            })
+            node.on('mouseup', ()=>{
+              node?.draggable(false)
+              
+            })
             layerRef.current?.add(node as Konva.Circle);
         } else {
             node.position({ x: target.x, y: target.y });
         }
+
+        node.on("mouseclick", () => {
+          if(toolRef.current === Tools.CURSOR || toolRef.current === Tools.MINDMAP){
+            node?.draggable(true);
+          }
+
+        });
+
         node.off('dblclick').on('dblclick', (event) => {
-          if (event.evt.button === 0 && toolRef.current === Tools.MINDMAP) {
-              //addNewCircleAndConnector(id);
+          if (event.evt.button === 0 && (toolRef.current === Tools.MINDMAP || toolRef.current === Tools.CURSOR)) {
               handleCircleClick(event, id);
           }
           
-      });
+        });
 
      
   
-      //우클릭 메뉴 이벤트
-      node.off('contextmenu').on('contextmenu', (event) => {
-        event.evt.preventDefault();
-         if (toolRef.current === Tools.MINDMAP) {
-          // console.log(toolRef.current)
-          showContextMenu(event, id);
-         }
-      });
+        //우클릭 메뉴 이벤트
+        node.off('contextmenu').on('contextmenu', (event) => {
+          event.evt.preventDefault();
+          if (toolRef.current === Tools.MINDMAP || toolRef.current === Tools.CURSOR) {
+            // console.log(toolRef.current)
+            showContextMenu(event, id);
+          }
+        });
 
           
-      // //드래그 구현 update targets, connectors 
-      node.off('dragmove').on('dragmove', () => {
-        //if(toolRef.current === Tools.MINDMAP){}
-            const target = yTargets.get(id);
-            if(target){
-              const updatedTarget: Target = {
-                ...target, 
-                x: node?.x()??target.x,
-                y: node?.y()??target.y,
-              }
-              yDocRef.current.transact(() => {
-                yTargets.set(id, updatedTarget);
-              }, undoManagerObj);
-              //layerRef.current?.add(target);
-        
-            
-            updateConnectors(id);
-          }
-        
-      });
+        // //드래그 구현 update targets, connectors 
+        node.off('dragmove').on('dragmove', () => {
+          //if(toolRef.current === Tools.MINDMAP || toolRef.current === Tools.CURSOR){}
+              const target = yTargets.get(id);
+              if(target){
+                const updatedTarget: Target = {
+                  ...target, 
+                  x: node?.x()??target.x,
+                  y: node?.y()??target.y,
+                }
+                yDocRef.current.transact(() => {
+                  yTargets.set(id, updatedTarget);
+                }, undoManagerObj);
+                //layerRef.current?.add(target);
+          
+              
+              updateConnectors(id);
+            }
+        });
 
 
       //target text 구현 
@@ -583,8 +570,18 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
             fill: 'black',
             stroke: 'black',
             zincIndex: 1,
-            draggable: true,
+            draggable: false,
           });
+          textNode.addName('mindmap');
+          textNode.on('mousedown', ()=>{
+            if(toolRef.current == Tools.CURSOR || toolRef.current == Tools.MINDMAP){
+              textNode?.draggable(true)
+            }
+          })
+          textNode.on('mouseup', ()=>{
+            textNode?.draggable(false)
+            
+          })
           layerRef.current?.add(textNode as Konva.Text);
         } 
         else {

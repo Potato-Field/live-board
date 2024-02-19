@@ -186,14 +186,14 @@ const App:FC = () => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current);
 
     /* 본인 로컬에서 작동 */
-    // const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+     const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://localhost:1235'] });
 
     /* 배포시 사용 */
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
     
       
 
@@ -652,6 +652,7 @@ const App:FC = () => {
     const updateNodeFromKonvaData2 = (index: string, konvaData: any) => {
       const node = stageRef.current.children[0].findOne("#" + index);
       if (!node) return;
+      if(node.hasName('mindmap'))return;
 
       if(konvaData.type == Shape.Group){
         node.scaleX(konvaData.Group.scaleX)
@@ -1976,9 +1977,12 @@ const App:FC = () => {
       let type:Shape;
       let konvaData:any;
       tr.getNodes().forEach((node:any)=>{
-        type = node.getClassName()
+        type = node.getClassName();
         if(node.name().includes("postIt")){
-          if(type === Shape.Group){
+          //if(type === Shape.Group){
+          if(type === Shape.Text){ 
+          
+            console.log("come to Group");     //TEST
             konvaData = {type : type}
             const childList:Konva.Node[] = node.children;
             if(node.getClassName() == Shape.Group){
@@ -2322,6 +2326,7 @@ const App:FC = () => {
       //}, undoManagerObj);
     }
 
+  
     else if (tool === Tools.ERASER) {
       if (!isDrawing.current || !stageRef.current) return;
     
@@ -2335,20 +2340,28 @@ const App:FC = () => {
         width: areaSize,
         height: areaSize
       };
-    
-      const shapes = stageRef.current.getLayers()[0].getChildren().filter(node => {
-        return typeof node.getClientRect === 'function';
+
+      const shapes = stageRef.current.getLayers()[0].getChildren((node) => {
+        return node instanceof Konva.Shape && !node.hasName('locked');
+
       });
+    
+      
     
       const targetErase = shapes.find(node => {
         const shapeRect = node.getClientRect();
-        return Konva.Util.haveIntersection(area, shapeRect);
+        return Konva.Util.haveIntersection(area, shapeRect) && !node.hasName('locked');
       });
     
       if (targetErase) {
         const targetEraseId = targetErase.id();
         
         yDocRef.current.transact(() => {
+          if(groupTr != null){
+            groupTr.destroy();
+            groupTr = null;
+          }
+          //yselect set 추가해야 할 듯
           yObjects.delete(targetEraseId);
         }, undoManagerObj);
       }
@@ -2403,10 +2416,14 @@ const App:FC = () => {
         selectionRectangle.destroy();
         var shapes = stageRef.current.find('Shape, Line, Text, Group');
         var box = selectionRectangle.getClientRect();
+
+        const rowSelected: Konva.Node[] = shapes.filter((shape: any) => {
+          const shapeNames = shape.name()?.split(' ') || [];
+          const intersects = Konva.Util.haveIntersection(box, shape.getClientRect());
+          const isMindmap = shapeNames.includes('mindmap');
+          return intersects && !isMindmap;
+        });
         
-        const rowSelected:Konva.Node[] = shapes.filter((shape:any) =>
-          Konva.Util.haveIntersection(box, shape.getClientRect())
-        );
 
         let selected:any[] = [];
         let locksData:string[] = [];
@@ -2472,10 +2489,12 @@ const App:FC = () => {
       }
     }
     else if(tool === Tools.HAND){
-      e.target.container().style.cursor = 'grab';
-      if(isHand){
-        isHand.current = false;
-        stageRef.current.draggable(false)
+      if(e.target === stage){
+        e.target.container().style.cursor = 'grab';
+        if(isHand){
+          isHand.current = false;
+          stageRef.current.draggable(false)
+        }
       }
     }
   };
@@ -2723,6 +2742,9 @@ const App:FC = () => {
     if (!menuNode) return;
     if (e.target === stageRef.current) return;
     if (tool === Tools.CURSOR){
+      if (e.target.hasName('mindmap')) {
+        return;
+    }
       contextTarget = e.target
 
       menuNode.style.display = 'block';
