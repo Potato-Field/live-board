@@ -652,6 +652,7 @@ const App:FC = () => {
     const updateNodeFromKonvaData2 = (index: string, konvaData: any) => {
       const node = stageRef.current.children[0].findOne("#" + index);
       if (!node) return;
+      if(node.hasName('mindmap'))return;
 
       if(konvaData.type == Shape.Group){
         node.scaleX(konvaData.Group.scaleX)
@@ -2321,37 +2322,7 @@ const App:FC = () => {
       //}, undoManagerObj);
     }
 
-    // else if (tool === Tools.ERASER) {
-    //   if (!isDrawing.current || !stageRef.current) return;
-    
-    //   const pos = stageRef.current.getPointerPosition();
-    //   if (!pos) return;
-    
-    //   const areaSize = 30;
-    //   const area = {
-    //     x: pos.x - areaSize / 2,
-    //     y: pos.y - areaSize / 2,
-    //     width: areaSize,
-    //     height: areaSize
-    //   };
-    
-    //   const shapes = stageRef.current.getLayers()[0].getChildren().filter(node => {
-    //     return typeof node.getClientRect === 'function';
-    //   });
-    
-    //   const targetErase = shapes.find(node => {
-    //     const shapeRect = node.getClientRect();
-    //     return Konva.Util.haveIntersection(area, shapeRect);
-    //   });
-    
-    //   if (targetErase) {
-    //     const targetEraseId = targetErase.id();
-        
-    //     yDocRef.current.transact(() => {
-    //       yObjects.delete(targetEraseId);
-    //     }, undoManagerObj);
-    //   }
-    // }
+  
     else if (tool === Tools.ERASER) {
       if (!isDrawing.current || !stageRef.current) return;
     
@@ -2441,13 +2412,14 @@ const App:FC = () => {
         selectionRectangle.destroy();
         var shapes = stageRef.current.find('Shape, Line, Text, Group');
         var box = selectionRectangle.getClientRect();
+
+        const rowSelected: Konva.Node[] = shapes.filter((shape: any) => {
+          const shapeNames = shape.name()?.split(' ') || [];
+          const intersects = Konva.Util.haveIntersection(box, shape.getClientRect());
+          const isMindmap = shapeNames.includes('mindmap');
+          return intersects && !isMindmap;
+        });
         
-        // const rowSelected:Konva.Node[] = shapes.filter((shape:any) =>
-        //   Konva.Util.haveIntersection(box, shape.getClientRect())
-        // );
-        const rowSelected:Konva.Node[] = shapes.filter((shape:any) =>
-          Konva.Util.haveIntersection(box, shape.getClientRect()) && (!shape.hasName('mindmap'))
-        );
 
         let selected:any[] = [];
         let locksData:string[] = [];
@@ -2513,10 +2485,12 @@ const App:FC = () => {
       }
     }
     else if(tool === Tools.HAND){
-      e.target.container().style.cursor = 'grab';
-      if(isHand){
-        isHand.current = false;
-        stageRef.current.draggable(false)
+      if(e.target === stage){
+        e.target.container().style.cursor = 'grab';
+        if(isHand){
+          isHand.current = false;
+          stageRef.current.draggable(false)
+        }
       }
     }
   };

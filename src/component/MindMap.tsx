@@ -472,54 +472,71 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
                 // fill:'#f9f9f9',
                 fill:'#A9A9A9',
                 radius: 70,
-                draggable: true,
+                draggable: false,
                 opacity: 1,
                 //stroke: 'black',
                 //strokeWidth: 2,
             });
+            node.addName('mindmap');
+            node.on('mousedown', ()=>{
+              if(toolRef.current == Tools.CURSOR || toolRef.current == Tools.MINDMAP){
+                node?.draggable(true)
+              }
+            })
+            node.on('mouseup', ()=>{
+              node?.draggable(false)
+              
+            })
             layerRef.current?.add(node as Konva.Circle);
         } else {
             node.position({ x: target.x, y: target.y });
         }
+
+        node.on("mouseclick", () => {
+          if(toolRef.current === Tools.CURSOR || toolRef.current === Tools.MINDMAP){
+            node?.draggable(true);
+          }
+
+        });
+
         node.off('dblclick').on('dblclick', (event) => {
           if (event.evt.button === 0 && (toolRef.current === Tools.MINDMAP || toolRef.current === Tools.CURSOR)) {
               handleCircleClick(event, id);
           }
           
-      });
+        });
 
      
   
-      //우클릭 메뉴 이벤트
-      node.off('contextmenu').on('contextmenu', (event) => {
-        event.evt.preventDefault();
-         if (toolRef.current === Tools.MINDMAP || toolRef.current === Tools.CURSOR) {
-          // console.log(toolRef.current)
-          showContextMenu(event, id);
-         }
-      });
+        //우클릭 메뉴 이벤트
+        node.off('contextmenu').on('contextmenu', (event) => {
+          event.evt.preventDefault();
+          if (toolRef.current === Tools.MINDMAP || toolRef.current === Tools.CURSOR) {
+            // console.log(toolRef.current)
+            showContextMenu(event, id);
+          }
+        });
 
           
-      // //드래그 구현 update targets, connectors 
-      node.off('dragmove').on('dragmove', () => {
-        //if(toolRef.current === Tools.MINDMAP){}
-            const target = yTargets.get(id);
-            if(target){
-              const updatedTarget: Target = {
-                ...target, 
-                x: node?.x()??target.x,
-                y: node?.y()??target.y,
-              }
-              yDocRef.current.transact(() => {
-                yTargets.set(id, updatedTarget);
-              }, undoManagerObj);
-              //layerRef.current?.add(target);
-        
-            
-            updateConnectors(id);
-          }
-        
-      });
+        // //드래그 구현 update targets, connectors 
+        node.off('dragmove').on('dragmove', () => {
+          //if(toolRef.current === Tools.MINDMAP || toolRef.current === Tools.CURSOR){}
+              const target = yTargets.get(id);
+              if(target){
+                const updatedTarget: Target = {
+                  ...target, 
+                  x: node?.x()??target.x,
+                  y: node?.y()??target.y,
+                }
+                yDocRef.current.transact(() => {
+                  yTargets.set(id, updatedTarget);
+                }, undoManagerObj);
+                //layerRef.current?.add(target);
+          
+              
+              updateConnectors(id);
+            }
+        });
 
 
       //target text 구현 
@@ -553,8 +570,18 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
             fill: 'black',
             stroke: 'black',
             zincIndex: 1,
-            draggable: true,
+            draggable: false,
           });
+          textNode.addName('mindmap');
+          textNode.on('mousedown', ()=>{
+            if(toolRef.current == Tools.CURSOR || toolRef.current == Tools.MINDMAP){
+              textNode?.draggable(true)
+            }
+          })
+          textNode.on('mouseup', ()=>{
+            textNode?.draggable(false)
+            
+          })
           layerRef.current?.add(textNode as Konva.Text);
         } 
         else {
