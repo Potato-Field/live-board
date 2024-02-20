@@ -196,13 +196,14 @@ body {
   text-align: left;
 }
 
-#contextMenu button:hover {
+/* #contextMenu button:hover {
   background-color: lightgray;
-}
+} */
 
 .btn-active {
-  box-shadow: inset 0px 9px 4px 6px dimgrey;
-  border-radius: 10%;
+  /* box-shadow: inset 0px 9px 4px 6px dimgrey;
+  border-radius: 10%; */
+  box-shadow: inset 0px 0px 131px 200px rgba(255, 255, 255, 0.4);
 }
 
 .btn-active svg{
