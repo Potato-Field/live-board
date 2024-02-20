@@ -194,7 +194,7 @@ const App:FC = () => {
 
     /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://localhost:1235'] });
+    //onst provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://localhost:1235'] });
 
     /* 배포시 사용 */
     const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
@@ -3002,6 +3002,8 @@ const App:FC = () => {
             strokeWidth : node.strokeWidth(),
             width       : node.width(), 
             height      : node.height(),
+            scaleX      : node.scaleX(), 
+            scaleY      : node.scaleY(),
             fill        : null,
             userId      : userId.current,
             draggable   : true,
@@ -3019,6 +3021,8 @@ const App:FC = () => {
             strokeWidth : node.strokeWidth(),
             width       : node.width(), 
             height      : node.height(),
+            scaleX      : node.scaleX(), 
+            scaleY      : node.scaleY(),
             fill        : null,
             userId      : userId.current,
             draggable   : true
@@ -3036,6 +3040,8 @@ const App:FC = () => {
             strokeWidth : node.strokeWidth(),
             sides       : node.sides(),
             radius      : node.radius(),
+            scaleX      : node.scaleX(), 
+            scaleY      : node.scaleY(),
             fill        : null,
             userId      : userId.current,
             draggable   : true
@@ -3062,6 +3068,8 @@ const App:FC = () => {
             strokeWidth : node.strokeWidth(),
             width       : node.width(), 
             height      : node.height(),
+            scaleX      : node.scaleX(), 
+            scaleY      : node.scaleY(),
             fill        : node.stroke(),
             userId      : userId.current,
             draggable   : true,
@@ -3079,6 +3087,8 @@ const App:FC = () => {
             strokeWidth : node.strokeWidth(),
             width       : node.width(), 
             height      : node.height(),
+            scaleX      : node.scaleX(), 
+            scaleY      : node.scaleY(),
             fill        : node.stroke(),
             userId      : userId.current,
             draggable   : true
@@ -3096,6 +3106,8 @@ const App:FC = () => {
             strokeWidth : node.strokeWidth(),
             sides       : node.sides(),
             radius      : node.radius(),
+            scaleX      : node.scaleX(), 
+            scaleY      : node.scaleY(),
             fill        : node.stroke(),
             userId      : userId.current,
             draggable   : true
