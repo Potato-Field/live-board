@@ -583,8 +583,7 @@ const App:FC = () => {
           newLine.visible(true);
         } 
         else {
-          
-          console.log(konvaData)
+
           if(konvaData.type == Shape.Rect){
             const newShape = createNewRect(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill, konvaData.stroke);
             newShape.visible(false)
@@ -625,6 +624,30 @@ const App:FC = () => {
                   height: konvaData.height,
                   draggable: true
                 });
+
+                newImage.on("mousedown", (e:any)=>{
+      
+                  if(toolRef.current !== Tools.CURSOR){
+                    newImage.draggable(false)
+                    return;
+                  } else {
+                    newImage.draggable(true)
+                  }
+            
+                  const selected = e.target
+                  if(groupTr == null){
+                    createNewTr();
+                  }
+                  if(groupTr){
+                    if(groupTr.nodes().length == 0){
+                      groupTr.nodes([selected]);
+                      groupTr.rotateEnabled(true);
+                      groupTr.enabledAnchors(ANK_ALL);
+                      groupTr.moveToTop();
+                    }
+                  }
+                })
+
                 //newImage.name(konvaData.image)
                 newImage.visible(false)
                 stageRef.current.getLayers()[0].add(newImage);
@@ -785,6 +808,29 @@ const App:FC = () => {
             height: img.height,
             draggable : true,
           });
+
+          konvaImage.on("mousedown", (e:any)=>{
+      
+            if(toolRef.current !== Tools.CURSOR){
+              konvaImage.draggable(false)
+              return;
+            } else {
+              konvaImage.draggable(true)
+            }
+      
+            const selected = e.target
+            if(groupTr == null){
+              createNewTr();
+            }
+            if(groupTr){
+              if(groupTr.nodes().length == 0){
+                groupTr.nodes([selected]);
+                groupTr.rotateEnabled(true);
+                groupTr.enabledAnchors(ANK_ALL);
+                groupTr.moveToTop();
+              }
+            }
+          })
     
           layer.add(konvaImage);
           layer.draw();
@@ -847,6 +893,29 @@ const App:FC = () => {
                     height: imageObject.height,
                     draggable : true,
                   });
+
+                  konvaImage.on("mousedown", (e:any)=>{
+      
+                    if(toolRef.current !== Tools.CURSOR){
+                      konvaImage.draggable(false)
+                      return;
+                    } else {
+                      konvaImage.draggable(true)
+                    }
+              
+                    const selected = e.target
+                    if(groupTr == null){
+                      createNewTr();
+                    }
+                    if(groupTr){
+                      if(groupTr.nodes().length == 0){
+                        groupTr.nodes([selected]);
+                        groupTr.rotateEnabled(true);
+                        groupTr.enabledAnchors(ANK_ALL);
+                        groupTr.moveToTop();
+                      }
+                    }
+                  })
 
                   const centerX = (-stageX + stageWidth / 2) / scaleX - imageObject.width / 2;
                   const centerY = (-stageY + stageHeight / 2) / scaleY - imageObject.height /2;
@@ -2803,7 +2872,6 @@ const App:FC = () => {
         if(groupTr.nodes().length > 0){
           groupTr.nodes().forEach((node:any) =>{
             if(node.hasName('postItRect')){
-              console.log(node)
             }
             if(node.getClassName() == Shape.Rect || node.getClassName() == Shape.Circle || node.getClassName() == Shape.RegularPolygon){
               if(!node.hasName('postItRect')){
@@ -2816,24 +2884,17 @@ const App:FC = () => {
             }
           });
         }
-        console.log(fillFlag)
-        console.log(noFillFlag)
         if(fillFlag){
-          // document.getElementById('fill')!.style.display = 'initial'
           document.getElementById('fill')!.removeAttribute('disabled')
           document.getElementById('fill')!.classList.remove('disabled')
         } else {
-          // document.getElementById('fill')!.style.display = 'none'
           document.getElementById('fill')!.setAttribute('disabled', 'true')
           document.getElementById('fill')!.classList.add('disabled')
         }
-        
         if(noFillFlag){
-          // document.getElementById('noFill')!.style.display = 'initial'
           document.getElementById('noFill')!.removeAttribute('disabled')
           document.getElementById('noFill')!.classList.remove('disabled')
         } else {
-          // document.getElementById('noFill')!.style.display = 'none'
           document.getElementById('noFill')!.setAttribute('disabled', 'true')
           document.getElementById('noFill')!.classList.add('disabled')
         }
