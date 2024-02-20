@@ -181,23 +181,37 @@ body {
 #contextMenu {
   display: none;
   position: absolute;
-  width: 60px;
-  background-color: white;
+  min-width: 140px;
+  background-color: dimgrey;
   box-shadow: 0 0 5px grey;
   border-radius: 3px;
+  z-index: 999;
+}
+
+#contextMenu hr{
+  margin-top: 0;
+  margin-bottom: 0;
+  border: 0;
+  border-top: 2px solid lightgray;
 }
 
 #contextMenu button {
   width: 100%;
-  background-color: white;
+  background-color: dimgrey;
   border: none;
   margin: 0;
   padding: 10px;
   text-align: left;
+  color : white;
+  cursor: pointer;
+}
+#contextMenu .disabled{
+  color : rgb(141, 141, 141);
 }
 
 #contextMenu button:hover {
   background-color: lightgray;
+  color: black;
 }
 
 .btn-active {
