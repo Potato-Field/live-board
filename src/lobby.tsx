@@ -43,8 +43,7 @@ interface AppBarProps extends MuiAppBarProps {
     open?: boolean;
 }
 
-
-
+// 로비 Drawer 수정
 const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
     ({ theme, open }) => ({
         '& .MuiDrawer-paper': {
