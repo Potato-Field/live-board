@@ -8,7 +8,7 @@ import appid from './voicechat/appId';
 import Konva from 'konva';
 
 import { AppBar, Avatar, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Toolbar, IconButton, MenuItem, Menu, Tooltip } from '@mui/material';
-import { AddCircle, PeopleAlt, PersonAdd,FileDownload, ArrowBackIos, Mic, MicOff } from '@mui/icons-material';
+import { AddCircle, PeopleAlt, FileDownload, ArrowBackIos, Mic, MicOff } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 
 import { VoteDrawer } from './VoteDrawer';
