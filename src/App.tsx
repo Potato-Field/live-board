@@ -33,6 +33,7 @@ import {Target} from './component/Target';
 import {Connector} from './component/Connector';
 
 import { throttle } from 'lodash';
+import { ShapeOrder } from './component/ShapeOrder';
 
 /* 블록 하는 좌표 */
 let multiSelectBlocker = {
@@ -108,6 +109,9 @@ const App:FC = () => {
   
   // 선택 영역 데이터 구조 정의
   const ySelectedNodes = yDocRef.current.getMap('selectedNodes');
+
+  // 객체 순서 저장
+  const yOrders = yDocRef.current.getMap('objectOrders');
 
   // 객체 Lock 저장
   const yLockNodes = yDocRef.current.getMap('lockNodes');
@@ -186,11 +190,11 @@ const App:FC = () => {
     //const provider = new WebsocketProvider('ws://192.168.1.103:1234', 'drawing-room', yDocRef.current);
 
     /* 본인 로컬에서 작동 */
-    // const provider = new WebrtcProvider('drawing-room', yDocRef.current);
+    //const provider = new WebrtcProvider('drawing-room', yDocRef.current);
 
     /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://localhost:1235'] });
+    //onst provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://localhost:1235'] });
 
     /* 배포시 사용 */
     const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
@@ -233,7 +237,7 @@ const App:FC = () => {
           const mousePosition:any = yMousePositions.get(key);
           const adjustedPosition = {
             x          : mousePosition.x * stageRef.current.scaleX() + stageRef.current.x(),
-            y          : (mousePosition.y+(43 / stageRef.current.scaleY())) * stageRef.current.scaleY() + stageRef.current.y(),
+            y          : (mousePosition.y - (23/stageRef.current.scaleY())) * stageRef.current.scaleY() + stageRef.current.y(),
             selectTool : mousePosition.selectTool,
             //scale      : mousePosition.scale
           };
@@ -352,13 +356,13 @@ const App:FC = () => {
         }
         else {
           if(konvaData.type === Shape.Rect){
-            newShape = createNewRect(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill)
+            newShape = createNewRect(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill, konvaData.stroke)
 
           } else if(konvaData.type === Shape.Circle){
-            newShape = createNewCir(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill)
+            newShape = createNewCir(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill, konvaData.stroke)
             
           } else if(konvaData.type === Shape.RegularPolygon){
-            newShape = createNewTri(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill)
+            newShape = createNewTri(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill, konvaData.stroke)
           } else if(konvaData.type === Shape.Group){
             newShape = createNewPostIt(index, {x: konvaData.Group.x, y: konvaData.Group.y}, konvaData.Text.text)
             newShape.moveToTop();
@@ -442,9 +446,31 @@ const App:FC = () => {
         });
       }
     })
+    yOrders.observe(() => {
+      yOrders.forEach((konvaData:any, index:string)=>{
+        const paramUserId = konvaData.userId;
+        if(paramUserId === userId.current || !userId.current) return;
+        const node = stageRef.current.children[0].findOne("#"+index)
+        if(!node) return;
+        
+        switch(konvaData.evt) {
+          case ShapeOrder.moveToTop:
+          node.moveToTop();
+          break;
+        case ShapeOrder.moveUp:
+          node.moveUp();
+          break;
+        case ShapeOrder.moveToBottom:
+          node.moveToBottom();
+          break;
+          case ShapeOrder.moveDown:
+            node.moveDown();
+            break;
+        }
+      });
+    });
 
-
-    // const initializeCanvas = () => {
+        // const initializeCanvas = () => {
     //   yObjects.forEach((konvaData:any, index:string) => {
         
     //     const node = stageRef.current.children[0].findOne("#"+index)
@@ -557,9 +583,9 @@ const App:FC = () => {
           newLine.visible(true);
         } 
         else {
-          
+
           if(konvaData.type == Shape.Rect){
-            const newShape = createNewRect(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+            const newShape = createNewRect(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill, konvaData.stroke);
             newShape.visible(false)
             stageRef.current.getLayers()[0].add(newShape);
             newShape.scaleX(konvaData.scaleX)
@@ -568,7 +594,7 @@ const App:FC = () => {
             newShape.visible(true);
           }
           else if(konvaData.type == Shape.Circle){
-            const newShape = createNewCir(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+            const newShape = createNewCir(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill, konvaData.stroke);
             newShape.visible(false)
             stageRef.current.getLayers()[0].add(newShape);
             newShape.scaleX(konvaData.scaleX)
@@ -577,7 +603,7 @@ const App:FC = () => {
             newShape.visible(true);
           } 
           else if(konvaData.type == Shape.RegularPolygon){
-            const newShape = createNewTri(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill);
+            const newShape = createNewTri(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill, konvaData.stroke);
             newShape.visible(false)
             stageRef.current.getLayers()[0].add(newShape);
             newShape.scaleX(konvaData.scaleX)
@@ -598,6 +624,30 @@ const App:FC = () => {
                   height: konvaData.height,
                   draggable: true
                 });
+
+                newImage.on("mousedown", (e:any)=>{
+      
+                  if(toolRef.current !== Tools.CURSOR){
+                    newImage.draggable(false)
+                    return;
+                  } else {
+                    newImage.draggable(true)
+                  }
+            
+                  const selected = e.target
+                  if(groupTr == null){
+                    createNewTr();
+                  }
+                  if(groupTr){
+                    if(groupTr.nodes().length == 0){
+                      groupTr.nodes([selected]);
+                      groupTr.rotateEnabled(true);
+                      groupTr.enabledAnchors(ANK_ALL);
+                      groupTr.moveToTop();
+                    }
+                  }
+                })
+
                 //newImage.name(konvaData.image)
                 newImage.visible(false)
                 stageRef.current.getLayers()[0].add(newImage);
@@ -650,8 +700,9 @@ const App:FC = () => {
     }
 
     const updateNodeFromKonvaData2 = (index: string, konvaData: any) => {
-      const node = stageRef.current.children[0].findOne("#" + index);
+      const node:any = stageRef.current.children[0].findOne("#" + index);
       if (!node) return;
+      if(node.hasName('mindmap'))return;
 
       if(konvaData.type == Shape.Group){
         node.scaleX(konvaData.Group.scaleX)
@@ -673,10 +724,10 @@ const App:FC = () => {
             
             break;
           case 'Rect':
-            break;
           case 'Circle':
-            break;
           case 'RegularPolygon':
+            node.stroke(konvaData.stroke),
+            node.fill(konvaData.fill);
             break;
           case 'Stamp':
             break;
@@ -711,6 +762,8 @@ const App:FC = () => {
           if (!konvaData && node) {
             if(groupTr){
               groupTr.nodes([]);
+              ySelectedNodes.delete(userId.current);
+              yLockNodes.delete(userId.current);
               groupTr.rotateEnabled(true);
               groupTr.enabledAnchors(ANK_ALL);
             }
@@ -755,6 +808,29 @@ const App:FC = () => {
             height: img.height,
             draggable : true,
           });
+
+          konvaImage.on("mousedown", (e:any)=>{
+      
+            if(toolRef.current !== Tools.CURSOR){
+              konvaImage.draggable(false)
+              return;
+            } else {
+              konvaImage.draggable(true)
+            }
+      
+            const selected = e.target
+            if(groupTr == null){
+              createNewTr();
+            }
+            if(groupTr){
+              if(groupTr.nodes().length == 0){
+                groupTr.nodes([selected]);
+                groupTr.rotateEnabled(true);
+                groupTr.enabledAnchors(ANK_ALL);
+                groupTr.moveToTop();
+              }
+            }
+          })
     
           layer.add(konvaImage);
           layer.draw();
@@ -817,6 +893,29 @@ const App:FC = () => {
                     height: imageObject.height,
                     draggable : true,
                   });
+
+                  konvaImage.on("mousedown", (e:any)=>{
+      
+                    if(toolRef.current !== Tools.CURSOR){
+                      konvaImage.draggable(false)
+                      return;
+                    } else {
+                      konvaImage.draggable(true)
+                    }
+              
+                    const selected = e.target
+                    if(groupTr == null){
+                      createNewTr();
+                    }
+                    if(groupTr){
+                      if(groupTr.nodes().length == 0){
+                        groupTr.nodes([selected]);
+                        groupTr.rotateEnabled(true);
+                        groupTr.enabledAnchors(ANK_ALL);
+                        groupTr.moveToTop();
+                      }
+                    }
+                  })
 
                   const centerX = (-stageX + stageWidth / 2) / scaleX - imageObject.width / 2;
                   const centerY = (-stageY + stageHeight / 2) / scaleY - imageObject.height /2;
@@ -1005,16 +1104,18 @@ const App:FC = () => {
     return newStamp;
   }
   
-  const createNewRect = (id:string, pos:{x:number, y:number}, color:any)=>{
+  const createNewRect = (id:string, pos:{x:number, y:number}, color:any, strokeColor:any)=>{
 
     const newShape = new Konva.Rect({
-      id        : id,
-      x         : pos.x,
-      y         : pos.y,
-      width     : 150, 
-      height    : 150,
-      fill      : color,
-      draggable : true
+      id          : id,
+      x           : pos.x,
+      y           : pos.y,
+      width       : 150, 
+      height      : 150,
+      fill        : color,
+      stroke      : strokeColor,
+      strokeWidth : 4,
+      draggable   : true
     });
     newShape.on("mousedown", (e:any)=>{
       
@@ -1041,15 +1142,17 @@ const App:FC = () => {
     return newShape
   }
 
-  const createNewCir = (id:string, pos:{x:number, y:number}, color:any)=>{
+  const createNewCir = (id:string, pos:{x:number, y:number}, color:any, strokeColor:any)=>{
     const newShape = new Konva.Circle({
-      id        : id,
-      x         : pos.x,
-      y         : pos.y,
-      width     : 150, 
-      height    : 150,
-      fill      : color,
-      draggable : true
+      id          : id,
+      x           : pos.x,
+      y           : pos.y,
+      width       : 150, 
+      height      : 150,
+      fill        : color,
+      stroke      : strokeColor,
+      strokeWidth : 4,
+      draggable   : true
     });
 
     newShape.on("mousedown", (e:any)=>{
@@ -1078,15 +1181,17 @@ const App:FC = () => {
     return newShape
   }
   
-  const createNewTri = (id:string, pos:{x:number, y:number}, color:any)=>{
+  const createNewTri = (id:string, pos:{x:number, y:number}, color:any, strokeColor:any)=>{
     const newShape = new Konva.RegularPolygon({
-      id        : id,
-      x         : pos.x,
-      y         : pos.y,
-      sides     : 3,
-      radius    : 100,
-      fill      : color,
-      draggable : true
+      id          : id,
+      x           : pos.x,
+      y           : pos.y,
+      sides       : 3,
+      radius      : 100,
+      fill        : color,
+      stroke      : strokeColor,
+      strokeWidth : 4,
+      draggable   : true
     });
     
     newShape.on("mousedown", (e:any)=>{
@@ -1186,7 +1291,7 @@ const App:FC = () => {
 
     const textNode:any = new Konva.Text({
       id : id,
-      text: text == ""?'Some text here':text,
+      text: text == ""?'텍스트를 입력하세요':text,
       x: pos.x,
       y: pos.y,
       fontSize: 20,
@@ -1685,36 +1790,37 @@ const App:FC = () => {
       }
     })
 
-    postItGroup.on('click', ()=>{  // e.target: Text, e.currentTarget: Group 
+    // postItGroup.on('click', ()=>{  // e.target: Text, e.currentTarget: Group 
       
-      const text = postItGroup.findOne('.postItText')
-      const rect = postItGroup.findOne('.postItRect')
-      const init = postItGroup.findOne('.postItInitText')
+    //   const text = postItGroup.findOne('.postItText')
+    //   const rect = postItGroup.findOne('.postItRect')
+    //   const init = postItGroup.findOne('.postItInitText')
       
-      if (text && rect) {
-        text.on('transform', () => {
-          text.setAttrs({
-            width: Math.max(text.width() * text.scaleX(), POSTIT_MIN_WIDTH),
-            height : Math.max(text.height() * text.scaleY(), POSTIT_MIN_HEIGHT),
-            scaleX: 1,
-            scaleY: 1,
-          });
+    //   if (text && rect) {
+    //     text.on('transform', () => {
+    //       text.setAttrs({
+    //         width: Math.max(text.width() * text.scaleX(), POSTIT_MIN_WIDTH),
+    //         height : Math.max(text.height() * text.scaleY(), POSTIT_MIN_HEIGHT),
+    //         scaleX: 1,
+    //         scaleY: 1,
+    //       });
     
-          // text의 크기가 변경될 때 rect의 크기도 업데이트
-          rect.setAttrs({
-            width: text.width(),
-            height: text.height(),
-          });
+    //       // text의 크기가 변경될 때 rect의 크기도 업데이트
+    //       rect.setAttrs({
+    //         width: text.width(),
+    //         height: text.height(),
+    //       });
 
-          // text의 너비가 변경될 때 initText의 너비도 업데이트
-          if (init) {
-            init.setAttrs({
-              width: text.width(),
-            })
-          }
-        });
-      }
-    })
+    //       // text의 너비가 변경될 때 initText의 너비도 업데이트
+    //       if (init) {
+    //         init.setAttrs({
+    //           width: text.width(),
+    //         })
+    //       }
+    //     });
+    //   }
+    // })
+    
     return postItGroup
   }
 
@@ -1749,7 +1855,6 @@ const App:FC = () => {
         yMousePositions.set(userId.current, mousePosition);
       }
       
-      
       if(tr.getNodes().length < 30){
         tr.getNodes().forEach((node:any)=>{    
           const changeInfo = {
@@ -1776,7 +1881,7 @@ const App:FC = () => {
         height: selectionRect.height / stageRef.current.scaleY(),
       };
       
-        ySelectedNodes.set(userId.current, absoluteSelectionInfo);
+      ySelectedNodes.set(userId.current, absoluteSelectionInfo);
 
     });
 
@@ -1861,31 +1966,35 @@ const App:FC = () => {
             }
           } else if(type === Shape.RegularPolygon){
             konvaData = {
-              type      : type, 
-              id        : node.id(),
-              x         : node.x(),
-              y         : node.y(),
-              sides     : node.sides(),
-              radius    : node.radius(),
-              fill      : node.fill(),
-              scaleX    : node.scaleX(),
-              scaleY    : node.scaleY(),
-              rotation  : node.rotation(),
-              draggable : true,
+              type        : type, 
+              id          : node.id(),
+              x           : node.x(),
+              y           : node.y(),
+              stroke      : node.stroke(),
+              strokeWidth : node.strokeWidth(),
+              sides       : node.sides(),
+              radius      : node.radius(),
+              fill        : node.fill(),
+              scaleX      : node.scaleX(),
+              scaleY      : node.scaleY(),
+              rotation    : node.rotation(),
+              draggable   : true,
             }
           } else if (type === Shape.Circle || type === Shape.Rect){
             konvaData = {
-              type      : type, 
-              id        : node.id(),
-              x         : node.x(),
-              y         : node.y(),
-              width     : node.width(),
-              height    : node.height(),
-              fill      : node.fill(),
-              scaleX    : node.scaleX(),
-              scaleY    : node.scaleY(),
-              rotation  : node.rotation(),
-              draggable : true,
+              type        : type, 
+              id          : node.id(),
+              x           : node.x(),
+              y           : node.y(),
+              stroke      : node.stroke(),
+              strokeWidth : node.strokeWidth(),
+              width       : node.width(),
+              height      : node.height(),
+              fill        : node.fill(),
+              scaleX      : node.scaleX(),
+              scaleY      : node.scaleY(),
+              rotation    : node.rotation(),
+              draggable   : true,
             }
           } else if(type === Shape.Stamp || type === Shape.Image){
             konvaData = {
@@ -1976,9 +2085,11 @@ const App:FC = () => {
       let type:Shape;
       let konvaData:any;
       tr.getNodes().forEach((node:any)=>{
-        type = node.getClassName()
+        type = node.getClassName();
         if(node.name().includes("postIt")){
           if(type === Shape.Group){
+          //if(type === Shape.Text){ 
+          
             konvaData = {type : type}
             const childList:Konva.Node[] = node.children;
             if(node.getClassName() == Shape.Group){
@@ -2050,31 +2161,35 @@ const App:FC = () => {
             }
           } else if(type === Shape.RegularPolygon){
             konvaData = { 
-              type      : type,
-              id        : node.id(),
-              x         : node.x(),
-              y         : node.y(),
-              sides     : node.sides(),
-              radius    : node.radius(),
-              fill      : node.fill(),
-              scaleX    : node.scaleX(),
-              scaleY    : node.scaleY(),
-              rotation  : node.rotation(),
-              draggable : true,
+              type        : type,
+              id          : node.id(),
+              x           : node.x(),
+              y           : node.y(),
+              stroke      : node.stroke(),
+              strokeWidth : node.strokeWidth(),
+              sides       : node.sides(),
+              radius      : node.radius(),
+              fill        : node.fill(),
+              scaleX      : node.scaleX(),
+              scaleY      : node.scaleY(),
+              rotation    : node.rotation(),
+              draggable   : true,
             }
           } else if (type === Shape.Circle || type === Shape.Rect){
             konvaData = { 
-              type      : type,
-              id        : node.id(),
-              x         : node.x(),
-              y         : node.y(),
-              width     : node.width(),
-              height    : node.height(),
-              fill      : node.fill(),
-              scaleX    : node.scaleX(),
-              scaleY    : node.scaleY(),
-              rotation  : node.rotation(),
-              draggable : true,
+              type        : type,
+              id          : node.id(),
+              x           : node.x(),
+              y           : node.y(),
+              stroke      : node.stroke(),
+              strokeWidth : node.strokeWidth(),
+              width       : node.width(),
+              height      : node.height(),
+              fill        : node.fill(),
+              scaleX      : node.scaleX(),
+              scaleY      : node.scaleY(),
+              rotation    : node.rotation(),
+              draggable   : true,
             } 
           } else if(type === Shape.Stamp){
             konvaData = {
@@ -2198,7 +2313,6 @@ const App:FC = () => {
             }
           });
           yDocRef.current.transact(() => {
-
             ySelectedNodes.delete(userId.current);
           }, undoManagerObj);
           yLockNodes.delete(userId.current);
@@ -2322,6 +2436,7 @@ const App:FC = () => {
       //}, undoManagerObj);
     }
 
+  
     else if (tool === Tools.ERASER) {
       if (!isDrawing.current || !stageRef.current) return;
     
@@ -2335,20 +2450,28 @@ const App:FC = () => {
         width: areaSize,
         height: areaSize
       };
-    
-      const shapes = stageRef.current.getLayers()[0].getChildren().filter(node => {
-        return typeof node.getClientRect === 'function';
+
+      const shapes = stageRef.current.getLayers()[0].getChildren((node) => {
+        return node instanceof Konva.Shape && !node.hasName('locked');
+
       });
+    
+      
     
       const targetErase = shapes.find(node => {
         const shapeRect = node.getClientRect();
-        return Konva.Util.haveIntersection(area, shapeRect);
+        return Konva.Util.haveIntersection(area, shapeRect) && !node.hasName('locked');
       });
     
       if (targetErase) {
         const targetEraseId = targetErase.id();
         
         yDocRef.current.transact(() => {
+          if(groupTr != null){
+            groupTr.destroy();
+            groupTr = null;
+          }
+          //yselect set 추가해야 할 듯
           yObjects.delete(targetEraseId);
         }, undoManagerObj);
       }
@@ -2403,10 +2526,14 @@ const App:FC = () => {
         selectionRectangle.destroy();
         var shapes = stageRef.current.find('Shape, Line, Text, Group');
         var box = selectionRectangle.getClientRect();
+
+        const rowSelected: Konva.Node[] = shapes.filter((shape: any) => {
+          const shapeNames = shape.name()?.split(' ') || [];
+          const intersects = Konva.Util.haveIntersection(box, shape.getClientRect());
+          const isMindmap = shapeNames.includes('mindmap');
+          return intersects && !isMindmap;
+        });
         
-        const rowSelected:Konva.Node[] = shapes.filter((shape:any) =>
-          Konva.Util.haveIntersection(box, shape.getClientRect())
-        );
 
         let selected:any[] = [];
         let locksData:string[] = [];
@@ -2472,10 +2599,12 @@ const App:FC = () => {
       }
     }
     else if(tool === Tools.HAND){
-      e.target.container().style.cursor = 'grab';
-      if(isHand){
-        isHand.current = false;
-        stageRef.current.draggable(false)
+      if(e.target === stage){
+        e.target.container().style.cursor = 'grab';
+        if(isHand){
+          isHand.current = false;
+          stageRef.current.draggable(false)
+        }
       }
     }
   };
@@ -2544,51 +2673,57 @@ const App:FC = () => {
       let konvaData : any;
       
       if (clickedIconBtn === 'rect'){
-        newShape = createNewRect(idx, shapeOptions, defaultColor)
+        newShape = createNewRect(idx, shapeOptions, defaultColor, defaultColor)
 
         konvaData = {
-          id        : newShape.id(),
-          type      : Shape.Rect,
-          x         : newShape.x(),
-          y         : newShape.y(),
-          width     : newShape.width(), 
-          height    : newShape.height(),
-          fill      : defaultColor,
-          userId    : userId.current,
-          draggable : true,
+          id          : newShape.id(),
+          type        : Shape.Rect,
+          x           : newShape.x(),
+          y           : newShape.y(),
+          stroke      : newShape.stroke(),
+          strokeWidth : newShape.strokeWidth(),
+          width       : newShape.width(), 
+          height      : newShape.height(),
+          fill        : defaultColor,
+          userId      : userId.current,
+          draggable   : true,
         }
       }
       else if (clickedIconBtn === 'cir') {
-        newShape = createNewCir(idx, shapeOptions, defaultColor)
+        newShape = createNewCir(idx, shapeOptions, defaultColor, defaultColor)
 
         konvaData = {
-          id        : newShape.id(),
-          type      : Shape.Circle,
-          x         : newShape.x(),
-          y         : newShape.y(),
-          width     : newShape.width(), 
-          height    : newShape.height(),
-          fill      : defaultColor,
-          userId    : userId.current,
-          draggable : true
+          id          : newShape.id(),
+          type        : Shape.Circle,
+          x           : newShape.x(),
+          y           : newShape.y(),
+          stroke      : newShape.stroke(),
+          strokeWidth : newShape.strokeWidth(),
+          width       : newShape.width(), 
+          height      : newShape.height(),
+          fill        : defaultColor,
+          userId      : userId.current,
+          draggable   : true
         }
       }
       else if (clickedIconBtn === 'tri') {
-        newShape = createNewTri(idx, shapeOptions, defaultColor)
+        newShape = createNewTri(idx, shapeOptions, defaultColor, defaultColor)
         konvaData = {
-          id        : newShape.id(),
-          type      : Shape.RegularPolygon,
-          x         : newShape.x(),
-          y         : newShape.y(),
-          sides     : newShape.sides(),
-          radius    : newShape.radius(),
-          fill      : defaultColor,
-          userId    : userId.current,
-          draggable : true
+          id          : newShape.id(),
+          type        : Shape.RegularPolygon,
+          x           : newShape.x(),
+          y           : newShape.y(),
+          stroke      : newShape.stroke(),
+          strokeWidth : newShape.strokeWidth(),
+          sides       : newShape.sides(),
+          radius      : newShape.radius(),
+          fill        : defaultColor,
+          userId      : userId.current,
+          draggable   : true
         }
       }
       layer.add(newShape);
-      yShape.set(idx, konvaData);
+      //yShape.set(idx, konvaData);
 
       yDocRef.current.transact(() => {
         yObjects.set(idx, konvaData);
@@ -2645,7 +2780,7 @@ const App:FC = () => {
       }
 
       layer.add(postItGroup);
-      yShape.set(idx, konvaData);
+      //yShape.set(idx, konvaData);
 
       yDocRef.current.transact(() => {
       
@@ -2715,7 +2850,7 @@ const App:FC = () => {
   }
 
   //--------------ContextMenu-------------------
-  let contextTarget:Konva.Node;
+  //let contextTarget:Konva.Node;
   
   const handleMouseContextMenu = (e: any) => {
     e.evt.preventDefault();
@@ -2723,11 +2858,48 @@ const App:FC = () => {
     if (!menuNode) return;
     if (e.target === stageRef.current) return;
     if (tool === Tools.CURSOR){
-      contextTarget = e.target
-
+      if (e.target.hasName('mindmap')) {
+        return;
+      }
+      //contextTarget = e.target
+      let fillFlag = false;
+      let noFillFlag = false;
       menuNode.style.display = 'block';
       menuNode.style.top = `${e.evt.clientY}px`;
       menuNode.style.left = `${e.evt.clientX}px`;
+
+      if(groupTr){
+        if(groupTr.nodes().length > 0){
+          groupTr.nodes().forEach((node:any) =>{
+            if(node.hasName('postItRect')){
+            }
+            if(node.getClassName() == Shape.Rect || node.getClassName() == Shape.Circle || node.getClassName() == Shape.RegularPolygon){
+              if(!node.hasName('postItRect')){
+                if(node.fill()){
+                  noFillFlag = true;
+                } else {
+                  fillFlag = true;
+                }
+              }
+            }
+          });
+        }
+        if(fillFlag){
+          document.getElementById('fill')!.removeAttribute('disabled')
+          document.getElementById('fill')!.classList.remove('disabled')
+        } else {
+          document.getElementById('fill')!.setAttribute('disabled', 'true')
+          document.getElementById('fill')!.classList.add('disabled')
+        }
+        if(noFillFlag){
+          document.getElementById('noFill')!.removeAttribute('disabled')
+          document.getElementById('noFill')!.classList.remove('disabled')
+        } else {
+          document.getElementById('noFill')!.setAttribute('disabled', 'true')
+          document.getElementById('noFill')!.classList.add('disabled')
+        }
+
+      }
 
     }
 
@@ -2736,7 +2908,16 @@ const App:FC = () => {
   const foreFrontClick = () => {
     if(groupTr!.nodes().length > 0){
       groupTr!.getNodes().forEach((node)=>{
+        if(node.hasName('postItText')||node.hasName('postItInitText')||node.hasName('postItRect')) return;
+        
         node.moveToTop();
+        const konvaData = {
+          id : node.id(),
+          evt : ShapeOrder.moveToTop,
+          userId : userId.current
+        }
+        
+        yOrders.set(konvaData.id, konvaData);
       })
     }
     document.getElementById('contextMenu')!.style.display = 'none';
@@ -2745,34 +2926,197 @@ const App:FC = () => {
   const moveTopClick = () => {
     if(groupTr!.nodes().length > 0){
       groupTr!.getNodes().forEach((node)=>{
+        if(node.hasName('postItText')||node.hasName('postItInitText')||node.hasName('postItRect')) return;
         node.moveUp();
+        const konvaData = {
+          id : node.id(),
+          evt : ShapeOrder.moveUp,
+          userId : userId.current
+        }
+        
+        yOrders.set(konvaData.id, konvaData);
       })
     }
     document.getElementById('contextMenu')!.style.display = 'none';
   }
-
+  
   const atTheBackClick = () => {
     if(groupTr!.nodes().length > 0){
       groupTr!.getNodes().forEach((node)=>{
+        if(node.hasName('postItText')||node.hasName('postItInitText')||node.hasName('postItRect')) return;
         node.moveToBottom();
+        const konvaData = {
+          id : node.id(),
+          evt : ShapeOrder.moveToBottom,
+          userId : userId.current
+        }
+        
+        yOrders.set(konvaData.id, konvaData);
       })
     }
     document.getElementById('contextMenu')!.style.display = 'none';
   }
-
+  
   const moveBackClick = () => {
     if(groupTr!.nodes().length > 0){
       groupTr!.getNodes().forEach((node)=>{
+        if(node.hasName('postItText')||node.hasName('postItInitText')||node.hasName('postItRect')) return;
         node.moveDown();
+        const konvaData = {
+          id : node.id(),
+          evt : ShapeOrder.moveDown,
+          userId : userId.current
+        }
+      
+        yOrders.set(konvaData.id, konvaData);
       })
     }
     document.getElementById('contextMenu')!.style.display = 'none';
   }
 
   const deleteObjClick = () => {
-    yObjects.delete(contextTarget.id());
-    contextTarget.destroy();
-    groupTr?.nodes([]);
+    if(groupTr!.nodes().length > 0){
+      groupTr!.getNodes().forEach((node)=>{
+        node.destroy();
+        yObjects.delete(node.id());
+      });
+      groupTr?.nodes([]);
+      ySelectedNodes.delete(userId.current);
+      yLockNodes.delete(userId.current);
+    }
+    document.getElementById('contextMenu')!.style.display = 'none';
+  }
+
+  const noFillClick = () => {
+    if(groupTr!.nodes().length > 0){
+      groupTr!.getNodes().forEach((node:any)=>{
+        let konvaData = {};
+        if(node.getClassName() == Shape.Circle){
+          node.fill(null);
+          konvaData = {
+            id          : node.id(),
+            type        : Shape.Circle,
+            x           : node.x(),
+            y           : node.y(),
+            stroke      : node.stroke(),
+            strokeWidth : node.strokeWidth(),
+            width       : node.width(), 
+            height      : node.height(),
+            scaleX      : node.scaleX(), 
+            scaleY      : node.scaleY(),
+            fill        : null,
+            userId      : userId.current,
+            draggable   : true,
+          }
+          yObjects.set(node.id(), konvaData);
+        }
+        else if( node.getClassName() == Shape.Rect && !node.hasName('postItRect')){
+          node.fill(null);
+          konvaData = {
+            id          : node.id(),
+            type        : Shape.Rect,
+            x           : node.x(),
+            y           : node.y(),
+            stroke      : node.stroke(),
+            strokeWidth : node.strokeWidth(),
+            width       : node.width(), 
+            height      : node.height(),
+            scaleX      : node.scaleX(), 
+            scaleY      : node.scaleY(),
+            fill        : null,
+            userId      : userId.current,
+            draggable   : true
+          }
+          yObjects.set(node.id(), konvaData);
+        }
+        else if(node.getClassName() == Shape.RegularPolygon){
+          node.fill(null);
+          konvaData = {
+            id          : node.id(),
+            type        : Shape.RegularPolygon,
+            x           : node.x(),
+            y           : node.y(),
+            stroke      : node.stroke(),
+            strokeWidth : node.strokeWidth(),
+            sides       : node.sides(),
+            radius      : node.radius(),
+            scaleX      : node.scaleX(), 
+            scaleY      : node.scaleY(),
+            fill        : null,
+            userId      : userId.current,
+            draggable   : true
+          }
+          yObjects.set(node.id(), konvaData);
+        }
+      });
+    }
+    
+    document.getElementById('contextMenu')!.style.display = 'none';
+  }
+  const fillClick = () => {
+    if(groupTr!.nodes().length > 0){
+      groupTr!.getNodes().forEach((node:any)=>{
+        let konvaData = {};
+        if(node.getClassName() == Shape.Circle){
+          node.fill(node.stroke());
+          konvaData = {
+            id          : node.id(),
+            type        : Shape.Circle,
+            x           : node.x(),
+            y           : node.y(),
+            stroke      : node.stroke(),
+            strokeWidth : node.strokeWidth(),
+            width       : node.width(), 
+            height      : node.height(),
+            scaleX      : node.scaleX(), 
+            scaleY      : node.scaleY(),
+            fill        : node.stroke(),
+            userId      : userId.current,
+            draggable   : true,
+          }
+          yObjects.set(node.id(), konvaData);
+        }
+        else if( node.getClassName() == Shape.Rect && !node.hasName('postItRect')){
+          node.fill(node.stroke());
+          konvaData = {
+            id          : node.id(),
+            type        : Shape.Rect,
+            x           : node.x(),
+            y           : node.y(),
+            stroke      : node.stroke(),
+            strokeWidth : node.strokeWidth(),
+            width       : node.width(), 
+            height      : node.height(),
+            scaleX      : node.scaleX(), 
+            scaleY      : node.scaleY(),
+            fill        : node.stroke(),
+            userId      : userId.current,
+            draggable   : true
+          }
+          yObjects.set(node.id(), konvaData);
+        }
+        else if(node.getClassName() == Shape.RegularPolygon){
+          node.fill(node.stroke());
+          konvaData = {
+            id          : node.id(),
+            type        : Shape.RegularPolygon,
+            x           : node.x(),
+            y           : node.y(),
+            stroke      : node.stroke(),
+            strokeWidth : node.strokeWidth(),
+            sides       : node.sides(),
+            radius      : node.radius(),
+            scaleX      : node.scaleX(), 
+            scaleY      : node.scaleY(),
+            fill        : node.stroke(),
+            userId      : userId.current,
+            draggable   : true
+          }
+          yObjects.set(node.id(), konvaData);
+        }
+      });
+    }
+    
     document.getElementById('contextMenu')!.style.display = 'none';
   }
 
@@ -2809,16 +3153,11 @@ const App:FC = () => {
       </Stage>
 
       <ButtonCustomGroup handleIconBtnClick={handleIconBtnClick} handleUndo={handleUndo} handleRedo={handleRedo}/>
-      <div id="contextMenu" style={{
-        display: 'none'
-        , position: 'absolute'
-        , zIndex: 999
-        , width: '100px'
-        , backgroundColor : 'white'
-        , boxShadow: '0 0 5px grey'
-        , borderRadius: '3px'
-      }}>
+      <div id="contextMenu">
         <div>
+          <button id="noFill" onClick={noFillClick}>채우기 없음</button>
+          <button id="fill" onClick={fillClick}>색 채우기</button>
+          <hr/>
           <button id="foreFront" onClick={foreFrontClick}>맨 앞으로</button>
           <button id="moveTop" onClick={moveTopClick}>앞으로</button>
           <hr/>
