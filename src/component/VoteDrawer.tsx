@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 import Divider from '@mui/material/Divider';
 import HowToVoteIcon from '@mui/icons-material/HowToVote';
-import { Card, CardContent, Typography, CardActions, Grid, IconButton } from '@mui/material';
+import { Card, CardContent, Typography, CardActions, Grid, IconButton, Tooltip } from '@mui/material';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ThumbUpAltRoundedIcon from '@mui/icons-material/ThumbUpAltRounded';
 import ThumbDownRoundedIcon from '@mui/icons-material/ThumbDownRounded';
@@ -120,14 +120,16 @@ export function VoteDrawer({stageRef}:{stageRef:React.RefObject<Konva.Stage>}) {
 
   return (
     <>
-      <IconButton 
-        size="large"
-        aria-label="Postit vote" 
-        // color="inherit" 
-        onClick={toggleDrawer(setOpen, true, stageRef, setPostItData)}
-      >
-        <HowToVoteIcon fontSize='large' />
-      </IconButton>
+      <Tooltip arrow placement="bottom" title="포스트잇 투표">
+        <IconButton 
+          size="large"
+          aria-label="Postit vote" 
+          // color="inherit" 
+          onClick={toggleDrawer(setOpen, true, stageRef, setPostItData)}
+          >
+          <HowToVoteIcon fontSize='large' />
+        </IconButton>
+      </Tooltip>
 
       <Drawer open={open} onClose={()=>{setOpen(false)}} PaperProps={{ sx: { width: '20%' } }} >
         <h2 style={{padding:'1rem', margin: 0}}>Vote results with postit</h2>

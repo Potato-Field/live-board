@@ -194,7 +194,7 @@ const App:FC = () => {
 
     /* 병철 로컬에서 작동 */
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://192.168.1.103:1235'] });
-    //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://localhost:1235'] });
+    //onst provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://localhost:1235'] });
 
     /* 배포시 사용 */
     const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
@@ -237,7 +237,7 @@ const App:FC = () => {
           const mousePosition:any = yMousePositions.get(key);
           const adjustedPosition = {
             x          : mousePosition.x * stageRef.current.scaleX() + stageRef.current.x(),
-            y          : (mousePosition.y+(43 / stageRef.current.scaleY())) * stageRef.current.scaleY() + stageRef.current.y(),
+            y          : (mousePosition.y - (23/stageRef.current.scaleY())) * stageRef.current.scaleY() + stageRef.current.y(),
             selectTool : mousePosition.selectTool,
             //scale      : mousePosition.scale
           };
@@ -583,8 +583,7 @@ const App:FC = () => {
           newLine.visible(true);
         } 
         else {
-          
-          console.log(konvaData)
+
           if(konvaData.type == Shape.Rect){
             const newShape = createNewRect(index, {x:konvaData.x, y:konvaData.y}, konvaData.fill, konvaData.stroke);
             newShape.visible(false)
@@ -625,6 +624,30 @@ const App:FC = () => {
                   height: konvaData.height,
                   draggable: true
                 });
+
+                newImage.on("mousedown", (e:any)=>{
+      
+                  if(toolRef.current !== Tools.CURSOR){
+                    newImage.draggable(false)
+                    return;
+                  } else {
+                    newImage.draggable(true)
+                  }
+            
+                  const selected = e.target
+                  if(groupTr == null){
+                    createNewTr();
+                  }
+                  if(groupTr){
+                    if(groupTr.nodes().length == 0){
+                      groupTr.nodes([selected]);
+                      groupTr.rotateEnabled(true);
+                      groupTr.enabledAnchors(ANK_ALL);
+                      groupTr.moveToTop();
+                    }
+                  }
+                })
+
                 //newImage.name(konvaData.image)
                 newImage.visible(false)
                 stageRef.current.getLayers()[0].add(newImage);
@@ -785,6 +808,29 @@ const App:FC = () => {
             height: img.height,
             draggable : true,
           });
+
+          konvaImage.on("mousedown", (e:any)=>{
+      
+            if(toolRef.current !== Tools.CURSOR){
+              konvaImage.draggable(false)
+              return;
+            } else {
+              konvaImage.draggable(true)
+            }
+      
+            const selected = e.target
+            if(groupTr == null){
+              createNewTr();
+            }
+            if(groupTr){
+              if(groupTr.nodes().length == 0){
+                groupTr.nodes([selected]);
+                groupTr.rotateEnabled(true);
+                groupTr.enabledAnchors(ANK_ALL);
+                groupTr.moveToTop();
+              }
+            }
+          })
     
           layer.add(konvaImage);
           layer.draw();
@@ -847,6 +893,29 @@ const App:FC = () => {
                     height: imageObject.height,
                     draggable : true,
                   });
+
+                  konvaImage.on("mousedown", (e:any)=>{
+      
+                    if(toolRef.current !== Tools.CURSOR){
+                      konvaImage.draggable(false)
+                      return;
+                    } else {
+                      konvaImage.draggable(true)
+                    }
+              
+                    const selected = e.target
+                    if(groupTr == null){
+                      createNewTr();
+                    }
+                    if(groupTr){
+                      if(groupTr.nodes().length == 0){
+                        groupTr.nodes([selected]);
+                        groupTr.rotateEnabled(true);
+                        groupTr.enabledAnchors(ANK_ALL);
+                        groupTr.moveToTop();
+                      }
+                    }
+                  })
 
                   const centerX = (-stageX + stageWidth / 2) / scaleX - imageObject.width / 2;
                   const centerY = (-stageY + stageHeight / 2) / scaleY - imageObject.height /2;
@@ -2803,7 +2872,6 @@ const App:FC = () => {
         if(groupTr.nodes().length > 0){
           groupTr.nodes().forEach((node:any) =>{
             if(node.hasName('postItRect')){
-              console.log(node)
             }
             if(node.getClassName() == Shape.Rect || node.getClassName() == Shape.Circle || node.getClassName() == Shape.RegularPolygon){
               if(!node.hasName('postItRect')){
@@ -2816,24 +2884,17 @@ const App:FC = () => {
             }
           });
         }
-        console.log(fillFlag)
-        console.log(noFillFlag)
         if(fillFlag){
-          // document.getElementById('fill')!.style.display = 'initial'
           document.getElementById('fill')!.removeAttribute('disabled')
           document.getElementById('fill')!.classList.remove('disabled')
         } else {
-          // document.getElementById('fill')!.style.display = 'none'
           document.getElementById('fill')!.setAttribute('disabled', 'true')
           document.getElementById('fill')!.classList.add('disabled')
         }
-        
         if(noFillFlag){
-          // document.getElementById('noFill')!.style.display = 'initial'
           document.getElementById('noFill')!.removeAttribute('disabled')
           document.getElementById('noFill')!.classList.remove('disabled')
         } else {
-          // document.getElementById('noFill')!.style.display = 'none'
           document.getElementById('noFill')!.setAttribute('disabled', 'true')
           document.getElementById('noFill')!.classList.add('disabled')
         }
@@ -2941,6 +3002,8 @@ const App:FC = () => {
             strokeWidth : node.strokeWidth(),
             width       : node.width(), 
             height      : node.height(),
+            scaleX      : node.scaleX(), 
+            scaleY      : node.scaleY(),
             fill        : null,
             userId      : userId.current,
             draggable   : true,
@@ -2958,6 +3021,8 @@ const App:FC = () => {
             strokeWidth : node.strokeWidth(),
             width       : node.width(), 
             height      : node.height(),
+            scaleX      : node.scaleX(), 
+            scaleY      : node.scaleY(),
             fill        : null,
             userId      : userId.current,
             draggable   : true
@@ -2975,6 +3040,8 @@ const App:FC = () => {
             strokeWidth : node.strokeWidth(),
             sides       : node.sides(),
             radius      : node.radius(),
+            scaleX      : node.scaleX(), 
+            scaleY      : node.scaleY(),
             fill        : null,
             userId      : userId.current,
             draggable   : true
@@ -3001,6 +3068,8 @@ const App:FC = () => {
             strokeWidth : node.strokeWidth(),
             width       : node.width(), 
             height      : node.height(),
+            scaleX      : node.scaleX(), 
+            scaleY      : node.scaleY(),
             fill        : node.stroke(),
             userId      : userId.current,
             draggable   : true,
@@ -3018,6 +3087,8 @@ const App:FC = () => {
             strokeWidth : node.strokeWidth(),
             width       : node.width(), 
             height      : node.height(),
+            scaleX      : node.scaleX(), 
+            scaleY      : node.scaleY(),
             fill        : node.stroke(),
             userId      : userId.current,
             draggable   : true
@@ -3035,6 +3106,8 @@ const App:FC = () => {
             strokeWidth : node.strokeWidth(),
             sides       : node.sides(),
             radius      : node.radius(),
+            scaleX      : node.scaleX(), 
+            scaleY      : node.scaleY(),
             fill        : node.stroke(),
             userId      : userId.current,
             draggable   : true
