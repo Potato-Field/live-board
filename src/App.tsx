@@ -237,7 +237,7 @@ const App:FC = () => {
           const mousePosition:any = yMousePositions.get(key);
           const adjustedPosition = {
             x          : mousePosition.x * stageRef.current.scaleX() + stageRef.current.x(),
-            y          : (mousePosition.y+(43 / stageRef.current.scaleY())) * stageRef.current.scaleY() + stageRef.current.y(),
+            y          : (mousePosition.y - (23/stageRef.current.scaleY())) * stageRef.current.scaleY() + stageRef.current.y(),
             selectTool : mousePosition.selectTool,
             //scale      : mousePosition.scale
           };
