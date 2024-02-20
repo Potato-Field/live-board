@@ -10,11 +10,13 @@ import * as Y from "yjs";
 import "./contextMenu.css";
 
 
-type SummaryNode = {
+interface SummaryNode  {
   id: string;
   value: string;
   priority: number;
+  hierarchicalId: string,
 }
+
   
 
 //  export const undoManagerObjRef = useRef<Y.UndoManager | null>(null);
@@ -58,7 +60,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
                           id: newNodeId,
                           x: pointerPosition.x,  
                           y: pointerPosition.y,  
-                          value: "new-node",
+                          value: "텍스트 루트",
                           childIds: [],
                       };
                       yDocRef.current.transact(() => {
@@ -107,7 +109,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
                     id: newNodeId,
                     x: pointerPosition.x,
                     y: pointerPosition.y,
-                    value: "new-node",
+                    value: "텍스트루트",
                     childIds: [],
                 };
                 yDocRef.current.transact(() => {
@@ -147,7 +149,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
       const generateRandomId = (prefix:any) => `${prefix}-${Math.random().toString(36).substring(2, 9)}`;
   
       const newTargetId = generateRandomId(`target-${yTargets.size}`);
-      const newTarget = { id: newTargetId, x: newX, y: newY, value: `new-node${yTargets.size}`, childIds: [] };
+      const newTarget = { id: newTargetId, x: newX, y: newY, value: `텍스트`, childIds: [] };
 
       yDocRef.current.transact(() => {
 
@@ -215,26 +217,37 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
         stage.on('dragmove', updateTextAreaPosition);
       };
 
+      const commitChangesAndRemoveTextarea = () => {
+        const nowTarget = yTargets.get(targetId);
+        if (nowTarget) {
+          yDocRef.current.transact(() => {
+            yTargets.set(targetId, { ...nowTarget, value: textArea.value });
+          }, undoManagerObj);
+        }
+        textArea.parentNode?.removeChild(textArea);
+        targetText?.show();
+      };
+
       if (!textArea) {
         textArea = document.createElement('textarea');
         textArea.id = textAreaId;
         document.body.appendChild(textArea);
+      
     
         textArea.addEventListener('keydown', function(e) {
           if (e.key === 'Enter' && !e.shiftKey) {
-            const nowTarget = yTargets.get(targetId);
-            if(nowTarget){
-              yDocRef.current.transact(()=>{
-                yTargets.set(targetId, { ...nowTarget, value: textArea.value });
-
-              }, undoManagerObj);
-            }
-            textArea.parentNode?.removeChild(textArea);
-            targetText?.show();
-  
+            commitChangesAndRemoveTextarea();
           }
         });
       }
+
+      const handleStageClick = (e: any) => {
+        if (e.target !== textArea) {
+          commitChangesAndRemoveTextarea();
+          stageRef.current?.off('mousedown touchstart', handleStageClick);
+        }
+      };
+      stageRef.current.on('mousedown touchstart', handleStageClick);
     
       const target = yTargets.get(targetId);
       if (!target) {
@@ -259,59 +272,78 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
 
 
 
-  const makeTextTravel = () => {
-    let summaryGroup = layerRef.current?.findOne('#summaryGroup') as Konva.Group;
-    if(summaryGroup){
-      summaryGroup.destroy();
-    }
-    
-    summaryGroup = new Konva.Group({
-        id: 'summaryGroup',
-        x: 50,
-        y: 50,
-        stroke: 'black',
-        strokeWidth: 2,
-        draggable: true,
-    });
-
-    const summaryNodes = new Map<string, SummaryNode>([]);
-    const dfs = (targetId:string, depth:number) => {
-      const nowTarget = yTargets.get(targetId);
-      if(!nowTarget) return;
-      summaryNodes.set(targetId, {id: targetId, value: nowTarget.value, priority: depth});
-      nowTarget?.childIds.forEach((childId:any) => dfs(childId, depth+1));
-    }
-
-    dfs('target-0', 0);   //target id set target-0 should revise this if set many mindmap
-
-    const baseFontSize = 40;
-    const decrement = 6;
-    const baseFontWeight = 700;
-    const fontDecrement = 100;
-    let yPosition = 10;
-
-    summaryNodes.forEach((summaryNode) => {
-      const fontSize = baseFontSize - (summaryNode.priority * decrement);
-      const fontWeight = Math.max(baseFontWeight - (summaryNode.priority * fontDecrement), 1);
-      const blanks = '        '.repeat(summaryNode.priority);
-
-      const text = new Konva.Text({
-          x: 10,
-          y: yPosition,
-          text: blanks + '.' + summaryNode.value,
-          // text:'.' + summaryNode.value,
-          fontSize: fontSize,
-          // fontStyle: fontWeight.toString() as Konva.FontStyle,
-          fontStyle: fontWeight.toString(),
-          fontFamily: 'Arial',
-          fill: 'black',
+    const makeTextTravel = () => {
+      let summaryGroup = layerRef.current?.findOne('#summaryGroup') as Konva.Group;
+      if(summaryGroup){
+        summaryGroup.destroy();
+      }
+      
+      const rootNode = yTargets.get('target-0');
+      summaryGroup = new Konva.Group({
+          id: 'summaryGroup',
+          x: rootNode.x,
+          y: rootNode.y,
+          stroke: 'black',
+          strokeWidth: 2,
+          draggable: true,
       });
-      summaryGroup?.add(text);
-      yPosition += text.height() + 10;
-    });
 
-    layerRef.current?.add(summaryGroup);
-  }
+      const generateHierarchicalIds = (nodeId: string, parentId: string , index: number = 1)
+      : SummaryNode[] => {
+
+        const node = yTargets.get(nodeId);
+        if(!node)return [];
+
+        const hierarchicalId = parentId ? `${parentId}.${index}`: `${index}`;
+        let result: SummaryNode[] = [{
+          id: node.id,
+          hierarchicalId,     //change this
+          value: node.value,
+          priority: hierarchicalId.split('.').length - 1,
+        }];
+
+        node.childIds.forEach((childId:any, idx:any) => {
+          result = result.concat(generateHierarchicalIds(childId, hierarchicalId, idx + 1));
+        });
+        return result;
+      }
+      
+      const summaryNodes = generateHierarchicalIds('target-0', "");
+
+      // const baseFontSize = 40;
+      // const decrement = 6;
+      const baseFontWeight = 700;
+      const fontDecrement = 100;
+      let yPosition = 10;
+      summaryNodes.forEach(summaryNode => {
+        if(summaryNode.priority <= 3){
+          //const fontSize = Math.max(baseFontSize - (summaryNode.priority * decrement), 10);
+          const fontWeight = Math.max(baseFontWeight - (summaryNode.priority * fontDecrement), 100);
+          const blanks = '        '.repeat(Math.min(summaryNode.priority, 3));
+
+          
+          const text = new Konva.Text({
+            x: 10,
+            y: yPosition,
+            text: blanks + `${summaryNode.hierarchicalId} ${summaryNode.value}`,
+            //fontSize: fontSize,
+            fontSize: 20,
+            fontStyle: fontWeight.toString(),
+            fontFamily: 'Arial',
+            fill: 'black',
+          });
+          if(summaryNode.priority === 0){
+            text.fontSize(40);
+            text.text(blanks + `${summaryNode.value}`);
+          }
+          summaryGroup?.add(text);
+          yPosition += text.height() + 10;
+        }
+      });
+      summaryGroup.addName('mindmap');
+      //summaryGroup.addName('lock');
+      layerRef.current?.add(summaryGroup);
+    }
 
 
   const deleteTargetDfs = (targetId: string) => {
@@ -334,6 +366,10 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
     const textNode = layerRef.current?.findOne('#text-'+targetId);
     node?.destroy();
     textNode?.destroy();
+    let summaryGroup = layerRef.current?.findOne('#summaryGroup') as Konva.Group;
+      if(summaryGroup){
+        summaryGroup.destroy();
+      }
 
     yDocRef.current.transact(() => {
 
