@@ -60,7 +60,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
                           id: newNodeId,
                           x: pointerPosition.x,  
                           y: pointerPosition.y,  
-                          value: "텍스트 루트",
+                          value: "텍스트",
                           childIds: [],
                       };
                       yDocRef.current.transact(() => {
@@ -109,7 +109,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
                     id: newNodeId,
                     x: pointerPosition.x,
                     y: pointerPosition.y,
-                    value: "텍스트루트",
+                    value: "텍스트",
                     childIds: [],
                 };
                 yDocRef.current.transact(() => {
@@ -316,29 +316,28 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
       const fontDecrement = 100;
       let yPosition = 10;
       summaryNodes.forEach(summaryNode => {
-        if(summaryNode.priority <= 3){
-          //const fontSize = Math.max(baseFontSize - (summaryNode.priority * decrement), 10);
-          const fontWeight = Math.max(baseFontWeight - (summaryNode.priority * fontDecrement), 100);
-          const blanks = '        '.repeat(Math.min(summaryNode.priority, 3));
-
-          
-          const text = new Konva.Text({
-            x: 10,
-            y: yPosition,
-            text: blanks + `${summaryNode.hierarchicalId} ${summaryNode.value}`,
-            //fontSize: fontSize,
-            fontSize: 20,
-            fontStyle: fontWeight.toString(),
-            fontFamily: 'Arial',
-            fill: 'black',
-          });
-          if(summaryNode.priority === 0){
-            text.fontSize(40);
-            text.text(blanks + `${summaryNode.value}`);
-          }
-          summaryGroup?.add(text);
-          yPosition += text.height() + 10;
+        //const fontSize = Math.max(baseFontSize - (summaryNode.priority * decrement), 10);
+        const fontWeight = Math.max(baseFontWeight - (summaryNode.priority * fontDecrement), 100);
+        const blanks = '        '.repeat(Math.min(summaryNode.priority, 3));
+        
+        
+        const text = new Konva.Text({
+          x: 10,
+          y: yPosition,
+          text: blanks + `${summaryNode.hierarchicalId} ${summaryNode.value}`,
+          //fontSize: fontSize,
+          fontSize: 20,
+          fontStyle: fontWeight.toString(),
+          fontFamily: 'Arial',
+          fill: 'black',
+        });
+        if(summaryNode.priority === 0){
+          text.fontSize(40);
+          text.text(blanks + `${summaryNode.value}`);
         }
+        summaryGroup?.add(text);
+        yPosition += text.height() + 10;
+     
       });
       summaryGroup.addName('mindmap');
       //summaryGroup.addName('lock');
