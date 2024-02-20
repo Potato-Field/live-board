@@ -16,7 +16,7 @@ export default function Login() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        //navigate('/lobby', { state: { nickname: nickname}});
+        // navigate('/lobby', { state: { nickname: nickname} });
         try {
             const response = await fetch(baseUrl + '/api/login', {
                 method: 'POST',

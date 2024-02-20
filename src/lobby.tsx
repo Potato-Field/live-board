@@ -1,9 +1,9 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import "./index.css"
-import { styled, useTheme } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import Drawer from '@mui/material/Drawer';
+import MuiDrawer from '@mui/material/Drawer';
 import CssBaseline from '@mui/material/CssBaseline';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -14,18 +14,24 @@ import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Logout from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
 import GroupsIcon from '@mui/icons-material/Groups';
+import Container from '@mui/material/Container';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
-import imageSample from './image/imageSample.png';
-import imageSample2 from './image/imageSample2.png'
+import imageSample3 from './image/imageSample3.png'
+import imageSample4 from './image/imageSample4.png'
+import imageSample5 from './image/imageSample5.png'
+import imageSample6 from './image/imageSample6.png'
+import imageSample7 from './image/imageSample7.png'
+import imageSample8 from './image/imageSample8.png'
+import imageSample9 from './image/imageSample9.png'
+
 import addButton from './image/addbutton.png'
 import { ButtonBase } from '@mui/material';
 
@@ -39,24 +45,31 @@ interface AppBarProps extends MuiAppBarProps {
 
 
 
-const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
-    open?: boolean;
-}>(({ theme, open }) => ({
-    flexGrow: 1,
-    padding: theme.spacing(3),
-    transition: theme.transitions.create('margin', {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
+const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
+    ({ theme, open }) => ({
+        '& .MuiDrawer-paper': {
+            position: 'relative',
+            whiteSpace: 'nowrap',
+            width: drawerWidth,
+            transition: theme.transitions.create('width', {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.enteringScreen,
+            }),
+            boxSizing: 'border-box',
+            ...(!open && {
+                overflowX: 'hidden',
+                transition: theme.transitions.create('width', {
+                    easing: theme.transitions.easing.sharp,
+                    duration: theme.transitions.duration.leavingScreen,
+                }),
+                width: theme.spacing(7),
+                [theme.breakpoints.up('sm')]: {
+                    width: theme.spacing(9),
+                },
+            }),
+        },
     }),
-    marginLeft: `-${drawerWidth}px`,
-    ...(open && {
-        transition: theme.transitions.create('margin', {
-            easing: theme.transitions.easing.easeOut,
-            duration: theme.transitions.duration.enteringScreen,
-        }),
-        marginLeft: 0,
-    }),
-}));
+);
 
 const DrawerHeader = styled('div')(({ theme }) => ({
     display: 'flex',
@@ -93,16 +106,11 @@ const Lobby = () => {
     // 서버요청해서 user목록 불러와야함. 
     // const [users, setUsers] = useState<User[]>([]);
 
-    const theme = useTheme();
     const [open, setOpen] = React.useState(false);
     // const [loggedIn, setLoggedIn] = useState(false);
 
-    const handleDrawerOpen = () => {
-        setOpen(true);
-    };
-
-    const handleDrawerClose = () => {
-        setOpen(false);
+    const toggleDrawer = () => {
+        setOpen(!open);
     };
 
     const handleEnter = (e: any) => {
@@ -123,138 +131,244 @@ const Lobby = () => {
             <AppBar position="fixed" open={open}>
                 <Toolbar>
                     <IconButton
+                        edge="start"
                         color="inherit"
                         aria-label="open drawer"
-                        onClick={handleDrawerOpen}
-                        edge="start"
-                        sx={{ mr: 2, ...(open && { display: 'none' }) }}
+                        onClick={toggleDrawer}
+                        sx={{
+                            marginRight: '36px',
+                            ...(open && { display: 'none' }),
+                        }}
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Typography variant="h6" noWrap component="div">
+                    <Typography variant="h5" noWrap component="div" >
                         Live-Board
                     </Typography>
                 </Toolbar>
             </AppBar>
-            <Drawer
-                sx={{
-                    width: drawerWidth,
-                    flexShrink: 0,
-                    '& .MuiDrawer-paper': {
-                        width: drawerWidth,
-                        boxSizing: 'border-box',
-                    },
-                }}
-                variant="persistent"
-                anchor="left"
-                open={open}
-            >
-                <DrawerHeader>
-                    <IconButton onClick={handleDrawerClose}>
-                        {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+            <Drawer variant="permanent" open={open}>
+                <Toolbar
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'flex-end',
+                        px: [1],
+                    }}
+                >
+                    <IconButton onClick={toggleDrawer}>
+                    {open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
                     </IconButton>
-                </DrawerHeader>
+                </Toolbar>
                 <Divider />
-                <List>
-                    {['Personal Project', 'Team Project'].map((text, index) => (
-                        <ListItem key={text} disablePadding>
-                            <ListItemButton>
-                                <ListItemIcon>
-                                    {index % 2 === 0 ? <PersonIcon /> : <GroupsIcon />}
-                                </ListItemIcon>
-                                <ListItemText primary={text} />
-                            </ListItemButton>
-                        </ListItem>
-                    ))}
-                </List>
-                <Divider />
-                <List>
-                    {['Logout'].map((text) => (
-                        <ListItem key={text} disablePadding>
-                            <ListItemButton onClick={handleLogOut}>
-                                <ListItemIcon >
-                                    <Logout />
-                                </ListItemIcon>
-                                <ListItemText primary={text} />
-                            </ListItemButton>
-                        </ListItem>
-                    ))}
+                <List component="nav">
+                    <ListItemButton>
+                        <ListItemIcon>
+                            <PersonIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Personal Project" />
+                    </ListItemButton>
+                    <ListItemButton>
+                        <ListItemIcon>
+                            <GroupsIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Team Project" />
+                    </ListItemButton>
+                    <Divider sx={{ my: 1 }} />
+                    <ListItemButton onClick={handleLogOut}>
+                        <ListItemIcon>
+                            <Logout />
+                        </ListItemIcon>
+                        <ListItemText primary="Log Out" />
+                    </ListItemButton>
                 </List>
             </Drawer>
-            <Main open={open}>
-                <DrawerHeader />
-                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 5 }}>
-                    <Card sx={{ maxWidth: 400 }}>
-                        <ButtonBase onClick={handleEnter}>
-                            <CardMedia
-                                // 여기 방 썸네일 불러와야함
+            <Box
+                component="main"
+                sx={{
+                    backgroundColor: (theme) =>
+                        theme.palette.mode === 'light'
+                            ? theme.palette.grey[100]
+                            : theme.palette.grey[900],
+                    flexGrow: 1,
+                    height: '100vh',
+                    overflow: 'auto',
+                }}
+            >
+                <Toolbar />
+                <Container maxWidth="lg" sx={{ mb: 4 }}>
+                    <DrawerHeader />
+                    <Box sx={{ display: 'flex', flexDirection: 'row', gap: 5, padding: 1 }}>
+                        <Card sx={{ maxWidth: 250 }}>
+                            <ButtonBase onClick={handleEnter}>
+                                <CardMedia
+                                    sx={{
+                                        height: 200,
+                                        width: '100%',
+                                        objectFit: 'contain'
+                                    }}
+                                    component="img"
+                                    image={imageSample3}
+                                    alt="Team2 PotatoField"
+                                />
+                            </ButtonBase>
+                            <CardContent>
+                                <Typography gutterBottom variant="h5" component="div">
+                                    Team2 PotatoField
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                        <Card sx={{ maxWidth: 250 }}>
+                            <ButtonBase >
+                                <CardMedia
+                                    sx={{
+                                        height: 200,
+                                        width: '100%',
+                                        objectFit: 'contain'
+                                    }}
+                                    component="img"
+                                    image={imageSample4}
+                                    alt="Team2 PotatoField"
+                                />
+                            </ButtonBase>
+                            <CardContent>
+                                <Typography gutterBottom variant="h5" component="div">
+                                    Drawing prac
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                        <Card sx={{ maxWidth: 250 }}>
+                            <ButtonBase >
+                                <CardMedia
+                                    sx={{
+                                        height: 200,
+                                        width: '100%',
+                                        objectFit: 'contain'
+                                    }}
+                                    component="img"
+                                    image={imageSample5}
+                                    alt="Team2 PotatoField"
+                                />
+                            </ButtonBase>
+                            <CardContent>
+                                <Typography gutterBottom variant="h5" component="div">
+                                    Insert image
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                        <Card sx={{ maxWidth: 250 }}>
+                            <ButtonBase >
+                                <CardMedia
+                                    // 여기 방 썸네일 불러와야함
+                                    sx={{
+                                        height: 200,
+                                        width: '100%',
+                                        objectFit: 'contain'
+                                    }}
+                                    component="img"
+                                    image={imageSample6}
+                                    alt="Team2 PotatoField"
+                                />
+                            </ButtonBase>
+                            <CardContent>
+                                <Typography gutterBottom variant="h5" component="div">
+                                    PostIt
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'row', gap: 5, alignItems: 'center', padding: 1 }}>
+                        <Card sx={{ maxWidth: 250 }}>
+                            <ButtonBase >
+                                <CardMedia
+                                    // 여기 방 썸네일 불러와야함
+                                    sx={{
+                                        height: 200,
+                                        width: '100%',
+                                        objectFit: 'contain'
+                                    }}
+                                    component="img"
+                                    image={imageSample7}
+                                    alt="Team2 PotatoField"
+                                />
+                            </ButtonBase>
+                            <CardContent>
+                                <Typography gutterBottom variant="h5" component="div">
+                                    Mind Map
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                        <Card sx={{ maxWidth: 250 }}>
+                            <ButtonBase >
+                                <CardMedia
+                                    sx={{
+                                        height: 200,
+                                        width: '100%',
+                                        objectFit: 'contain'
+                                    }}
+                                    component="img"
+                                    image={imageSample8}
+                                    alt="Team2 PotatoField"
+                                />
+                            </ButtonBase>
+                            <CardContent>
+                                <Typography gutterBottom variant="h5" component="div">
+                                    Server Flow
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                        <Card sx={{ maxWidth: 250 }}>
+                            <ButtonBase >
+                                <CardMedia
+                                    // 여기 방 썸네일 불러와야함
+                                    sx={{
+                                        height: 200,
+                                        width: '100%',
+                                        objectFit: 'contain'
+                                    }}
+                                    component="img"
+                                    image={imageSample9}
+                                    alt="Team2 PotatoField"
+                                />
+                            </ButtonBase>
+                            <CardContent>
+                                <Typography gutterBottom variant="h5" component="div">
+                                    Make Image
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                        <Card sx={{ maxWidth: 250, display: 'flex', flexDirection: 'column', justifyContent: 'center', boxShadow: 'none', alignItems: 'center' }}>
+                            <ButtonBase
                                 sx={{
-                                    height: 300,
-                                    width: '100%',
-                                    objectFit: 'contain'
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'center',
+                                    height: 200, // Set a specific height for the ButtonBase
+                                    width: 300,
+                                    '&:focus-visible': {  // This will remove the focus highlight/outline
+                                        outline: 'none'
+                                    }
                                 }}
-                                component="img"
-                                image={imageSample}
-                                alt="Team2 PotatoField"
-                            />
-                        </ButtonBase>
-                        <CardContent>
-                            <Typography gutterBottom variant="h5" component="div">
-                                Team2 PotatoField
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                    <Card sx={{ maxWidth: 400 }}>
-                        <ButtonBase >
-                            <CardMedia
-                                // 여기 방 썸네일 불러와야함
-                                sx={{
-                                    height: 300,
-                                    width: '100%',
-                                    objectFit: 'contain'
-                                }}
-                                component="img"
-                                image={imageSample2}
-                                alt="Team2 PotatoField"
-                            />
-                        </ButtonBase>
-                        <CardContent>
-                            <Typography gutterBottom variant="h5" component="div">
-                                Drawing prac
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                    <Card sx={{ maxWidth: 400, display: 'flex', flexDirection: 'column', justifyContent: 'center', boxShadow: 'none' }}>
-                        <ButtonBase
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'center',
-                                height: 300, // Set a specific height for the ButtonBase
-                                width: '100%',
-                                '&:focus-visible': {  // This will remove the focus highlight/outline
-                                    outline: 'none'
-                                }
-                            }}
-                        >
-                            <CardMedia
-                                sx={{
-                                    height: 100,
-                                    width: '100%',
-                                    objectFit: 'contain'
-                                }}
-                                component="img"
-                                image={addButton}
-                            />
-                        </ButtonBase>
-                        <CardContent>
-                            <Typography fontSize={20} component="div">
-                                New Project
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                </Box>
-            </Main>
+                            >
+                                <CardMedia
+                                    sx={{
+                                        height: 100,
+                                        width: '100%',
+                                        objectFit: 'contain'
+                                    }}
+                                    component="img"
+                                    image={addButton}
+                                />
+                            </ButtonBase>
+                            <CardContent>
+                                <Typography fontSize={20} component="div">
+                                    New Project
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Box>
+                </Container>
+            </Box>
         </Box>
     );
 }
