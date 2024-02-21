@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 import AgoraRTC, { IAgoraRTCClient, ILocalAudioTrack, IRemoteAudioTrack } from 'agora-rtc-sdk-ng';
@@ -39,6 +39,7 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
     localAudioTrack: null,
     remoteAudioTracks: {},
   });
+
 
 
   const initRtc = async () => {
@@ -104,6 +105,17 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
     navigate("/lobby", { state: { nickname: nickname} })
   };
 
+  useEffect(() => {
+    // 컴포넌트 마운트 시 initRtc 함수를 호출하여 RTC를 초기화합니다.
+    initRtc();
+
+    // 컴포넌트가 언마운트될 때 실행될 클린업 함수를 반환합니다.
+    // 이 함수는 컴포넌트가 언마운트되기 직전에 호출되며, 여기서 리소스를 정리합니다.
+    return () => {
+      leaveRoom();
+    };
+  }, []); 
+
 
   const handleUserJoined = (user: { uid: string; nickname: string; }) => {
     setMembers(prevMembers => {
@@ -111,7 +123,9 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
       const isUserExist = prevMembers.includes(user.uid);
       // 존재하지 않는 경우에만 목록에 추가합니다.
       return isUserExist ? prevMembers : [...prevMembers, user.uid];
+      
     });
+    document.getElementById("prevMembers")?.insertAdjacentHTML('beforeend', user.uid);
   };
 
 
