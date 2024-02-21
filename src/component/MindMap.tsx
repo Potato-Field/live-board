@@ -193,19 +193,28 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
     
       const setupTextArea = (textArea: HTMLTextAreaElement, targetValue: string, position: {x: number, y: number}) => {
      
-          textArea.value = targetValue;
-          textArea.style.fontSize = '25px';
-          textArea.style.position = 'absolute';
-          textArea.style.left = position.x + 'px';
-          textArea.style.top = position.y + 'px';
-          textArea.style.border = 'none';
-          textArea.style.padding = '0px'; 
-          textArea.style.margin = '0px';
-          textArea.style.overflow = 'hidden';
-          textArea.style.background = 'none'; 
-          textArea.style.outline = 'none';
-          textArea.style.resize = 'none';
-          textArea.focus();
+        const scale = stageRef.current?.scaleX() || 1;
+        const targetText = layerRef.current?.findOne("#text-"+targetId);
+        let fontSize = "25px" ;
+        if (targetText && targetText instanceof Konva.Text) {
+          fontSize = (targetText.fontSize() * scale) + 'px';
+      }
+
+
+        textArea.value = targetValue;
+        // textArea.style.fontSize = '25px';
+        textArea.style.fontSize = fontSize;
+        textArea.style.position = 'absolute';
+        textArea.style.left = position.x + 'px';
+        textArea.style.top = position.y + 'px';
+        textArea.style.border = 'none';
+        textArea.style.padding = '0px'; 
+        textArea.style.margin = '0px';
+        textArea.style.overflow = 'hidden';
+        textArea.style.background = 'none'; 
+        textArea.style.outline = 'none';
+        textArea.style.resize = 'none';
+        textArea.focus();
     
         // 드래그 했을 경우 textarea 위치 변경
         const updateTextAreaPosition = () => {
@@ -345,7 +354,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
         }
         if(summaryNode.priority === 0){
           text.fontSize(40);
-          text.text(blanks + `${summaryNode.value}`);
+          text.text(`${summaryNode.value}`);
         }
         summaryGroup?.add(text);
         yPosition += text.height() + 10;
