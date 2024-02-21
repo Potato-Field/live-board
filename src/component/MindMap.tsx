@@ -48,18 +48,21 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
 
     useEffect(() => {
       if (stageRef.current) {
-          stageRef.current.on('click', () => {
+          stageRef.current.on('click', (event:any) => {
             //console.log(toolRef.current, toolRef.current, toolRef, "Tool now");
               if (toolRef.current === Tools.MINDMAP && yTargets.size === 0) {
                   const stage = stageRef.current;
                   const pointerPosition = stage?.getPointerPosition();
+                  //console.log(pointerPosition, `${event.evt.clientX}px`, `${event.evt.clientY}px`);
   
                   if (stage && pointerPosition) {
                       const newNodeId = `target-${yTargets.size}`;
                       const newNode = {
                           id: newNodeId,
-                          x: pointerPosition.x,  
-                          y: pointerPosition.y,  
+                          // x: pointerPosition.x,  
+                          // y: pointerPosition.y,  
+                          x: event.evt.clientX,
+                          y: event.evt.clientY,
                           value: "텍스트",
                           childIds: [],
                       };
@@ -107,8 +110,10 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
                 const newNodeId = `target-${yTargets.size}`;
                 const newNode = {
                     id: newNodeId,
-                    x: pointerPosition.x,
-                    y: pointerPosition.y,
+                    // x: pointerPosition.x,
+                    // y: pointerPosition.y,
+                    x: event.evt.clientX,
+                    y: event.evt.clientY,
                     value: "텍스트",
                     childIds: [],
                 };
@@ -263,7 +268,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
         x: stage.container().offsetLeft + (targetTextPosition?.x ?? 0),
         y: stage.container().offsetTop + (targetTextPosition?.y ?? 0),
       };
-      console.log(targetText?.x(), targetText?.y(), areaPos);     //TEST
+      //console.log(targetText?.x(), targetText?.y(), areaPos);     //TEST
 
       setupTextArea(textArea, target.value, areaPos);
     
@@ -288,19 +293,22 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
           draggable: true,
       });
 
-      const generateHierarchicalIds = (nodeId: string, parentId: string , index: number = 1)
+      const generateHierarchicalIds = (nodeId: string, parentId: string , index: number = 0)
       : SummaryNode[] => {
 
         const node = yTargets.get(nodeId);
         if(!node)return [];
 
-        const hierarchicalId = parentId ? `${parentId}.${index}`: `${index}`;
+        let hierarchicalId = (parentId && (parentId != '0')) ? `${parentId}.${index}`: `${index}`;
+        //hierarchicalId = (parentId != '.0') ? `${parentId}.${index}`: `${index}`;
+
         let result: SummaryNode[] = [{
           id: node.id,
           hierarchicalId,     //change this
           value: node.value,
-          priority: hierarchicalId.split('.').length - 1,
+          priority: hierarchicalId.split('.').length,
         }];
+        
 
         node.childIds.forEach((childId:any, idx:any) => {
           result = result.concat(generateHierarchicalIds(childId, hierarchicalId, idx + 1));
@@ -309,6 +317,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
       }
       
       const summaryNodes = generateHierarchicalIds('target-0', "");
+      //console.log(summaryNodes);//test
 
       // const baseFontSize = 40;
       // const decrement = 6;
@@ -318,7 +327,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
       summaryNodes.forEach(summaryNode => {
         //const fontSize = Math.max(baseFontSize - (summaryNode.priority * decrement), 10);
         const fontWeight = Math.max(baseFontWeight - (summaryNode.priority * fontDecrement), 100);
-        const blanks = '        '.repeat(Math.min(summaryNode.priority, 3));
+        const blanks = '        '.repeat(Math.min(summaryNode.priority, 4));
         
         
         const text = new Konva.Text({
@@ -331,6 +340,9 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
           fontFamily: 'Arial',
           fill: 'black',
         });
+        if(summaryNode.hierarchicalId === '0'){
+          summaryNode.priority = 0;
+        }
         if(summaryNode.priority === 0){
           text.fontSize(40);
           text.text(blanks + `${summaryNode.value}`);
@@ -415,7 +427,7 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
     button.addEventListener('click', () => {
       onClick();
       const menu = document.getElementById('contextMenu' + id);
-      console.log(menu);
+      //console.log(menu);
       if (menu) {
         menu.style.display = 'none';
       }
