@@ -1,5 +1,8 @@
 import * as React from 'react';
-import { useState, useRef } from 'react';
+import { useState
+  , useRef
+  // , useEffect 
+} from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 import AgoraRTC, { IAgoraRTCClient, ILocalAudioTrack, IRemoteAudioTrack } from 'agora-rtc-sdk-ng';
@@ -7,8 +10,12 @@ import appid from './voicechat/appId';
 
 import Konva from 'konva';
 
-import { AppBar, Avatar, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Toolbar, IconButton, MenuItem, Menu, Tooltip } from '@mui/material';
-import { AddCircle, PeopleAlt, FileDownload, ArrowBackIos, Mic, MicOff } from '@mui/icons-material';
+import { AppBar
+  , Avatar
+  , Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Toolbar, IconButton, MenuItem, Menu, Tooltip } from '@mui/material';
+import { AddCircle, PeopleAlt, FileDownload, ArrowBackIos
+  , Mic, MicOff 
+} from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 
 import { VoteDrawer } from './VoteDrawer';
@@ -25,7 +32,7 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
     useState<null | HTMLElement>(null);
   const [open, setOpen] = useState(false);  // Dialog
 
-  ///////////////////// VoiceAgora /////////////////////
+  /////////////////// VoiceAgora /////////////////////
   const location = useLocation();
   const {nickname} = location.state;
   const [roomId] = useState<string>("main");
@@ -39,6 +46,7 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
     localAudioTrack: null,
     remoteAudioTracks: {},
   });
+
 
 
   const initRtc = async () => {
@@ -104,6 +112,14 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
     navigate("/lobby", { state: { nickname: nickname} })
   };
 
+  // useEffect(() => {
+  //   initRtc();
+
+  //   return () => {
+  //     leaveRoom();
+  //   };
+  // }, []); 
+
 
   const handleUserJoined = (user: { uid: string; nickname: string; }) => {
     setMembers(prevMembers => {
@@ -111,7 +127,9 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
       const isUserExist = prevMembers.includes(user.uid);
       // 존재하지 않는 경우에만 목록에 추가합니다.
       return isUserExist ? prevMembers : [...prevMembers, user.uid];
+      
     });
+    document.getElementById("prevMembers")?.insertAdjacentHTML('beforeend', user.uid);
   };
 
 
@@ -246,13 +264,14 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
           <Box sx={{ flexGrow: 1 }} />
           
           {/* TODO: Join 버튼 누르지 않아도 방에 들어오면 joinSubmit 되도록 */}
+          
           <Button
               style={{ backgroundColor: theme.palette.secondary.main, color: '#636567', borderRadius: '30px', fontWeight: '700' }}
               onClick={joinSubmit}
               >
               JOIN
           </Button>
-
+       
           <IconButton onClick={toggleMic} size='large'>
             {micMuted ? <MicOff style={{color: "indianred"}} fontSize='large' /> : <Mic style={{color: "green"}} fontSize='large' />}
           </IconButton>
