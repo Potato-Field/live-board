@@ -88,7 +88,7 @@ export default function Login() {
                     <Typography component="h1" variant="body2" sx={{ mt: 1, mb: 1 }} >
                         아직 회원이 아니신가요?
                         <Button onClick={signUpClick}  sx={{ ml: 1, color: theme.palette.info.main }}>회원가입</Button>
-                    </Typography>
+                    </Typography> 
                 </Box>
                 <Copyright sx={{ mt: 4, mb: 4 }} />
             </Container>
