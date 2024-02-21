@@ -3,7 +3,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, TextField, Box, Typography, Container } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import Copyright from './component/Copyright'
+import Copyright from './component/Copyright';
+
+import logo from './assets/liveBoardLogo.png';
 
 export default function Login() {
 
@@ -12,7 +14,6 @@ export default function Login() {
     const [nickname, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
-
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -39,8 +40,6 @@ export default function Login() {
         } catch (error) {
             console.error('로그인 요청 중 오류 발생:', error);
         }
-
-    
     };
 
     const signUpClick = ()=>{
@@ -49,12 +48,10 @@ export default function Login() {
 
     return (
         <div style={{ height: '100vh', display: 'flex', alignItems: 'center', backgroundColor: theme.palette.secondary.main }}>
-            <Container component="main" maxWidth="xs" style={{ backgroundColor: 'white', borderRadius: '20px'}}>
-                <Typography component="h1" variant="h5"  sx={{ mt: 6, mb: 4, color: theme.palette.info.main, fontWeight: "bolder" }} >
-                    {/* TODO: 라이브보드 로고 넣기 (= README logo) */}
-                    Live Board
-                </Typography>
-                <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+            <Container component="main" maxWidth="xs" className='loginContainer'>
+                <img src={logo} alt='Logo' className='logo' />
+
+                <Box component="form" onSubmit={handleSubmit} noValidate>
                     <TextField
                         margin="normal"
                         required
@@ -87,8 +84,8 @@ export default function Login() {
                     </Button>
                     <Typography component="h1" variant="body2" sx={{ mt: 1, mb: 1 }} >
                         아직 회원이 아니신가요?
-                        <Button onClick={signUpClick}  sx={{ ml: 1, color: theme.palette.info.main }}>회원가입</Button>
-                    </Typography> 
+                        <Button onClick={signUpClick} sx={{ ml: 1, color: theme.palette.info.main }}>회원가입</Button>
+                    </Typography>
                 </Box>
                 <Copyright sx={{ mt: 4, mb: 4 }} />
             </Container>
