@@ -150,7 +150,8 @@ const App:FC = () => {
     return color;
   }
   
-  function updateMousePositionOnScreen(userId:string, mousePosition:any) {    let mouseIcon = document.getElementById(`mouse-${userId}`);
+  function updateMousePositionOnScreen(userId:string, mousePosition:any) {    
+    let mouseIcon = document.getElementById(`mouse-${userId}`);
     if (!mouseIcon) {
       mouseIcon = document.createElement('div');
       mouseIcon.id = `mouse-${userId}`;
