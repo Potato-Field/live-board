@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, TextField, Link, Box, Typography, Container } from '@mui/material';
+import { Button, TextField, Box, Typography, Container } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +11,7 @@ import logo from './assets/signupLogo.png';
 export default function SignUp() {
     const theme = useTheme();
 
+    // const baseUrl = "http://localhost:8080";
     const baseUrl = "https://www.jungleweb.duckdns.org";
     const [nickname, setNickname] = useState('');
     const [password, setPassword] = useState('');
@@ -133,7 +134,7 @@ export default function SignUp() {
                     
                     <Typography component="h1" variant="body2" sx={{ mt: 1, mb: 1 }} >
                         이미 계정이 있나요?
-                        <Link href="/" color="inherit" variant="body2" sx={{ ml: 1, color: theme.palette.info.main }}>로그인</Link>
+                        <Button href="/" color="inherit" sx={{ ml: 1, color: theme.palette.info.main }}>로그인</Button>
                     </Typography>
                 </Box>
                 <Copyright sx={{ mt: 4, mb: 4 }} />

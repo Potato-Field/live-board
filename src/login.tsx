@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, TextField, Link, Box, Typography, Container } from '@mui/material';
+import { Button, TextField, Box, Typography, Container } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Copyright from './component/Copyright';
 
@@ -17,8 +17,7 @@ export default function Login() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // navigate('/lobby', { state: { nickname: nickname}});
-
+        // navigate('/lobby', { state: { nickname: nickname} });
         try {
             const response = await fetch(baseUrl + '/api/login', {
                 method: 'POST',
@@ -85,7 +84,7 @@ export default function Login() {
                     </Button>
                     <Typography component="h1" variant="body2" sx={{ mt: 1, mb: 1 }} >
                         아직 회원이 아니신가요?
-                        <Link href='javascript:void(0)' onClick={signUpClick} variant="body2" sx={{ ml: 1, color: theme.palette.info.main }}>회원가입</Link>
+                        <Button onClick={signUpClick} sx={{ ml: 1, color: theme.palette.info.main }}>회원가입</Button>
                     </Typography>
                 </Box>
                 <Copyright sx={{ mt: 4, mb: 4 }} />
