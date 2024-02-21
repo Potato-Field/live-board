@@ -626,7 +626,31 @@ const App:FC = () => {
                   height: konvaData.height,
                   draggable: true
                 });
-                //newImage.name(konvaData.image)
+                
+                
+                newImage.on("mousedown", (e:any)=>{
+
+                  if(toolRef.current !== Tools.CURSOR){
+                    newImage.draggable(false)
+                    return;
+                  } else {
+                    newImage.draggable(true)
+                  }
+
+                  const selected = e.target
+                  if(groupTr == null){
+                    createNewTr();
+                  }
+                  if(groupTr){
+                    if(groupTr.nodes().length == 0){
+                      groupTr.nodes([selected]);
+                      groupTr.rotateEnabled(true);
+                      groupTr.enabledAnchors(ANK_ALL);
+                      groupTr.moveToTop();
+                    }
+                  }
+                })
+
                 newImage.visible(false)
                 stageRef.current.getLayers()[0].add(newImage);
                 newImage.scaleX(konvaData.scaleX)
@@ -786,6 +810,29 @@ const App:FC = () => {
             height: img.height,
             draggable : true,
           });
+
+          konvaImage.on("mousedown", (e:any)=>{
+
+            if(toolRef.current !== Tools.CURSOR){
+              konvaImage.draggable(false)
+              return;
+            } else {
+              konvaImage.draggable(true)
+            }
+
+            const selected = e.target
+            if(groupTr == null){
+              createNewTr();
+            }
+            if(groupTr){
+              if(groupTr.nodes().length == 0){
+                groupTr.nodes([selected]);
+                groupTr.rotateEnabled(true);
+                groupTr.enabledAnchors(ANK_ALL);
+                groupTr.moveToTop();
+              }
+            }
+          })
     
           layer.add(konvaImage);
           layer.draw();
@@ -848,6 +895,29 @@ const App:FC = () => {
                     height: imageObject.height,
                     draggable : true,
                   });
+
+                  konvaImage.on("mousedown", (e:any)=>{
+
+                    if(toolRef.current !== Tools.CURSOR){
+                      konvaImage.draggable(false)
+                      return;
+                    } else {
+                      konvaImage.draggable(true)
+                    }
+
+                    const selected = e.target
+                    if(groupTr == null){
+                      createNewTr();
+                    }
+                    if(groupTr){
+                      if(groupTr.nodes().length == 0){
+                        groupTr.nodes([selected]);
+                        groupTr.rotateEnabled(true);
+                        groupTr.enabledAnchors(ANK_ALL);
+                        groupTr.moveToTop();
+                      }
+                    }
+                  })
 
                   const centerX = (-stageX + stageWidth / 2) / scaleX - imageObject.width / 2;
                   const centerY = (-stageY + stageHeight / 2) / scaleY - imageObject.height /2;
