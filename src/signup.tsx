@@ -8,6 +8,7 @@ import Copyright from './component/Copyright'
 export default function SignUp() {
     const theme = useTheme();
 
+    // const baseUrl = "http://localhost:8080";
     const baseUrl = "https://www.jungleweb.duckdns.org";
     const [nickname, setNickname] = useState('');
     const [password, setPassword] = useState('');
