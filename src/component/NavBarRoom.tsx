@@ -36,8 +36,8 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
   const rtcClientRef = useRef<IAgoraRTCClient | null>(null);
   const navigate = useNavigate()
   const audioTracksRef = useRef<AudioTracks>({
-      localAudioTrack: null,
-      remoteAudioTracks: {},
+    localAudioTrack: null,
+    remoteAudioTracks: {},
   });
 
 
@@ -133,9 +133,9 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
 
   const toggleMic = () => {
     setMicMuted((prevMicMuted) => {
-        const newMicMuted = !prevMicMuted;
-        audioTracksRef.current.localAudioTrack?.setMuted(newMicMuted);
-        return newMicMuted;
+      const newMicMuted = !prevMicMuted;
+      audioTracksRef.current.localAudioTrack?.setMuted(newMicMuted);
+      return newMicMuted;
     });
   };
   ///////////////////////////////////////////////////////
