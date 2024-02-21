@@ -79,7 +79,7 @@ export const ButtonCustomGroup = ({handleIconBtnClick, handleUndo, handleRedo}: 
 
                     <IconButton id='btnStamp'  onClick={() => { toggleStamp(); setIsAllShape(false); }}>
                         <Tooltip arrow placement="top" title="Stamp">
-                            <FontAwesomeIcon icon={faStamp} size='xl'/>
+                            <FontAwesomeIcon icon={faStamp} size='lg'/>
                         </Tooltip>
 
                         {isAllStamp && 
@@ -91,7 +91,7 @@ export const ButtonCustomGroup = ({handleIconBtnClick, handleUndo, handleRedo}: 
 
                     <IconButton id='btnShape' onClick={() => { toggleShape(); setIsAllStamp(false); }}>
                         <Tooltip arrow placement="top" title="Shape">
-                            <FontAwesomeIcon icon={faShapes} size='xl'/>
+                            <FontAwesomeIcon icon={faShapes} size='lg'/>
                         </Tooltip>
                         
                         {isAllShape && 

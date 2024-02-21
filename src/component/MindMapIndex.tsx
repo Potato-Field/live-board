@@ -25,7 +25,7 @@ export default function MindMap({ props }:MindMapProps){
         <>
         <Tooltip arrow placement="top" title="Mind map">
             <IconButton id={componentElem.id} onClick={()=>{setTool(props)}}>
-                <FontAwesomeIcon icon={faSitemap} size='xl' />
+                <FontAwesomeIcon icon={faSitemap} size='lg' />
             </IconButton>
         </Tooltip>
         </>

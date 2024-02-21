@@ -10,12 +10,8 @@ import appid from './voicechat/appId';
 
 import Konva from 'konva';
 
-import { AppBar
-  , Avatar
-  , Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Toolbar, IconButton, MenuItem, Menu, Tooltip } from '@mui/material';
-import { AddCircle, PeopleAlt, FileDownload, ArrowBackIos
-  , Mic, MicOff 
-} from '@mui/icons-material';
+import { AppBar, Avatar, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Toolbar, IconButton, MenuItem, Menu, Tooltip } from '@mui/material';
+import { AddCircle, PeopleAlt, Mic, MicOff, Logout } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 
 import { VoteDrawer } from './VoteDrawer';
@@ -224,36 +220,6 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
     <Box sx={{ flexGrow: 1 }} position="relative">
       <AppBar position="absolute" style={{zIndex: "999", display: 'flex', justifyContent: 'center', height: '55px'}}>
         <Toolbar>
-          <Tooltip arrow placement="bottom" title="나가기">
-            <IconButton
-              edge="start"
-              aria-label="Exit room"
-              onClick={handleClickOpen}
-              >
-              <ArrowBackIos />
-            </IconButton>
-          </Tooltip>
-
-          <Dialog
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-          >
-            <DialogTitle id="alert-dialog-title">
-              {"🧐"}
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText id="alert-dialog-description">
-                이 방에서 나가시겠습니까?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={leaveRoom} style={{backgroundColor: theme.palette.info.main, color: 'white'}} >YES</Button>
-              <Button onClick={handleClose} autoFocus style={{backgroundColor: '#636567', color: 'white'}}>NO</Button>
-            </DialogActions>
-          </Dialog>
-
           <VoteDrawer stageRef = {stageRef}/>
 
           {/* <IconButton size="large" aria-label="Stop watch" color="inherit">
@@ -327,15 +293,36 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
             </IconButton>
           </Box>
 
-          <Tooltip arrow placement="bottom" title="저장">
+          <Tooltip arrow placement="bottom" title="나가기">
             <IconButton
               size="large" 
-              aria-label="Export" 
+              aria-label="Exit room" 
               // color="inherit"
+              onClick={handleClickOpen}
               >
-                <FileDownload fontSize='large' />
+                <Logout fontSize='large' />
             </IconButton>
           </Tooltip>
+
+          <Dialog
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle id="alert-dialog-title">
+              {"🧐"}
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                이 방에서 나가시겠습니까?
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={leaveRoom} style={{backgroundColor: theme.palette.info.main, color: 'white'}} >YES</Button>
+              <Button onClick={handleClose} autoFocus style={{backgroundColor: '#636567', color: 'white'}}>NO</Button>
+            </DialogActions>
+          </Dialog>
         </Toolbar>
       </AppBar>
       {renderMobileMenu}

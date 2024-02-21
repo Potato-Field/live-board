@@ -32,7 +32,7 @@ export default function Pen({ props, icon }:PenProps){
         <>
         <Tooltip arrow placement="top" title={componentElem.id === 'PEN' ? 'Pen' : 'Highlighter'}>
             <IconButton id={componentElem.id} onTouchEnd={()=>{setTool(props)}} onClick={()=>{setTool(props)}}>
-                <FontAwesomeIcon icon={icon} size='xl' />
+                <FontAwesomeIcon icon={icon} size='lg' />
             </IconButton>
         </Tooltip>
         </>
