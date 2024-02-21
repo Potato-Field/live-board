@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState
   , useRef
-  , useEffect 
+  // , useEffect 
 } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -112,13 +112,13 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
     navigate("/lobby", { state: { nickname: nickname} })
   };
 
-  useEffect(() => {
-    initRtc();
+  // useEffect(() => {
+  //   initRtc();
 
-    return () => {
-      leaveRoom();
-    };
-  }, []); 
+  //   return () => {
+  //     leaveRoom();
+  //   };
+  // }, []); 
 
 
   const handleUserJoined = (user: { uid: string; nickname: string; }) => {
