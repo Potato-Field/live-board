@@ -132,9 +132,9 @@ export default function SignUp() {
                         가입하기
                     </Button>
                     
-                    <Typography component="h1" variant="body2" sx={{ mt: 1, mb: 1 }} >
+                    <Typography component="h1" variant="body2" sx={{ mt: 1, mb: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }} >
                         이미 계정이 있나요?
-                        <Button href="/" color="inherit" sx={{ ml: 1, color: theme.palette.info.main }}>로그인</Button>
+                        <Button href="/" color="inherit" sx={{ color: theme.palette.info.main }}>로그인</Button>
                     </Typography>
                 </Box>
                 <Copyright sx={{ mt: 4, mb: 4 }} />
