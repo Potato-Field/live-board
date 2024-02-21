@@ -24,7 +24,7 @@ import Container from '@mui/material/Container';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
-import imageSample3 from './image/imageSample3.png'
+import imageSampleMain from './image/imageSampleMain.png';
 import imageSample4 from './image/imageSample4.png'
 import imageSample5 from './image/imageSample5.png'
 import imageSample6 from './image/imageSample6.png'
@@ -207,7 +207,7 @@ const Lobby = () => {
                                         objectFit: 'contain'
                                     }}
                                     component="img"
-                                    image={imageSample3}
+                                    image={imageSampleMain}
                                     alt="Team2 PotatoField"
                                 />
                             </ButtonBase>
