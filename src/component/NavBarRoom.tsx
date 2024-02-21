@@ -1,161 +1,161 @@
 import * as React from 'react';
 import { useState
-  // , useRef
-  // , useEffect 
+  , useRef
+  , useEffect 
 } from 'react';
-// import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-// import AgoraRTC, { IAgoraRTCClient, ILocalAudioTrack, IRemoteAudioTrack } from 'agora-rtc-sdk-ng';
-// import appid from './voicechat/appId';
+import AgoraRTC, { IAgoraRTCClient, ILocalAudioTrack, IRemoteAudioTrack } from 'agora-rtc-sdk-ng';
+import appid from './voicechat/appId';
 
 import Konva from 'konva';
 
 import { AppBar
-  // , Avatar
+  , Avatar
   , Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Toolbar, IconButton, MenuItem, Menu, Tooltip } from '@mui/material';
 import { AddCircle, PeopleAlt, FileDownload, ArrowBackIos
-  // , Mic, MicOff 
+  , Mic, MicOff 
 } from '@mui/icons-material';
-// import { useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 
 import { VoteDrawer } from './VoteDrawer';
 
-// interface AudioTracks {
-//   localAudioTrack: ILocalAudioTrack | null;
-//   remoteAudioTracks: { [uid: string]: IRemoteAudioTrack }; // 타입 수정
-// }
+interface AudioTracks {
+  localAudioTrack: ILocalAudioTrack | null;
+  remoteAudioTracks: { [uid: string]: IRemoteAudioTrack }; // 타입 수정
+}
 
 export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} ) => {
-  // const theme = useTheme();
+  const theme = useTheme();
 
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
     useState<null | HTMLElement>(null);
   const [open, setOpen] = useState(false);  // Dialog
 
-  ///////////////////// VoiceAgora /////////////////////
-  // const location = useLocation();
-  // const {nickname} = location.state;
-  // const [roomId] = useState<string>("main");
-  // const [micMuted, setMicMuted] = useState<boolean>(true);
-  // const [members, setMembers] = useState<Array<string>>([]);
-  // const [userVolumes, setUserVolumes] = useState<{ [nickname: string]: number }>({});
-  // const rtcUid = nickname;
-  // const rtcClientRef = useRef<IAgoraRTCClient | null>(null);
-  // const navigate = useNavigate()
-  // const audioTracksRef = useRef<AudioTracks>({
-  //   localAudioTrack: null,
-  //   remoteAudioTracks: {},
-  // });
+  /////////////////// VoiceAgora /////////////////////
+  const location = useLocation();
+  const {nickname} = location.state;
+  const [roomId] = useState<string>("main");
+  const [micMuted, setMicMuted] = useState<boolean>(true);
+  const [members, setMembers] = useState<Array<string>>([]);
+  const [userVolumes, setUserVolumes] = useState<{ [nickname: string]: number }>({});
+  const rtcUid = nickname;
+  const rtcClientRef = useRef<IAgoraRTCClient | null>(null);
+  const navigate = useNavigate()
+  const audioTracksRef = useRef<AudioTracks>({
+    localAudioTrack: null,
+    remoteAudioTracks: {},
+  });
 
 
 
-  // const initRtc = async () => {
-  //   const token = null
-  //   // 클라이언트 유저 생성
-  //   const rtcClient: IAgoraRTCClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
-  //   // 본인 설정
-  //   rtcClientRef.current = rtcClient;
-  //   // Agora RTC 서버에 join, publish, left 통신보내기
-  //   rtcClient.on('user-joined', handleUserJoined);
-  //   rtcClient.on('user-published', handleUserPublished);
-  //   rtcClient.on('user-left', handleUserLeft);
+  const initRtc = async () => {
+    const token = null
+    // 클라이언트 유저 생성
+    const rtcClient: IAgoraRTCClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+    // 본인 설정
+    rtcClientRef.current = rtcClient;
+    // Agora RTC 서버에 join, publish, left 통신보내기
+    rtcClient.on('user-joined', handleUserJoined);
+    rtcClient.on('user-published', handleUserPublished);
+    rtcClient.on('user-left', handleUserLeft);
 
-  //   // join 대기
-  //   await rtcClient.join(appid, roomId, token, rtcUid);
+    // join 대기
+    await rtcClient.join(appid, roomId, token, rtcUid);
     
-  //   // 마이크, 오디오 트랙 생성
-  //   const localAudioTrack: ILocalAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-  //   // 본인 마이크, 오디오로 설정
-  //   audioTracksRef.current.localAudioTrack = localAudioTrack;
+    // 마이크, 오디오 트랙 생성
+    const localAudioTrack: ILocalAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+    // 본인 마이크, 오디오로 설정
+    audioTracksRef.current.localAudioTrack = localAudioTrack;
 
-  //   localAudioTrack.setMuted(micMuted);
-  //   // 오디오 트랙에 publish 
-  //   await rtcClient.publish(localAudioTrack);
+    localAudioTrack.setMuted(micMuted);
+    // 오디오 트랙에 publish 
+    await rtcClient.publish(localAudioTrack);
 
-  //   setMembers([rtcUid]);        
-  //   // 볼륨 인디케이터 초기화
-  //   initVolumeIndicator();
-  // };
-
-
-  // const initVolumeIndicator = async () => {
-  //   if (!rtcClientRef.current) {
-  //     console.warn("RTC Client is not initialized");
-  //     return;
-  //   }
-
-  //   rtcClientRef.current.enableAudioVolumeIndicator();
-  //   rtcClientRef.current.on("volume-indicator", volumes => {
-  //     const newVolumes = { ...userVolumes };
-  //     volumes.forEach((volume) => {
-  //       newVolumes[volume.uid] = volume.level;
-  //     });
-  //     setUserVolumes(newVolumes);
-  //   });
-  // };
+    setMembers([rtcUid]);        
+    // 볼륨 인디케이터 초기화
+    initVolumeIndicator();
+  };
 
 
-  // const joinSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault(); // 폼의 기본 제출 동작을 방지합니다.
-  //   await initRtc(); // RTC 초기화 함수를 비동기적으로 호출합니다.
-  // };
+  const initVolumeIndicator = async () => {
+    if (!rtcClientRef.current) {
+      console.warn("RTC Client is not initialized");
+      return;
+    }
+
+    rtcClientRef.current.enableAudioVolumeIndicator();
+    rtcClientRef.current.on("volume-indicator", volumes => {
+      const newVolumes = { ...userVolumes };
+      volumes.forEach((volume) => {
+        newVolumes[volume.uid] = volume.level;
+      });
+      setUserVolumes(newVolumes);
+    });
+  };
 
 
-  // const leaveRoom = async () => {
-  //   const { localAudioTrack } = audioTracksRef.current;
-  //   localAudioTrack?.stop();
-  //   localAudioTrack?.close();
-
-  //   await rtcClientRef.current?.unpublish();
-  //   await rtcClientRef.current?.leave();
-
-  //   navigate("/lobby", { state: { nickname: nickname} })
-  // };
-
-  // useEffect(() => {
-  //   initRtc();
-
-  //   return () => {
-  //     leaveRoom();
-  //   };
-  // }, []); 
+  const joinSubmit = async (e: React.FormEvent) => {
+    e.preventDefault(); // 폼의 기본 제출 동작을 방지합니다.
+    await initRtc(); // RTC 초기화 함수를 비동기적으로 호출합니다.
+  };
 
 
-  // const handleUserJoined = (user: { uid: string; nickname: string; }) => {
-  //   setMembers(prevMembers => {
-  //     // 새로운 사용자가 이미 목록에 있는지 확인합니다.
-  //     const isUserExist = prevMembers.includes(user.uid);
-  //     // 존재하지 않는 경우에만 목록에 추가합니다.
-  //     return isUserExist ? prevMembers : [...prevMembers, user.uid];
+  const leaveRoom = async () => {
+    const { localAudioTrack } = audioTracksRef.current;
+    localAudioTrack?.stop();
+    localAudioTrack?.close();
+
+    await rtcClientRef.current?.unpublish();
+    await rtcClientRef.current?.leave();
+
+    navigate("/lobby", { state: { nickname: nickname} })
+  };
+
+  useEffect(() => {
+    initRtc();
+
+    return () => {
+      leaveRoom();
+    };
+  }, []); 
+
+
+  const handleUserJoined = (user: { uid: string; nickname: string; }) => {
+    setMembers(prevMembers => {
+      // 새로운 사용자가 이미 목록에 있는지 확인합니다.
+      const isUserExist = prevMembers.includes(user.uid);
+      // 존재하지 않는 경우에만 목록에 추가합니다.
+      return isUserExist ? prevMembers : [...prevMembers, user.uid];
       
-  //   });
-  //   document.getElementById("prevMembers")?.insertAdjacentHTML('beforeend', user.uid);
-  // };
+    });
+    document.getElementById("prevMembers")?.insertAdjacentHTML('beforeend', user.uid);
+  };
 
 
-  // const handleUserPublished = async (user: any, mediaType: "audio" | "video") => {
-  //   const track = await rtcClientRef.current?.subscribe(user, mediaType);
+  const handleUserPublished = async (user: any, mediaType: "audio" | "video") => {
+    const track = await rtcClientRef.current?.subscribe(user, mediaType);
 
-  //   if (mediaType === "audio" && track) {
-  //     const audioTrack = track as IRemoteAudioTrack; // 타입 단언을 IRemoteAudioTrack으로 변경
-  //     audioTracksRef.current.remoteAudioTracks[user.uid] = audioTrack;
-  //     audioTrack.play(); // IRemoteAudioTrack에는 play 메서드가 있습니다.
-  //   }
-  // };
-
-
-  // const handleUserLeft = (user: any) => {
-  //   setMembers((prevMembers) => prevMembers.filter((uid) => uid !== user.uid)); // 사용자가 나갈 때 목록에서 제거
-  // };
+    if (mediaType === "audio" && track) {
+      const audioTrack = track as IRemoteAudioTrack; // 타입 단언을 IRemoteAudioTrack으로 변경
+      audioTracksRef.current.remoteAudioTracks[user.uid] = audioTrack;
+      audioTrack.play(); // IRemoteAudioTrack에는 play 메서드가 있습니다.
+    }
+  };
 
 
-  // const toggleMic = () => {
-  //   setMicMuted((prevMicMuted) => {
-  //     const newMicMuted = !prevMicMuted;
-  //     audioTracksRef.current.localAudioTrack?.setMuted(newMicMuted);
-  //     return newMicMuted;
-  //   });
-  // };
+  const handleUserLeft = (user: any) => {
+    setMembers((prevMembers) => prevMembers.filter((uid) => uid !== user.uid)); // 사용자가 나갈 때 목록에서 제거
+  };
+
+
+  const toggleMic = () => {
+    setMicMuted((prevMicMuted) => {
+      const newMicMuted = !prevMicMuted;
+      audioTracksRef.current.localAudioTrack?.setMuted(newMicMuted);
+      return newMicMuted;
+    });
+  };
   ///////////////////////////////////////////////////////
 
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
@@ -185,7 +185,7 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
       open={isMobileMenuOpen}
       onClose={handleMobileMenuClose}
     >
-      {/* {members.map((uid) => (
+      {members.map((uid) => (
         <MenuItem
           className={`speaker user-rtc-${uid}`} 
           style={{display:'flex', justifyContent:'center'}}
@@ -194,7 +194,7 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
           }} >
           {uid}
         </MenuItem>
-      ))} */}
+      ))}
 
       {/* 초대 TODO: 클릭시 방번호 popover 뜨도록 */}
       <MenuItem style={{display:'flex', justifyContent:'center'}} >
@@ -249,7 +249,7 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
               </DialogContentText>
             </DialogContent>
             <DialogActions>
-              {/* <Button onClick={leaveRoom} style={{backgroundColor: theme.palette.info.main, color: 'white'}} >YES</Button> */}
+              <Button onClick={leaveRoom} style={{backgroundColor: theme.palette.info.main, color: 'white'}} >YES</Button>
               <Button onClick={handleClose} autoFocus style={{backgroundColor: '#636567', color: 'white'}}>NO</Button>
             </DialogActions>
           </Dialog>
@@ -264,20 +264,20 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
           <Box sx={{ flexGrow: 1 }} />
           
           {/* TODO: Join 버튼 누르지 않아도 방에 들어오면 joinSubmit 되도록 */}
-          {/*
+          
           <Button
               style={{ backgroundColor: theme.palette.secondary.main, color: '#636567', borderRadius: '30px', fontWeight: '700' }}
               onClick={joinSubmit}
               >
               JOIN
           </Button>
-        */}
-          {/* <IconButton onClick={toggleMic} size='large'>
+       
+          <IconButton onClick={toggleMic} size='large'>
             {micMuted ? <MicOff style={{color: "indianred"}} fontSize='large' /> : <Mic style={{color: "green"}} fontSize='large' />}
-          </IconButton> */}
+          </IconButton>
 
           <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            {/* <span id="members" style={{display: 'flex', alignItems: 'center'}}>
+            <span id="members" style={{display: 'flex', alignItems: 'center'}}>
               {members.map((uid) => (
                 <span key={uid} className={`speaker user-rtc-${uid}`}>
                   <Box
@@ -296,7 +296,7 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
                   </Box>
                 </span>
               ))}
-            </span> */}
+            </span>
 
             <Tooltip arrow placement="bottom" title="초대">
               <IconButton
