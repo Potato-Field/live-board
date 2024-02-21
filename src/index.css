@@ -1,11 +1,10 @@
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;  /* 텍스트 블록 줄 간격 */
-  /* font-weight: 400; */
+
   text-align: center;
 
   color-scheme: light;
-  /* background-color: #fafafa; */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -20,38 +19,6 @@ body {
   min-width: 100vw;
   min-height: 100vh;
   overflow: hidden;
-}
-
-#container {
-  max-width: 1300px;
-  margin: 0 auto;
-  display: flex; 
-  justify-content: flex-end; 
-  flex-direction: row; 
-}
-
-#room-header-controls {
-  display: flex;
-  justify-content: flex-end; 
-  align-items: center; 
-  width: 90%; 
-}
-
-#welcome {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-
-#center-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh; /* 화면 전체 높이만큼 요소를 채우도록 설정 */
-  text-align: center; /* 내용을 가로로 가운데 정렬 */
 }
 
 .tool-CURSOR {
@@ -222,4 +189,30 @@ body {
 
 .btn-active svg{
   color: black !important;
+}
+
+.logo {
+  display: block;
+  width: 75%;
+  margin: auto;
+  padding-top: 12%;
+  padding-bottom: 8%;
+}
+
+.signupLogo {
+  padding-bottom: 6%;
+}
+
+.loginContainer {
+  background-color: white;
+  border-radius: 20px;
+}
+
+#idInputAlert {
+  margin: 0;
+  text-align: left;
+  padding-left: 0.7rem;
+  font-size: 0.8rem;
+  color: #E7464B;
+  font-weight: bold;
 }

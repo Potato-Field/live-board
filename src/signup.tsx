@@ -1,18 +1,24 @@
 import * as React from 'react';
-import { Button, TextField, Link, Box, Typography, Container } from '@mui/material';
+import { Button, TextField, Box, Typography, Container } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Copyright from './component/Copyright'
+import Copyright from './component/Copyright';
+
+import logo from './assets/signupLogo.png';
+// import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 export default function SignUp() {
     const theme = useTheme();
 
+    // const baseUrl = "http://localhost:8080";
     const baseUrl = "https://www.jungleweb.duckdns.org";
     const [nickname, setNickname] = useState('');
     const [password, setPassword] = useState('');
     const [passwordConfirm, setPasswordConfirm] = useState('');
     const navigate = useNavigate();
+
+    const [showText, setShowText] = useState(false);
 
     // 아래 DB url 에 응답으로 nickname 중복확인
     const checkNicknameExists = async (nickname: any) => {
@@ -34,6 +40,7 @@ export default function SignUp() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        // navigate('/');
 
         // 비밀번호 일치확인
         if (password !== passwordConfirm) {
@@ -70,15 +77,10 @@ export default function SignUp() {
 
     return (
         <div style={{ height: '100vh', display: 'flex', alignItems: 'center', backgroundColor: theme.palette.secondary.main }}>
-            <Container component="main" maxWidth="xs" style={{ backgroundColor: 'white', borderRadius: '20px'}}>
-                <Typography component="h1" variant="h5"  sx={{ mt: 6, mb: 4, color: theme.palette.info.main, fontWeight: "bolder" }} >
-                    회원가입
-                </Typography>
-                <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-                    {/** TODO
-                     * input focus시 id 규칙 텍스트 띄도록
-                     * 아이디: 영어, 숫자만
-                     */}
+            <Container component="main" maxWidth="xs" className='loginContainer'>
+                <img src={logo} alt='Logo' className='logo signupLogo' />
+
+                <Box component="form" onSubmit={handleSubmit} noValidate>
                     <TextField
                         margin="normal"
                         required
@@ -87,7 +89,13 @@ export default function SignUp() {
                         label="아이디"
                         name="nickname"
                         onChange={(e) => setNickname(e.target.value)}
+                        onFocus={() => setShowText(true)}
+                        onBlur={() => setShowText(false)}
                     />
+                    <p id = "idInputAlert">
+                        { showText ? '영문 대소문자와 숫자, 특수기호만 사용 가능합니다.' : null}
+                    </p>
+
                     <TextField
                         margin="normal"
                         required
@@ -97,10 +105,11 @@ export default function SignUp() {
                         type="password"
                         id="password"
                         onChange={(e) => setPassword(e.target.value)}
-                    />
-                    {/** TODO
-                     * 비밀번호 같은지 확인
-                     */}
+                    >
+                    </TextField>
+
+                    {/* <Visibility></Visibility> */}
+
                     <TextField
                         margin="normal"
                         required
@@ -112,6 +121,7 @@ export default function SignUp() {
                         value={passwordConfirm}
                         onChange={(e) => setPasswordConfirm(e.target.value)}
                     />
+
                     <Button
                         type="submit"
                         fullWidth
@@ -121,9 +131,10 @@ export default function SignUp() {
                     >
                         가입하기
                     </Button>
+                    
                     <Typography component="h1" variant="body2" sx={{ mt: 1, mb: 1 }} >
                         이미 계정이 있나요?
-                        <Link href="/" color="inherit" variant="body2" sx={{ ml: 1, color: theme.palette.info.main }}>로그인</Link>
+                        <Button href="/" color="inherit" sx={{ ml: 1, color: theme.palette.info.main }}>로그인</Button>
                     </Typography>
                 </Box>
                 <Copyright sx={{ mt: 4, mb: 4 }} />
