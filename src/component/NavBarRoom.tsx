@@ -32,7 +32,7 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
   const location = useLocation();
   const {nickname} = location.state;
   const [roomId] = useState<string>("main");
-  const [micMuted, setMicMuted] = useState<boolean>(true);
+  const [micMuted, setMicMuted] = useState<boolean>(false);
   const [members, setMembers] = useState<Array<string>>([]);
   const [userVolumes, setUserVolumes] = useState<{ [nickname: string]: number }>({});
   const rtcUid = nickname;
@@ -46,6 +46,11 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
 
 
   const initRtc = async () => {
+    if (rtcClientRef.current) {
+      console.warn("RTC Client is already initialized");
+      return;
+    }
+    // d
     const token = null
     // 클라이언트 유저 생성
     const rtcClient: IAgoraRTCClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
@@ -67,8 +72,11 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
     localAudioTrack.setMuted(micMuted);
     // 오디오 트랙에 publish 
     await rtcClient.publish(localAudioTrack);
-
-    setMembers([rtcUid]);        
+    const currentUsers = rtcClient.remoteUsers;
+  
+    // uid만 추출하여 멤버 목록을 설정합
+    const userIds = currentUsers.map(user => user.uid.toString());
+    setMembers([rtcUid, ...userIds]);
     // 볼륨 인디케이터 초기화
     initVolumeIndicator();
   };
@@ -96,6 +104,15 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
     await initRtc(); // RTC 초기화 함수를 비동기적으로 호출합니다.
   };
 
+  const handleUserJoined = (user: { uid: string; nickname: string; }) => {
+    setMembers(prevMembers => {
+      // 새로운 사용자가 이미 목록에 있는지 확인합니다.
+      const isUserExist = prevMembers.includes(user.uid);
+      // 존재하지 않는 경우에만 목록에 추가합니다.
+      return isUserExist ? prevMembers : [...prevMembers, user.uid];
+      
+    });
+  };
 
   const leaveRoom = async () => {
     const { localAudioTrack } = audioTracksRef.current;
@@ -117,16 +134,6 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
   // }, []); 
 
 
-  const handleUserJoined = (user: { uid: string; nickname: string; }) => {
-    setMembers(prevMembers => {
-      // 새로운 사용자가 이미 목록에 있는지 확인합니다.
-      const isUserExist = prevMembers.includes(user.uid);
-      // 존재하지 않는 경우에만 목록에 추가합니다.
-      return isUserExist ? prevMembers : [...prevMembers, user.uid];
-      
-    });
-    document.getElementById("prevMembers")?.insertAdjacentHTML('beforeend', user.uid);
-  };
 
 
   const handleUserPublished = async (user: any, mediaType: "audio" | "video") => {
