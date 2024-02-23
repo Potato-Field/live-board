@@ -198,7 +198,7 @@ const App:FC = () => {
     //const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['ws://localhost:1235'] });
 
     /* 배포시 사용 */
-    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.duckdns.org:1235'] });
+    const provider = new WebrtcProvider('drawing-room', yDocRef.current, { signaling: ['wss://www.jungleweb.monster:1235'] });
     
       
 
