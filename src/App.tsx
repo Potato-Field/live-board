@@ -16,8 +16,8 @@ import { Tools } from './component/Tools';
 
 import NavBarRoom from './component/NavBarRoom';
 
-import thumbUpImg from './assets/thumbUp.png';
-import thumbDownImg from './assets/thumbDown.png'
+import thumbUpImg from './assets/thumbup.png';
+import thumbDownImg from './assets/thumbdown.png'
 
 import "./index.css"
 
