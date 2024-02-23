@@ -10,12 +10,8 @@ import appid from './voicechat/appId';
 
 import Konva from 'konva';
 
-import { AppBar
-  , Avatar
-  , Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Toolbar, IconButton, MenuItem, Menu, Tooltip } from '@mui/material';
-import { AddCircle, PeopleAlt, FileDownload, ArrowBackIos
-  , Mic, MicOff 
-} from '@mui/icons-material';
+import { AppBar, Avatar, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Toolbar, IconButton, MenuItem, Menu, Tooltip } from '@mui/material';
+import { AddCircle, PeopleAlt, Mic, MicOff, Logout } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 
 import { VoteDrawer } from './VoteDrawer';
@@ -36,7 +32,7 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
   const location = useLocation();
   const {nickname} = location.state;
   const [roomId] = useState<string>("main");
-  const [micMuted, setMicMuted] = useState<boolean>(true);
+  const [micMuted, setMicMuted] = useState<boolean>(false);
   const [members, setMembers] = useState<Array<string>>([]);
   const [userVolumes, setUserVolumes] = useState<{ [nickname: string]: number }>({});
   const rtcUid = nickname;
@@ -50,6 +46,11 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
 
 
   const initRtc = async () => {
+    if (rtcClientRef.current) {
+      console.warn("RTC Client is already initialized");
+      return;
+    }
+    // d
     const token = null
     // 클라이언트 유저 생성
     const rtcClient: IAgoraRTCClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
@@ -71,8 +72,11 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
     localAudioTrack.setMuted(micMuted);
     // 오디오 트랙에 publish 
     await rtcClient.publish(localAudioTrack);
-
-    setMembers([rtcUid]);        
+    const currentUsers = rtcClient.remoteUsers;
+  
+    // uid만 추출하여 멤버 목록을 설정합
+    const userIds = currentUsers.map(user => user.uid.toString());
+    setMembers([rtcUid, ...userIds]);
     // 볼륨 인디케이터 초기화
     initVolumeIndicator();
   };
@@ -100,6 +104,15 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
     await initRtc(); // RTC 초기화 함수를 비동기적으로 호출합니다.
   };
 
+  const handleUserJoined = (user: { uid: string; nickname: string; }) => {
+    setMembers(prevMembers => {
+      // 새로운 사용자가 이미 목록에 있는지 확인합니다.
+      const isUserExist = prevMembers.includes(user.uid);
+      // 존재하지 않는 경우에만 목록에 추가합니다.
+      return isUserExist ? prevMembers : [...prevMembers, user.uid];
+      
+    });
+  };
 
   const leaveRoom = async () => {
     const { localAudioTrack } = audioTracksRef.current;
@@ -121,16 +134,6 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
   // }, []); 
 
 
-  const handleUserJoined = (user: { uid: string; nickname: string; }) => {
-    setMembers(prevMembers => {
-      // 새로운 사용자가 이미 목록에 있는지 확인합니다.
-      const isUserExist = prevMembers.includes(user.uid);
-      // 존재하지 않는 경우에만 목록에 추가합니다.
-      return isUserExist ? prevMembers : [...prevMembers, user.uid];
-      
-    });
-    document.getElementById("prevMembers")?.insertAdjacentHTML('beforeend', user.uid);
-  };
 
 
   const handleUserPublished = async (user: any, mediaType: "audio" | "video") => {
@@ -224,36 +227,6 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
     <Box sx={{ flexGrow: 1 }} position="relative">
       <AppBar position="absolute" style={{zIndex: "999", display: 'flex', justifyContent: 'center', height: '55px'}}>
         <Toolbar>
-          <Tooltip arrow placement="bottom" title="나가기">
-            <IconButton
-              edge="start"
-              aria-label="Exit room"
-              onClick={handleClickOpen}
-              >
-              <ArrowBackIos />
-            </IconButton>
-          </Tooltip>
-
-          <Dialog
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-          >
-            <DialogTitle id="alert-dialog-title">
-              {"🧐"}
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText id="alert-dialog-description">
-                이 방에서 나가시겠습니까?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={leaveRoom} style={{backgroundColor: theme.palette.info.main, color: 'white'}} >YES</Button>
-              <Button onClick={handleClose} autoFocus style={{backgroundColor: '#636567', color: 'white'}}>NO</Button>
-            </DialogActions>
-          </Dialog>
-
           <VoteDrawer stageRef = {stageRef}/>
 
           {/* <IconButton size="large" aria-label="Stop watch" color="inherit">
@@ -327,15 +300,36 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
             </IconButton>
           </Box>
 
-          <Tooltip arrow placement="bottom" title="저장">
+          <Tooltip arrow placement="bottom" title="나가기">
             <IconButton
               size="large" 
-              aria-label="Export" 
+              aria-label="Exit room" 
               // color="inherit"
+              onClick={handleClickOpen}
               >
-                <FileDownload fontSize='large' />
+                <Logout fontSize='large' />
             </IconButton>
           </Tooltip>
+
+          <Dialog
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle id="alert-dialog-title">
+              {"🧐"}
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                이 방에서 나가시겠습니까?
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={leaveRoom} style={{backgroundColor: theme.palette.info.main, color: 'white'}} >YES</Button>
+              <Button onClick={handleClose} autoFocus style={{backgroundColor: '#636567', color: 'white'}}>NO</Button>
+            </DialogActions>
+          </Dialog>
         </Toolbar>
       </AppBar>
       {renderMobileMenu}

@@ -25,7 +25,7 @@ export default function Eraser({ props }:EraserProps){
         <>
         <Tooltip arrow placement="top" title="Eraser">
             <IconButton id={componentElem.id} onClick={()=>{setTool(props)}}>
-                <FontAwesomeIcon icon={faEraser} size='xl' />
+                <FontAwesomeIcon icon={faEraser} size='lg' />
             </IconButton>
         </Tooltip>
         </>

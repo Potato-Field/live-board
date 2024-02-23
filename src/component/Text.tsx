@@ -25,7 +25,7 @@ export default function Text({ props }:TextProps){
         <>
         <Tooltip arrow placement="top" title="Text">
             <IconButton id={componentElem.id} onClick={()=>{setTool(props)}}>
-                <FontAwesomeIcon icon={faFont} size='xl' />
+                <FontAwesomeIcon icon={faFont} size='lg' />
             </IconButton>
         </Tooltip>
         </>
