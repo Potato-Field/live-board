@@ -48,21 +48,23 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
 
     useEffect(() => {
       if (stageRef.current) {
-          stageRef.current.on('click', (event:any) => {
+          stageRef.current.on('click', () => {
             //console.log(toolRef.current, toolRef.current, toolRef, "Tool now");
               if (toolRef.current === Tools.MINDMAP && yTargets.size === 0) {
                   const stage = stageRef.current;
                   const pointerPosition = stage?.getPointerPosition();
                   //console.log(pointerPosition, `${event.evt.clientX}px`, `${event.evt.clientY}px`);
+                  const pos = stage?.position();
+                  const scale = stage ? stage?.scaleX(): 1;
   
-                  if (stage && pointerPosition) {
+                  if (stage && pointerPosition && pos) {
                       const newNodeId = `target-${yTargets.size}`;
                       const newNode = {
                           id: newNodeId,
-                          // x: pointerPosition.x,  
-                          // y: pointerPosition.y,  
-                          x: event.evt.clientX,
-                          y: event.evt.clientY,
+                          x: (pointerPosition.x - pos.x)/scale,  
+                          y: (pointerPosition.y - pos.y)/scale,  
+                          // x: event.evt.clientX,
+                          // y: event.evt.clientY,
                           value: "텍스트",
                           childIds: [],
                       };
@@ -106,14 +108,17 @@ export const MindMap = (({ stageRef, toolRef, yDocRef, yTargets, yConnectors, un
         if (toolRef.current === Tools.MINDMAP && yTargets.size === 0) {
             const stage = stageRef.current;
             const pointerPosition = stage?.getPointerPosition();
-            if (stage && pointerPosition) {
+            const pos = stage?.position();
+            const scale = stage ? stage?.scaleX(): 1;
+
+            if (stage && pointerPosition && pos) {
                 const newNodeId = `target-${yTargets.size}`;
                 const newNode = {
                     id: newNodeId,
                     // x: pointerPosition.x,
                     // y: pointerPosition.y,
-                    x: event.evt.clientX,
-                    y: event.evt.clientY,
+                    x: (pointerPosition.x - pos.x)/scale,  
+                    y: (pointerPosition.y - pos.y)/scale,  
                     value: "텍스트",
                     childIds: [],
                 };
