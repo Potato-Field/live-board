@@ -11,8 +11,10 @@ import logo from './assets/signupLogo.png';
 export default function SignUp() {
     const theme = useTheme();
 
-    const baseUrl = "https://www.jungleweb.monster";
-    const [nickname, setNickname] = useState('');
+    // const baseUrl = "https://www.jungleweb.monster";
+    // const [
+    //     // nickname,
+    //      setNickname] = useState('');
     const [password, setPassword] = useState('');
     const [passwordConfirm, setPasswordConfirm] = useState('');
     const navigate = useNavigate();
@@ -20,22 +22,22 @@ export default function SignUp() {
     const [showText, setShowText] = useState(false);
 
     // 아래 DB url 에 응답으로 nickname 중복확인
-    const checkNicknameExists = async (nickname: any) => {
-        const url = `${baseUrl}/api/users/check-nickname?nickname=${encodeURIComponent(nickname)}`;
-        console.log(`Sending request to: ${url}`); // Debugging: Log the full URL
-        try {
-            const response = await fetch(url);
-            if (response.ok) {
-                const data = await response.json();
-                return data.exists;
-            } else {
-                console.error('Server responded with an error', response.status);
-            }
-        } catch (error) {
-            console.error('Failed to fetch', error);
-        }
-        return false;
-    };
+    // const checkNicknameExists = async (nickname: any) => {
+    //     const url = `${baseUrl}/api/users/check-nickname?nickname=${encodeURIComponent(nickname)}`;
+    //     console.log(`Sending request to: ${url}`); // Debugging: Log the full URL
+    //     try {
+    //         const response = await fetch(url);
+    //         if (response.ok) {
+    //             const data = await response.json();
+    //             return data.exists;
+    //         } else {
+    //             console.error('Server responded with an error', response.status);
+    //         }
+    //     } catch (error) {
+    //         console.error('Failed to fetch', error);
+    //     }
+    //     return false;
+    // };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -46,32 +48,33 @@ export default function SignUp() {
             alert('비밀번호가 일치하지 않습니다');
             return;
         }
-
+        alert('가입이 완료되었습니다.');
+        navigate('/');
         // nickname 중복확인
-        const nicknameExists = await checkNicknameExists(nickname);
-        if (nicknameExists) {
-            alert('이미 사용중인 아이디입니다.');
-            return;
-        }
+        // const nicknameExists = await checkNicknameExists(nickname);
+        // if (nicknameExists) {
+        //     alert('이미 사용중인 아이디입니다.');
+        //     return;
+        // }
 
-        try {
-            const response = await fetch(baseUrl + '/api/users', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ nickname, password }),
-            });
-            if (response.ok) {
-                alert('가입이 완료되었습니다.');
-                navigate('/');
-            } else {
-                // 오류 처리
-                alert('회원가입 실패. 다시 시도해주세요.');
-            }
-        } catch (error) {
-            console.error('회원가입 중 오류 발생:', error);
-        }
+        // try {
+        //     const response = await fetch(baseUrl + '/api/users', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //         },
+        //         body: JSON.stringify({ nickname, password }),
+        //     });
+        //     if (response.ok) {
+        //         alert('가입이 완료되었습니다.');
+        //         navigate('/');
+        //     } else {
+        //         // 오류 처리
+        //         alert('회원가입 실패. 다시 시도해주세요.');
+        //     }
+        // } catch (error) {
+        //     console.error('회원가입 중 오류 발생:', error);
+        // }
     };
 
     return (
@@ -87,7 +90,7 @@ export default function SignUp() {
                         id="nickname"
                         label="아이디"
                         name="nickname"
-                        onChange={(e) => setNickname(e.target.value)}
+                        // onChange={(e) => setNickname(e.target.value)}
                         onFocus={() => setShowText(true)}
                         onBlur={() => setShowText(false)}
                     />
