@@ -9,7 +9,7 @@ import logo from './assets/liveBoardLogo.png';
 
 export default function Login() {
 
-    //const baseUrl = "https://www.jungleweb.duckdns.org";
+    const baseUrl = "https://www.jungleweb.monster";
     const theme = useTheme();
     const [nickname, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -17,29 +17,29 @@ export default function Login() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        navigate('/lobby', { state: { nickname: nickname} });
-    //     try {
-    //         const response = await fetch(baseUrl + '/api/login', {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //             },
-    //             body: JSON.stringify({ nickname, password }),
-    //         });
+        // navigate('/lobby', { state: { nickname: nickname} });
+        try {
+            const response = await fetch(baseUrl + '/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ nickname, password }),
+            });
 
-    //         if (response.ok) {
-    //             const data = await response.json();
-    //             // 로그인 성공 처리
-    //             // 예를 들어, 사용자 상태 설정, 홈페이지로 리다이렉트 등
-    //             navigate('/lobby', { state: { nickname: nickname, ...data } });
-    //         } else {
-    //             // 로그인 실패 처리
-    //             // 예를 들어, 에러 메시지 표시
-    //             alert('로그인 실패: 잘못된 사용자 이름 또는 비밀번호');
-    //         }
-    //     } catch (error) {
-    //         console.error('로그인 요청 중 오류 발생:', error);
-    //     }
+            if (response.ok) {
+                const data = await response.json();
+                // 로그인 성공 처리
+                // 예를 들어, 사용자 상태 설정, 홈페이지로 리다이렉트 등
+                navigate('/lobby', { state: { nickname: nickname, ...data } });
+            } else {
+                // 로그인 실패 처리
+                // 예를 들어, 에러 메시지 표시
+                alert('로그인 실패: 잘못된 사용자 이름 또는 비밀번호');
+            }
+        } catch (error) {
+            console.error('로그인 요청 중 오류 발생:', error);
+        }
     };
 
     const signUpClick = ()=>{
