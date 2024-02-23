@@ -1074,8 +1074,8 @@ const App:FC = () => {
       id     : id,
       x      : pos.x,
       y      : pos.y,
-      width  : 40,
-      height : 40,
+      width  : 50,
+      height : 50,
       image  : imageObj,
       draggable : true
     });
