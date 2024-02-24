@@ -1,15 +1,22 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+
 import "./index.css"
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
+
+import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import MuiDrawer from '@mui/material/Drawer';
-import CssBaseline from '@mui/material/CssBaseline';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
+import Container from '@mui/material/Container';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
+
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -17,13 +24,10 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Logout from '@mui/icons-material/Logout';
+// import Logout from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
 import GroupsIcon from '@mui/icons-material/Groups';
-import Container from '@mui/material/Container';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import CardMedia from '@mui/material/CardMedia';
+
 import imageSampleMain from './image/imageSampleMain.png';
 import imageSample4 from './image/imageSample4.png'
 import imageSample5 from './image/imageSample5.png'
@@ -31,11 +35,12 @@ import imageSample6 from './image/imageSample6.png'
 import imageSample7 from './image/imageSample7.png'
 import imageSample8 from './image/imageSample8.png'
 import imageSample9 from './image/imageSample9.png'
-
 import addButton from './image/addbutton.png'
-import { ButtonBase } from '@mui/material';
+import { Button, ButtonBase } from '@mui/material';
 
-
+import logo from './assets/liveBoardLogo.png';
+import Copyright from './component/Copyright';
+// import { ThemeConsumer } from 'styled-components';
 
 const drawerWidth = 240;
 
@@ -121,7 +126,7 @@ const Lobby = () => {
         navigate('/', { state: { nickname: '' } })
     }
 
-
+    const theme = useTheme();
 
 
     return (
@@ -141,9 +146,22 @@ const Lobby = () => {
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Typography variant="h5" noWrap component="div" >
-                        Live-Board
-                    </Typography>
+
+                    <img src={logo} alt='Logo' style={{
+                        maxHeight: '30px',
+                    }}/>
+
+                    <Box sx={{ flexGrow: 1 }} />
+
+                    <Button onClick={handleLogOut} sx={{
+                        bgcolor: theme.palette.info.main,
+                        color: 'white',
+                        borderRadius: '30px',
+                        fontWeight: 'bolder',
+                        
+                    }}>
+                        로그아웃
+                    </Button>
                 </Toolbar>
             </AppBar>
             <Drawer variant="permanent" open={open}>
@@ -173,22 +191,19 @@ const Lobby = () => {
                         </ListItemIcon>
                         <ListItemText primary="Team Project" />
                     </ListItemButton>
-                    <Divider sx={{ my: 1 }} />
-                    <ListItemButton onClick={handleLogOut}>
+                    {/* <Divider sx={{ my: 1 }} /> */}
+                    {/* <ListItemButton onClick={handleLogOut}>
                         <ListItemIcon>
                             <Logout />
                         </ListItemIcon>
                         <ListItemText primary="Log Out" />
-                    </ListItemButton>
+                    </ListItemButton> */}
                 </List>
             </Drawer>
             <Box
                 component="main"
                 sx={{
-                    backgroundColor: (theme) =>
-                        theme.palette.mode === 'light'
-                            ? theme.palette.grey[100]
-                            : theme.palette.grey[900],
+                    bgcolor: 'whitesmoke',
                     flexGrow: 1,
                     height: '100vh',
                     overflow: 'auto',
@@ -367,6 +382,7 @@ const Lobby = () => {
                         </Card>
                     </Box>
                 </Container>
+                <Copyright sx={{ mt: 4, mb: 4 }} />
             </Box>
         </Box>
     );
