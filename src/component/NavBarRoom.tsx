@@ -242,7 +242,7 @@ export const NavBarRoom = ( {stageRef}: {stageRef:React.RefObject<Konva.Stage>} 
               style={{ backgroundColor: theme.palette.secondary.main, color: '#636567', borderRadius: '30px', fontWeight: '700' }}
               onClick={joinSubmit}
               >
-              JOIN
+              Let's voice chat
           </Button>
        
           <IconButton onClick={toggleMic} size='large'>
