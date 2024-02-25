@@ -93,11 +93,10 @@ const App:FC = () => {
   
   //Text 동작 저장
   const yText = yDocRef.current.getMap('text');
-  
-  //Shape 저장
-  const yShape = yDocRef.current.getMap('shape');
+
   //Trans 동작 저장
   const yTrans = yDocRef.current.getMap('trans');
+  
   //Drag move 동작 저장
   const yMove = yDocRef.current.getMap('move');
   
@@ -320,60 +319,6 @@ const App:FC = () => {
         yText.delete(index);
       });
     });
-
-    yShape.observe(() => {
-      yShape.forEach((konvaData:any, index:string)=>{
-        const node = stageRef.current.children[0].findOne("#"+index)
-        let newShape:any;
-        if(node) return;
-        if(konvaData.type === Shape.Stamp || konvaData.type === Shape.Image){
-          if(konvaData.image !== 'thumbUp' && konvaData.image !== 'thumbUp'){
-            const imageObj = new Image();
-            imageObj.onload = () => {
-              const newImage = new Konva.Image({
-                id: index,
-                image: imageObj,
-                x: konvaData.x,
-                y: konvaData.y,
-                width: konvaData.width,
-                height: konvaData.height,
-                draggable: true
-              });
-              stageRef.current.getLayers()[0].add(newImage);
-            };
-            imageObj.src = konvaData.image;
-          } else {
-            let stampImg = new window.Image();
-            stampImg.src = konvaData.image === 'thumbUp' ? thumbUpImg : thumbDownImg;
-            
-            stampImg.onload = () => {
-              
-              const newStamp = createNewStamp(index, {x: konvaData.x, y: konvaData.y}, stampImg)
-              newStamp.name(konvaData.image)
-              stageRef.current.getLayers()[0].add(newStamp);
-            }
-            yShape.delete(index); 
-          }
-        }
-        else {
-          if(konvaData.type === Shape.Rect){
-            newShape = createNewRect(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill, konvaData.stroke)
-
-          } else if(konvaData.type === Shape.Circle){
-            newShape = createNewCir(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill, konvaData.stroke)
-            
-          } else if(konvaData.type === Shape.RegularPolygon){
-            newShape = createNewTri(index, {x: konvaData.x, y: konvaData.y}, konvaData.fill, konvaData.stroke)
-          } else if(konvaData.type === Shape.Group){
-            newShape = createNewPostIt(index, {x: konvaData.Group.x, y: konvaData.Group.y}, konvaData.Text.text)
-            newShape.moveToTop();
-          }
-          stageRef.current.getLayers()[0].add(newShape);
-
-          yShape.delete(index); 
-        }
-      });  
-    })
 
     yMove.observe((e) => {
       if(e.keysChanged.has('groupChange')){
@@ -2669,7 +2614,6 @@ const App:FC = () => {
         }
         layer.add(newStamp);
         
-        //yShape.set(idx, konvaData);
 
         yDocRef.current.transact(() => {
           yObjects.set(idx, konvaData);
@@ -2735,7 +2679,6 @@ const App:FC = () => {
         }
       }
       layer.add(newShape);
-      //yShape.set(idx, konvaData);
 
       yDocRef.current.transact(() => {
         yObjects.set(idx, konvaData);
@@ -2792,7 +2735,6 @@ const App:FC = () => {
       }
 
       layer.add(postItGroup);
-      //yShape.set(idx, konvaData);
 
       yDocRef.current.transact(() => {
       
