@@ -1,30 +1,300 @@
-# React + TypeScript + Vite
+# Live Board
+## 크래프톤 정글 3기 🥔 105호 2조 감자밭 🥔 
+<!-- 조회수 -->
+<p align="right">
+  <a href="https://hits.seeyoufarm.com">
+    <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPotato-Field%2Flive-board&count_bg=%23004AAD&title_bg=%23FF7A50&icon=&icon_color=%23E7E7E7&title=Live+Board+Viewers&edge_flat=false" alt="Hits">
+  </a>
+</p>
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+<!-- PROJECT LOGO -->
+<div align="center">
+  <a href="https://highlighters.site/" target="_blank">
+    <img src="./src/assets/readme/liveBoardLogoReadme.png" alt="Logo" width="" height="">
+  </a>
 
-Currently, two official plugins are available:
+  <p align="center">
+    <b>실시간 협업 화이트보드 Live Board와 함께 언제 어디서든 쉽게 팀원들과 아이디어 회의를 진행하세요!</b>
+  </p>
+</div>
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+<!-- TABLE OF CONTENTS -->
+## 목차
 
-## Expanding the ESLint configuration
+1. [프로젝트 개요](#LiveBoard)
+2. [서비스 소개](#Intro)
+3. [핵심 기술](#CRDT)
+4. [기술적 챌린지](#Challenge)
+5. [기술 스택 & 시스템 아키텍쳐](#Arch) <!-- todo -->
+6. [프로젝트 실행 방법](#Run)  <!-- todo -->
+7. [디렉터리 구조](#Directory)
+8. [프로젝트 포스터](#Poster)
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
 
-- Configure the top-level `parserOptions` property like this:
+<a name="LiveBoard"> </a>
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
+## 1️⃣ 프로젝트 개요
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+### 📍 프로젝트 기간
+<b>2024.01.11. ~ 2024.02.24 (5주)</b>
+
+### 📍 팀원 소개
+<div>
+  <table align="center">
+    <tr>
+      <td height="40px" align="center"><a href="https://github.com/bckim9489">김병철</a></td>
+      <td height="40px" align="center"><a href="https://github.com/hyrmzz1">양혜림</a></td>
+      <td height="40px" align="center"><a href="https://github.com/junyonglee0223">이준용</a></td>
+      <td height="40px" align="center"><a href="https://github.com/piu0887">황상필</a></td>
+    </tr>
+    <tr>
+      <td height="40px" align="center">BE, FE<br>TL</td>
+      <td height="40px" align="center">FE</td>
+      <td height="40px" align="center">FE</td>
+      <td height="40px" align="center">BE, FE</td>
+    </tr>
+    <tr>
+      <td height="40px">
+        <ul>
+        <li>개발 환경 구축</li>
+        <li>동시 편집 기능</li>
+        <li>객체 관리 기능</li>
+        </ul>
+      </td>
+      <td height="40px">
+        <ul>
+        <li>화이트보드 도구</li>
+        <li>브레인스토밍 기능</li>
+        <li>UI/UX 총괄</li>
+        <li>로그인 페이지</li>
+        </ul>
+      </td>
+      <td height="40px">
+        <ul>
+        <li>마인드맵</li>
+        <li>동시 편집 기능</li>
+        <li>객체 관리 기능</li>
+        </ul>
+      </td>
+      <td height="40px">
+        <ul>
+        <li>음성 채팅 기능</li>
+        <li>로그인, 회원가입 기능</li>
+        <li>로비 페이지</li>
+        </ul>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<p align="right">(<a href="#readme-top">맨 위로</a>)</p>
+
+
+<a name="Intro"> </a>
+
+## 2️⃣ 서비스 소개
+
+<!-- TODO: gif로 프로젝트 캡쳐본 넣기 (./src/assets/readme 내부에 gif 저장) -->
+### 1. 화이트보드 도구
+- 펜, 하이라이터, 지우개, 텍스트, 도형을 이용할 수 있습니다.
+  <table border="0" >
+    <tr>
+        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561610-7b3c0b07-2924-4414-be78-281ea964e699.gif"> </img></td>
+        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561650-8a524521-d6d2-46fd-91af-0f1cedb5fa21.gif"></img></td>
+    </tr>
+  </table>
+
+
+### 2. 동시 편집
+- 같은 방에 있는 모든 사용자에게 모든 작업이 실시간으로 반영됩니다.
+  <table border="0" >
+    <tr>
+        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561610-7b3c0b07-2924-4414-be78-281ea964e699.gif"> </img></td>
+        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561650-8a524521-d6d2-46fd-91af-0f1cedb5fa21.gif"></img></td>
+    </tr>
+  </table>
+
+- 다른 사용자가 수정 중인 영역에 접근해 수정 또는 삭제할 수 없습니다.
+  <table border="0" >
+    <tr>
+        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561610-7b3c0b07-2924-4414-be78-281ea964e699.gif"> </img></td>
+        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561650-8a524521-d6d2-46fd-91af-0f1cedb5fa21.gif"></img></td>
+    </tr>
+  </table>
+
+
+### 3. 마인드맵 생성 및 요약
+- 마인드맵을 생성하고 팀원들과 마인드맵을 확장 및 수정할 수 있습니다.
+  <table border="0" >
+    <tr>
+        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561610-7b3c0b07-2924-4414-be78-281ea964e699.gif"> </img></td>
+        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561650-8a524521-d6d2-46fd-91af-0f1cedb5fa21.gif"></img></td>
+    </tr>
+  </table>
+
+- 마인드맵을 텍스트로 요약할 수 있습니다.
+  <table border="0" >
+    <tr>
+        <td>    <img src="https://user-images.githubusercontent.com/101175828/216537143-2f7bcd1f-9d30-42f8-86de-10587673a030.gif"></img></td>
+        <td>    <img src="https://user-images.githubusercontent.com/101175828/216537281-4498ad2d-a8c5-44fa-9c54-e0ab51c337cb.gif"> </img></td>
+    </tr>
+  </table>
+
+
+### 4. 포스트잇 생성 및 투표
+- 포스트잇을 이용할 수 있습니다.
+  <table border="0" >
+    <tr>
+        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561610-7b3c0b07-2924-4414-be78-281ea964e699.gif"> </img></td>
+        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561650-8a524521-d6d2-46fd-91af-0f1cedb5fa21.gif"></img></td>
+    </tr>
+  </table>
+
+- 포스트잇 위에 스탬프를 찍어 투표를 진행할 수 있습니다.
+- 투표 결과는 한 곳에서 확인 가능합니다.
+  <table border="0" >
+    <tr>
+        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561610-7b3c0b07-2924-4414-be78-281ea964e699.gif"> </img></td>
+        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561650-8a524521-d6d2-46fd-91af-0f1cedb5fa21.gif"></img></td>
+    </tr>
+  </table>
+
+- 돋보기 아이콘을 눌러 해당 포스트잇을 자세히 볼 수 있습니다.
+  <table border="0" >
+    <tr>
+      <td><img width="400" height="230" src="https://user-images.githubusercontent.com/101175828/216539463-35aa8836-9b30-41c0-aeac-ef03335c031e.gif"> </img>
+      </td>
+      <td>
+      <img width="300" height="230" src="https://user-images.githubusercontent.com/101175828/216539648-c765fe17-f104-4500-96ab-0a074e0e70d2.gif"> </img>
+      </td>
+    </tr>
+  </table>
+
+### 5. 음성 회의
+- 팀원들과 음성 채팅을 할 수 있습니다.
+  <img  src="https://user-images.githubusercontent.com/101175828/216539214-8ee34979-d587-49df-a343-38fcc02f5be5.gif"> </img>
+
+
+<a name="CRDT"> </a>
+
+## 3️⃣ 핵심 기술
+### 📍 동시 편집
+<div>
+  <table align="center" border="1">
+    <tr>
+      <td height="40px" align="center"><b>OT</b></td>
+      <td height="40px" align="center"><b>CRDT</b></td>
+    </tr>
+    <tr>
+      <td height="40px" align="center">연산 기반 동기화</td>
+      <td height="40px" align="center"><b>데이터 상태 기반 동기화</b></td>
+    </tr>
+    <tr>
+      <td height="40px" align="center">복잡한 충돌 해결 로직 필요</td>
+      <td height="40px" align="center"><b>자동 충돌 해결</b></td>
+    </tr>
+    <tr>
+      <td height="40px" align="center">중앙 집중식 서버 / DB</td>
+      <td height="40px" align="center"><b>Peer To Peer</b></td>
+    </tr>
+  </table>
+</div>
+
+### 📍 CRDT
+- 실시간으로 여러 사용자가 동시적으로 작업을 수행해야 하므로 <br/><b>데이터 충돌 이슈 해결에 중점을 두고 기술을 선정</b>했습니다.
+- 중앙 집중식 서버나 DB를 통해 데이터를 동기화하는 OT 알고리즘과 다르게 <br/><b>CRDT는 클라이언트 간의 연결을 통해 복잡한 알고리즘 없이 충돌을 해결하고 데이터를 병합합니다.</b>
+- <b>따라서 CRDT 사용이 데이터의 일관적인 유지 및 구현에 적합하다 판단하여 채택했습니다.</b>
+
+
+<a name="Challenge"></a>
+
+## 4️⃣ 기술적 챌린지
+
+### 📍 Line drawing logical issue
+
+#### 목표
+User A가 객체를 그리는 과정이 모든 user에게 실시간으로 자연스럽게 동기화되어야 합니다.
+
+#### 이슈
+그리는 과정이 실시간으로 동기화되지 않고 객체가 완전히 생성된 후에 동기화되었습니다.
+<div align="center">
+  <img src="./src/assets/readme/lineDrawingIssue.png" width="50%">
+</div>
+
+#### 해결
+드로잉 시 마우스가 움직이는 좌표를 계속적으로 추가하는 방식으로 동기화하여 문제를 해결했습니다.<br />
+드로잉에 대한 이벤트 발생이 빈번해 Throttling을 통한 일정 간격으로 이벤트를 구현하고 매끄럽지 않은 드로잉에 대해 보정 알고리즘으로 최적화를 구상했습니다.
+
+
+### 📍 Text synchronization issue
+
+
+#### 목표
+User A가 텍스트를 작성 또는 수정 중일 때 모든 user에게 그 과정과 결과가 실시간으로 동기화되어야 합니다.
+
+#### 이슈
+텍스트를 작성할 때 수정된 부분만 업데이트하는 것이 아니라 기존 텍스트를 삭제하고 업데이트 후 전체 텍스트를 동기화함으로써 텍스트 노드가 반짝이는 현상이 발생합니다.
+
+#### 시도
+LCS(최장 공통부분 문자열) 알고리즘을 이용해 두 문자열을 순회하며 공통된 문자열을 제외한 부분을 업데이트하는 방식으로 구현했고 공통 문자열이 전체 문자열에서 맨 처음에 위치할 경우 문제가 해결된 듯 보였으나, 다른 위치에서는 동일한 문제가 발생했습니다. 
+
+#### 해결
+Two Pointer 알고리즘을 사용해 텍스트 노드의 양쪽 끝에서부터 순회하여 LCS보다 더 빠른 시간 내에 변경된 부분을 찾았습니다. 결과적으로 텍스트 변경이 잦더라도 즉각적으로 반영되도록 구현했습니다.
+
+<div align="center">
+  <img src="./src/assets/readme/textSyncIssue.png" width="50%">
+</div>
+
+<a name="Arch"></a>
+
+## 5️⃣ 기술 스택 & 시스템 아키텍쳐
+
+### 📍 기술 스택
+
+<!-- TODO: 알맞게 수정 (이건 다른 프로젝트 기술 스택 복붙한거) -->
+| FrontEnd                | BackEnd            | DATA            | DB           | CI/CD                     | 협업 툴  |
+| ----------------------- | ------------------ | --------------- | ------------ | ------------------------- | ------- |
+| Node 18.17.1            | Java JDK 11        | Python 3.9      | MySQL 8.0.33 | AWS EC2(Ubuntu 20.04 LTS) | GitLab  |
+| NPM 9.6.7               | Spring Boot 2.7.15 | FastApi 0.103.1 | Redis 7.0.12 | Nginx 1.25.1              | Jira    |
+| Vite + Typescript + SWC | Gradle 8.2.1       | Selenium 4.13.0 |              | Docker 24                 | Notion  |
+| React 18.2.0            | Lombok             | pandas 1.5.3    |              | Jenkins                   | figma   |
+| Recoil                  | Spring Security    |                 |              |                           | Swagger |
+| React-query             | JJWT 0.9.1         |                 |              |                           | Postman |
+| Framer-motion           |                    |                 |              |                           |         |
+| ChakraUI                |                    |                 |              |                           |         |
+
+### 📍 시스템 아키텍쳐
+<div align="center">
+  <img src="./src/assets/readme/liveBoardArchitecture.png" width="70%">
+</div>
+
+<p align="right">(<a href="#readme-top">맨 위로</a>)</p>
+
+
+<a name="Run"></a>
+
+## 6️⃣ 프로젝트 실행 방법
+
+### Client
+
+  <!-- TODO: 실행 방법 넣기 -->
+
+### Server
+  
+  <!-- TODO: 실행 방법 넣기 -->
+
+
+<a name="Directory"></a>
+
+## 7️⃣ 디렉터리 구조
+
+  <!-- TODO -->
+
+
+<a name="Poster"> </a>
+
+## 8️⃣ 프로젝트 포스터
+
+<img src="./src/assets/readme/liveBoardPoster.png">
+
+<p align="right">(<a href="#readme-top">맨 위로</a>)</p>
