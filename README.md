@@ -1,11 +1,5 @@
 # Live Board
 ## 크래프톤 정글 3기 🥔 105호 2조 감자밭 🥔 
-<!-- 조회수 -->
-<p align="right">
-  <a href="https://hits.seeyoufarm.com">
-    <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPotato-Field%2Flive-board&count_bg=%23004AAD&title_bg=%23FF7A50&icon=&icon_color=%23E7E7E7&title=Live+Board+Viewers&edge_flat=false" alt="Hits">
-  </a>
-</p>
 
 <!-- PROJECT LOGO -->
 <div align="center">
@@ -30,7 +24,7 @@
 7. [디렉터리 구조](#Directory)
 8. [프로젝트 포스터](#Poster)
 
-
+<br/>
 <a name="LiveBoard"> </a>
 
 ## 1️⃣ 프로젝트 개요
@@ -87,9 +81,8 @@
   </table>
 </div>
 
-<p align="right">(<a href="#readme-top">맨 위로</a>)</p>
 
-
+<br/>
 <a name="Intro"> </a>
 
 ## 2️⃣ 서비스 소개
@@ -175,6 +168,7 @@
   <img  src="https://user-images.githubusercontent.com/101175828/216539214-8ee34979-d587-49df-a343-38fcc02f5be5.gif"> </img>
 
 
+<br/>
 <a name="CRDT"> </a>
 
 ## 3️⃣ 핵심 기술
@@ -200,12 +194,13 @@
   </table>
 </div>
 
-### 📍 CRDT
+#### CRDT
 - 실시간으로 여러 사용자가 동시적으로 작업을 수행해야 하므로 <br/><b>데이터 충돌 이슈 해결에 중점을 두고 기술을 선정</b>했습니다.
 - 중앙 집중식 서버나 DB를 통해 데이터를 동기화하는 OT 알고리즘과 다르게 <br/><b>CRDT는 클라이언트 간의 연결을 통해 복잡한 알고리즘 없이 충돌을 해결하고 데이터를 병합합니다.</b>
 - <b>따라서 CRDT 사용이 데이터의 일관적인 유지 및 구현에 적합하다 판단하여 채택했습니다.</b>
 
 
+<br/>
 <a name="Challenge"></a>
 
 ## 4️⃣ 기술적 챌린지
@@ -223,7 +218,7 @@ User A가 객체를 그리는 과정이 모든 user에게 실시간으로 자연
 
 #### 해결
 드로잉 시 마우스가 움직이는 좌표를 계속적으로 추가하는 방식으로 동기화하여 문제를 해결했습니다.<br />
-드로잉에 대한 이벤트 발생이 빈번해 Throttling을 통한 일정 간격으로 이벤트를 구현하고 매끄럽지 않은 드로잉에 대해 보정 알고리즘으로 최적화를 구상했습니다.
+드로잉에 대한 이벤트 발생이 빈번해 Throttling을 통한 일정 간격으로 이벤트를 구현하고 매끄럽지 않은 드로잉에 대해 보정 알고리즘으로 최적화를 구상했습니다.<br />
 
 
 ### 📍 Text synchronization issue
@@ -236,15 +231,19 @@ User A가 텍스트를 작성 또는 수정 중일 때 모든 user에게 그 과
 텍스트를 작성할 때 수정된 부분만 업데이트하는 것이 아니라 기존 텍스트를 삭제하고 업데이트 후 전체 텍스트를 동기화함으로써 텍스트 노드가 반짝이는 현상이 발생합니다.
 
 #### 시도
-LCS(최장 공통부분 문자열) 알고리즘을 이용해 두 문자열을 순회하며 공통된 문자열을 제외한 부분을 업데이트하는 방식으로 구현했고 공통 문자열이 전체 문자열에서 맨 처음에 위치할 경우 문제가 해결된 듯 보였으나, 다른 위치에서는 동일한 문제가 발생했습니다. 
+LCS(최장 공통부분 문자열) 알고리즘을 이용해 두 문자열을 순회하며 공통된 문자열을 제외한 부분을 업데이트하는 방식으로 구현했습니다. <br />
+공통 문자열이 전체 문자열에서 맨 처음에 위치할 경우 문제가 해결된 듯 보였으나, 다른 위치에서는 동일한 문제가 발생했습니다. 
 
 #### 해결
-Two Pointer 알고리즘을 사용해 텍스트 노드의 양쪽 끝에서부터 순회하여 LCS보다 더 빠른 시간 내에 변경된 부분을 찾았습니다. 결과적으로 텍스트 변경이 잦더라도 즉각적으로 반영되도록 구현했습니다.
+Two Pointer 알고리즘을 사용해 텍스트 노드의 양쪽 끝에서부터 순회하여 LCS보다 더 빠른 시간 내에 변경된 부분을 찾았습니다. <br />
+결과적으로 텍스트 변경이 잦더라도 즉각적으로 반영되도록 구현했습니다.
 
 <div align="center">
   <img src="./src/assets/readme/textSyncIssue.png" width="50%">
 </div>
 
+
+<br />
 <a name="Arch"></a>
 
 ## 5️⃣ 기술 스택 & 시스템 아키텍쳐
@@ -262,15 +261,15 @@ Two Pointer 알고리즘을 사용해 텍스트 노드의 양쪽 끝에서부터
 | React-query             | JJWT 0.9.1         |                 |              |                           | Postman |
 | Framer-motion           |                    |                 |              |                           |         |
 | ChakraUI                |                    |                 |              |                           |         |
+<br />
 
 ### 📍 시스템 아키텍쳐
 <div align="center">
   <img src="./src/assets/readme/liveBoardArchitecture.png" width="70%">
 </div>
 
-<p align="right">(<a href="#readme-top">맨 위로</a>)</p>
 
-
+<br />
 <a name="Run"></a>
 
 ## 6️⃣ 프로젝트 실행 방법
@@ -284,17 +283,115 @@ Two Pointer 알고리즘을 사용해 텍스트 노드의 양쪽 끝에서부터
   <!-- TODO: 실행 방법 넣기 -->
 
 
+<br />
 <a name="Directory"></a>
 
 ## 7️⃣ 디렉터리 구조
 
-  <!-- TODO -->
+<details>
+<summary><strong>디렉터리 구조 확인하기</strong></summary>
 
+```
+live-board
+├─ .eslintrc.cjs
+├─ .gitignore
+├─ bin
+│  ├─ callback.js
+│  ├─ server.js
+│  └─ utils.js
+├─ index.html
+├─ LICENSE
+├─ package-lock.json
+├─ package.json
+├─ public
+│  ├─ LCSWorker.js
+│  └─ vite.svg
+├─ README.md
+├─ src
+│  ├─ App.tsx
+│  ├─ assets
+│  │  ├─ cursor.svg
+│  │  ├─ eraser.svg
+│  │  ├─ highlighter.svg
+│  │  ├─ liveBoardLogo.png
+│  │  ├─ mindmap.svg
+│  │  ├─ pen.svg
+│  │  ├─ postit.svg
+│  │  ├─ PotatoFieldLogoLong.png
+│  │  ├─ PotatoFieldLogoSquare.png
+│  │  ├─ react.svg
+│  │  ├─ readme
+│  │  │  ├─ lineDrawingIssue.png
+│  │  │  ├─ liveBoardArchitecture.png
+│  │  │  ├─ liveBoardLogoReadme.png
+│  │  │  ├─ liveBoardPoster.png
+│  │  │  └─ textSyncIssue.png
+│  │  ├─ shapes.svg
+│  │  ├─ signupLogo.png
+│  │  ├─ stamp.svg
+│  │  ├─ text.svg
+│  │  ├─ thumbdown.png
+│  │  └─ thumbup.png
+│  ├─ component
+│  │  ├─ ButtonCustomGroup.module.css
+│  │  ├─ ButtonCustomGroup.tsx
+│  │  ├─ ColorContext.tsx
+│  │  ├─ Connector.ts
+│  │  ├─ contextMenu.css
+│  │  ├─ Copyright.tsx
+│  │  ├─ Cursor.tsx
+│  │  ├─ EditableText.tsx
+│  │  ├─ Eraser.tsx
+│  │  ├─ Hand.tsx
+│  │  ├─ MindMap.tsx
+│  │  ├─ MindMapIndex.tsx
+│  │  ├─ NavBarLobby.tsx
+│  │  ├─ NavBarRoom.tsx
+│  │  ├─ Pen.tsx
+│  │  ├─ PostIt.tsx
+│  │  ├─ Shape.tsx
+│  │  ├─ ShapeOrder.ts
+│  │  ├─ Stamp.tsx
+│  │  ├─ Target.ts
+│  │  ├─ Text.tsx
+│  │  ├─ TextEditor.tsx
+│  │  ├─ ToolContext.tsx
+│  │  ├─ Tools.ts
+│  │  ├─ UserShape.ts
+│  │  ├─ voicechat
+│  │  │  ├─ appId.tsx
+│  │  │  ├─ voiceAgora.tsx
+│  │  │  ├─ voicechat.tsx
+│  │  │  └─ voiceserver.js
+│  │  ├─ VoteDrawer.module.css
+│  │  └─ VoteDrawer.tsx
+│  ├─ image
+│  │  ├─ addbutton.png
+│  │  ├─ imageSample10.png
+│  │  ├─ imageSample3.png
+│  │  ├─ imageSample4.png
+│  │  ├─ imageSample5.png
+│  │  ├─ imageSample6.png
+│  │  ├─ imageSample7.png
+│  │  ├─ imageSample8.png
+│  │  ├─ imageSample9.png
+│  │  └─ imageSampleMain.png
+│  ├─ index.css
+│  ├─ lobby.tsx
+│  ├─ login.tsx
+│  ├─ main.tsx
+│  ├─ signup.tsx
+│  └─ vite-env.d.ts
+├─ tsconfig.json
+├─ tsconfig.node.json
+└─ vite.config.ts
 
+```
+</details>
+
+<br />
 <a name="Poster"> </a>
 
 ## 8️⃣ 프로젝트 포스터
 
 <img src="./src/assets/readme/liveBoardPoster.png">
-
-<p align="right">(<a href="#readme-top">맨 위로</a>)</p>
