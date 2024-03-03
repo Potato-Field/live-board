@@ -250,17 +250,44 @@ Two Pointer 알고리즘을 사용해 텍스트 노드의 양쪽 끝에서부터
 
 ### 📍 기술 스택
 
-<!-- TODO: 알맞게 수정 (이건 다른 프로젝트 기술 스택 복붙한거) -->
-| FrontEnd                | BackEnd            | DATA            | DB           | CI/CD                     | 협업 툴  |
-| ----------------------- | ------------------ | --------------- | ------------ | ------------------------- | ------- |
-| Node 18.17.1            | Java JDK 11        | Python 3.9      | MySQL 8.0.33 | AWS EC2(Ubuntu 20.04 LTS) | GitLab  |
-| NPM 9.6.7               | Spring Boot 2.7.15 | FastApi 0.103.1 | Redis 7.0.12 | Nginx 1.25.1              | Notion  |
-| Vite + Typescript       | Gradle 8.2.1       | Selenium 4.13.0 |              | Docker 24                 | figma   |
-| React 18.2.0            | Lombok             | pandas 1.5.3    |              | Jenkins                   |         |
-| Recoil                  | Spring Security    |                 |              |                           |         |
-| React-query             | JJWT 0.9.1         |                 |              |                           |         |
-| Framer-motion           |                    |                 |              |                           |         |
-| ChakraUI                |                    |                 |              |                           |         |
++ **Language**
+<div align="left">
+  <img src="https://img.shields.io/badge/typescript-3178C6?style=for-the-badge&logo=typescript&logoColor=white">
+  <img src="https://img.shields.io/badge/java-007396?style=for-the-badge&logo=openjdk&logoColor=white">
+</div>
+
++ **Framework**
+<div align="left">
+  <img src="https://img.shields.io/badge/react-61DAFB?style=for-the-badge&logo=react&logoColor=white"> 
+  <img src="https://img.shields.io/badge/node.js-39933?style=for-the-badge&logo=nodedotjs&logoColor=white">
+  <img src="https://img.shields.io/badge/spring boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white">
+</div>
+
++ **Server**
+<div align="left">
+  <img src="https://img.shields.io/badge/vercel-000000?style=for-the-badge&logo=vercel&logoColor=white">
+  <img src="https://img.shields.io/badge/amazon ec2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white">
+  <img src="https://img.shields.io/badge/linux-FCC624?style=for-the-badge&logo=linux&logoColor=white">
+</div>
+
++ **DB**
+<div align="left">
+  <img src="https://img.shields.io/badge/mariadb-003545?style=for-the-badge&logo=mariadb&logoColor=white">
+  <img src="https://img.shields.io/badge/amazonrds-527FFF?style=for-the-badge&logo=amazonrds&logoColor=white">
+</div>
+
++ **Library**
+<div align="left">
+  <img src="https://img.shields.io/badge/konva-0D83CD?style=for-the-badge&logo=konva&logoColor=white">
+  <img src="https://img.shields.io/badge/webrtc-333333?style=for-the-badge&logo=webrtc&logoColor=white">
+</div>
+
++ **Collaboration Tool**
+<div align="left">
+  <img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white">
+  <img src="https://img.shields.io/badge/notion-000000?style=for-the-badge&logo=notion&logoColor=white">
+  <img src="https://img.shields.io/badge/figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white">
+</div>
 <br />
 
 ### 📍 시스템 아키텍쳐
