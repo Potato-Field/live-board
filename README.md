@@ -254,11 +254,11 @@ Two Pointer 알고리즘을 사용해 텍스트 노드의 양쪽 끝에서부터
 | FrontEnd                | BackEnd            | DATA            | DB           | CI/CD                     | 협업 툴  |
 | ----------------------- | ------------------ | --------------- | ------------ | ------------------------- | ------- |
 | Node 18.17.1            | Java JDK 11        | Python 3.9      | MySQL 8.0.33 | AWS EC2(Ubuntu 20.04 LTS) | GitLab  |
-| NPM 9.6.7               | Spring Boot 2.7.15 | FastApi 0.103.1 | Redis 7.0.12 | Nginx 1.25.1              | Jira    |
-| Vite + Typescript + SWC | Gradle 8.2.1       | Selenium 4.13.0 |              | Docker 24                 | Notion  |
-| React 18.2.0            | Lombok             | pandas 1.5.3    |              | Jenkins                   | figma   |
-| Recoil                  | Spring Security    |                 |              |                           | Swagger |
-| React-query             | JJWT 0.9.1         |                 |              |                           | Postman |
+| NPM 9.6.7               | Spring Boot 2.7.15 | FastApi 0.103.1 | Redis 7.0.12 | Nginx 1.25.1              | Notion  |
+| Vite + Typescript       | Gradle 8.2.1       | Selenium 4.13.0 |              | Docker 24                 | figma   |
+| React 18.2.0            | Lombok             | pandas 1.5.3    |              | Jenkins                   |         |
+| Recoil                  | Spring Security    |                 |              |                           |         |
+| React-query             | JJWT 0.9.1         |                 |              |                           |         |
 | Framer-motion           |                    |                 |              |                           |         |
 | ChakraUI                |                    |                 |              |                           |         |
 <br />
@@ -275,12 +275,15 @@ Two Pointer 알고리즘을 사용해 텍스트 노드의 양쪽 끝에서부터
 ## 6️⃣ 프로젝트 실행 방법
 
 ### Client
-
-  <!-- TODO: 실행 방법 넣기 -->
+> npm run dev 
 
 ### Server
-  
-  <!-- TODO: 실행 방법 넣기 -->
+> cd /live-voard/bin
+> * for Linux
+> PORT=1235 node ./server.js
+>* for windows
+> SET PORT=1235
+> node ./server.js
 
 
 <br />
