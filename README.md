@@ -280,8 +280,10 @@ Two Pointer 알고리즘을 사용해 텍스트 노드의 양쪽 끝에서부터
 ### Server
 > cd /live-voard/bin
 > * for Linux
+> 
 > PORT=1235 node ./server.js
->* for windows
+> * for windows
+>
 > SET PORT=1235
 > node ./server.js
 
