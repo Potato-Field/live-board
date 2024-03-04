@@ -220,7 +220,7 @@ User A가 객체를 그리는 과정이 모든 user에게 실시간으로 자연
 #### 해결
 드로잉 시 마우스가 움직이는 좌표를 계속적으로 추가하는 방식으로 동기화하여 문제를 해결했습니다.<br />
 드로잉에 대한 이벤트 발생이 빈번해 Throttling을 통한 일정 간격으로 이벤트를 구현하고 매끄럽지 않은 드로잉에 대해 보정 알고리즘으로 최적화를 구상했습니다.<br />
-
+<br/>
 
 ### 📍 Text synchronization issue
 
@@ -309,12 +309,12 @@ User A가 텍스트를 작성 또는 수정 중일 때 모든 user에게 그 과
 ## 6️⃣ 프로젝트 실행 방법
 
 ### Client
-```
+```bash
 npm run dev 
 ```
 
 ### Server
-```
+```bash
 cd /live-voard/bin
 # for Linux
 
