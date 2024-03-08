@@ -92,8 +92,8 @@
 - 펜, 하이라이터, 지우개, 텍스트, 도형을 이용할 수 있습니다.
   <table border="0" >
     <tr>
-        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561610-7b3c0b07-2924-4414-be78-281ea964e699.gif"> </img></td>
-        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561650-8a524521-d6d2-46fd-91af-0f1cedb5fa21.gif"></img></td>
+        <td><img width="400" height="200" src="./src/assets/readme/tool.gif"> </img></td>
+        <td><img width="400" height="200" src="./src/assets/readme/shape.gif"></img></td>
     </tr>
   </table>
 
@@ -102,16 +102,14 @@
 - 같은 방에 있는 모든 사용자에게 모든 작업이 실시간으로 반영됩니다.
   <table border="0" >
     <tr>
-        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561610-7b3c0b07-2924-4414-be78-281ea964e699.gif"> </img></td>
-        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561650-8a524521-d6d2-46fd-91af-0f1cedb5fa21.gif"></img></td>
+        <td><img width="400" height="200" src="./src/assets/readme/crdt.gif"> </img></td>
     </tr>
   </table>
 
 - 다른 사용자가 수정 중인 영역에 접근해 수정 또는 삭제할 수 없습니다.
   <table border="0" >
     <tr>
-        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561610-7b3c0b07-2924-4414-be78-281ea964e699.gif"> </img></td>
-        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561650-8a524521-d6d2-46fd-91af-0f1cedb5fa21.gif"></img></td>
+        <td><img width="400" height="200" src="./src/assets/readme/lock.gif"> </img></td>
     </tr>
   </table>
 
@@ -120,16 +118,14 @@
 - 마인드맵을 생성하고 팀원들과 마인드맵을 확장 및 수정할 수 있습니다.
   <table border="0" >
     <tr>
-        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561610-7b3c0b07-2924-4414-be78-281ea964e699.gif"> </img></td>
-        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561650-8a524521-d6d2-46fd-91af-0f1cedb5fa21.gif"></img></td>
+        <td><img width="400" height="200" src="./src/assets/readme/mindmapcreate.gif"> </img></td>
     </tr>
   </table>
 
 - 마인드맵을 텍스트로 요약할 수 있습니다.
   <table border="0" >
     <tr>
-        <td>    <img src="https://user-images.githubusercontent.com/101175828/216537143-2f7bcd1f-9d30-42f8-86de-10587673a030.gif"></img></td>
-        <td>    <img src="https://user-images.githubusercontent.com/101175828/216537281-4498ad2d-a8c5-44fa-9c54-e0ab51c337cb.gif"> </img></td>
+        <td><img width="400" height="200" src="./src/assets/readme/summary.gif"></img></td>
     </tr>
   </table>
 
@@ -138,8 +134,7 @@
 - 포스트잇을 이용할 수 있습니다.
   <table border="0" >
     <tr>
-        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561610-7b3c0b07-2924-4414-be78-281ea964e699.gif"> </img></td>
-        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561650-8a524521-d6d2-46fd-91af-0f1cedb5fa21.gif"></img></td>
+        <td><img width="400" height="200" src="./src/assets/readme/postitcreate.gif"> </img></td>
     </tr>
   </table>
 
@@ -147,25 +142,21 @@
 - 투표 결과는 한 곳에서 확인 가능합니다.
   <table border="0" >
     <tr>
-        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561610-7b3c0b07-2924-4414-be78-281ea964e699.gif"> </img></td>
-        <td><img width="400" height="200" src="https://user-images.githubusercontent.com/101175828/216561650-8a524521-d6d2-46fd-91af-0f1cedb5fa21.gif"></img></td>
+        <td><img width="400" height="200" src="./src/assets/readme/vote.gif"> </img></td>
     </tr>
   </table>
 
 - 돋보기 아이콘을 눌러 해당 포스트잇을 자세히 볼 수 있습니다.
   <table border="0" >
     <tr>
-      <td><img width="400" height="230" src="https://user-images.githubusercontent.com/101175828/216539463-35aa8836-9b30-41c0-aeac-ef03335c031e.gif"> </img>
-      </td>
-      <td>
-      <img width="300" height="230" src="https://user-images.githubusercontent.com/101175828/216539648-c765fe17-f104-4500-96ab-0a074e0e70d2.gif"> </img>
+      <td><img width="400" height="230" src="./src/assets/readme/focus.gif"> </img>
       </td>
     </tr>
   </table>
 
 ### 5. 음성 회의
 - 팀원들과 음성 채팅을 할 수 있습니다.
-  <img  src="https://user-images.githubusercontent.com/101175828/216539214-8ee34979-d587-49df-a343-38fcc02f5be5.gif"> </img>
+  <img  src="./src/assets/readme/voicechat.gif"> </img>
 
 
 <br/>
