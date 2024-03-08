@@ -156,12 +156,7 @@
 
 ### 5. 음성 회의
 - 팀원들과 음성 채팅을 할 수 있습니다.
-  <table border="0" >
-    <tr>
-      <td><img width="400" height="230" src="./src/assets/readme/voicechat.gif"> </img>
-      </td>
-    </tr>
-  </table>
+  <img  src="./src/assets/readme/voicechat.gif"> </img>
 
 
 <br/>
